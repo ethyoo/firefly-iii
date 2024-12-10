@@ -3,3 +3,6 @@ rules:
   - base: develop
     upstream: firefly-iii:develop
     mergeMethod: hardreset
+  - base: pull
+    upstream: firefly-iii:main
+    mergeMethod: merge
