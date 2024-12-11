@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace FireflyIII\Models;
 
+use FireflyIII\Casts\SeparateTimezoneCaster;
 use FireflyIII\Support\Models\ReturnsIntegerIdTrait;
 use FireflyIII\Support\Models\ReturnsIntegerUserIdTrait;
 use FireflyIII\User;
@@ -51,16 +52,16 @@ class Recurrence extends Model
             'title'        => 'string',
             'id'           => 'int',
             'description'  => 'string',
-            'first_date'   => 'date',
-            'repeat_until' => 'date',
-            'latest_date'  => 'date',
+            'first_date'   => SeparateTimezoneCaster::class,
+            'repeat_until' => SeparateTimezoneCaster::class,
+            'latest_date'  => SeparateTimezoneCaster::class,
             'repetitions'  => 'int',
             'active'       => 'bool',
             'apply_rules'  => 'bool',
         ];
 
     protected $fillable
-                     = ['user_id', 'transaction_type_id', 'title', 'description', 'first_date', 'repeat_until', 'latest_date', 'repetitions', 'apply_rules', 'active'];
+                     = ['user_id', 'transaction_type_id', 'title', 'description', 'first_date', 'first_date_tz', 'repeat_until', 'repeat_until_tz', 'latest_date', 'latest_date_tz', 'repetitions', 'apply_rules', 'active'];
 
     /** @var string The table to store the data in */
     protected $table = 'recurrences';

@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace FireflyIII\Models;
 
+use FireflyIII\Casts\SeparateTimezoneCaster;
 use FireflyIII\Support\Models\ReturnsIntegerIdTrait;
 use FireflyIII\Support\Models\ReturnsIntegerUserIdTrait;
 use FireflyIII\User;
@@ -49,14 +50,16 @@ class Bill extends Model
             'created_at'      => 'datetime',
             'updated_at'      => 'datetime',
             'deleted_at'      => 'datetime',
-            'date'            => 'date',
-            'end_date'        => 'date',
-            'extension_date'  => 'date',
+            'date'            => SeparateTimezoneCaster::class,
+            'end_date'        => SeparateTimezoneCaster::class,
+            'extension_date'  => SeparateTimezoneCaster::class,
             'skip'            => 'int',
             'automatch'       => 'boolean',
             'active'          => 'boolean',
             'name_encrypted'  => 'boolean',
             'match_encrypted' => 'boolean',
+            'amount_min'      => 'string',
+            'amount_max'      => 'string',
         ];
 
     protected $fillable
@@ -68,6 +71,7 @@ class Bill extends Model
             'user_group_id',
             'amount_max',
             'date',
+            'date_tz',
             'repeat_freq',
             'skip',
             'automatch',
@@ -75,6 +79,8 @@ class Bill extends Model
             'transaction_currency_id',
             'end_date',
             'extension_date',
+            'end_date_tz',
+            'extension_date_tz',
         ];
 
     protected $hidden = ['amount_min_encrypted', 'amount_max_encrypted', 'name_encrypted', 'match_encrypted'];

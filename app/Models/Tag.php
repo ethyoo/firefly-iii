@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace FireflyIII\Models;
 
+use FireflyIII\Casts\SeparateTimezoneCaster;
 use FireflyIII\Support\Models\ReturnsIntegerIdTrait;
 use FireflyIII\Support\Models\ReturnsIntegerUserIdTrait;
 use FireflyIII\User;
@@ -47,13 +48,13 @@ class Tag extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
             'deleted_at' => 'datetime',
-            'date'       => 'date',
+            'date'       => SeparateTimezoneCaster::class,
             'zoomLevel'  => 'int',
             'latitude'   => 'float',
             'longitude'  => 'float',
         ];
 
-    protected $fillable = ['user_id', 'user_group_id', 'tag', 'date', 'description', 'tagMode'];
+    protected $fillable = ['user_id', 'user_group_id', 'tag', 'date', 'date_tz', 'description', 'tagMode'];
 
     protected $hidden   = ['zoomLevel', 'latitude', 'longitude'];
 

@@ -24,6 +24,7 @@ declare(strict_types=1);
 
 namespace FireflyIII\Models;
 
+use FireflyIII\Casts\SeparateTimezoneCaster;
 use FireflyIII\Support\Models\ReturnsIntegerIdTrait;
 use FireflyIII\Support\Models\ReturnsIntegerUserIdTrait;
 use FireflyIII\User;
@@ -41,10 +42,10 @@ class InvitedUser extends Model
 
     protected $casts
                         = [
-            'expires'  => 'datetime',
+            'expires'  => SeparateTimezoneCaster::class,
             'redeemed' => 'boolean',
         ];
-    protected $fillable = ['user_id', 'email', 'invite_code', 'expires', 'redeemed'];
+    protected $fillable = ['user_id', 'email', 'invite_code', 'expires', 'expires_tz', 'redeemed'];
 
     /**
      * Route binder. Converts the key in the URL to the specified object (or throw 404).

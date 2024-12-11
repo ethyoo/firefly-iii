@@ -24,6 +24,7 @@ declare(strict_types=1);
 namespace FireflyIII\Models;
 
 use Carbon\Carbon;
+use FireflyIII\Casts\SeparateTimezoneCaster;
 use FireflyIII\Support\Models\ReturnsIntegerIdTrait;
 use FireflyIII\Support\Models\ReturnsIntegerUserIdTrait;
 use FireflyIII\User;
@@ -37,6 +38,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -54,7 +56,7 @@ class TransactionJournal extends Model
             'created_at'    => 'datetime',
             'updated_at'    => 'datetime',
             'deleted_at'    => 'datetime',
-            'date'          => 'datetime',
+            'date'          => SeparateTimezoneCaster::class,
             'interest_date' => 'date',
             'book_date'     => 'date',
             'process_date'  => 'date',
@@ -76,6 +78,7 @@ class TransactionJournal extends Model
             'completed',
             'order',
             'date',
+            'date_tz',
         ];
 
     protected $hidden = ['encrypted'];
@@ -88,7 +91,7 @@ class TransactionJournal extends Model
     public static function routeBinder(string $value): self
     {
         if (auth()->check()) {
-            $journalId = (int)$value;
+            $journalId = (int) $value;
 
             /** @var User $user */
             $user      = auth()->user();
@@ -167,12 +170,16 @@ class TransactionJournal extends Model
 
     public function scopeAfter(EloquentBuilder $query, Carbon $date): EloquentBuilder
     {
-        return $query->where('transaction_journals.date', '>=', $date->format('Y-m-d 00:00:00'));
+        Log::debug(sprintf('scopeAfter("%s")', $date->format('Y-m-d H:i:s')));
+
+        return $query->where('transaction_journals.date', '>=', $date->format('Y-m-d H:i:s'));
     }
 
     public function scopeBefore(EloquentBuilder $query, Carbon $date): EloquentBuilder
     {
-        return $query->where('transaction_journals.date', '<=', $date->format('Y-m-d 00:00:00'));
+        Log::debug(sprintf('scopeBefore("%s")', $date->format('Y-m-d H:i:s')));
+
+        return $query->where('transaction_journals.date', '<=', $date->format('Y-m-d H:i:s'));
     }
 
     public function scopeTransactionTypes(EloquentBuilder $query, array $types): void
@@ -238,14 +245,14 @@ class TransactionJournal extends Model
     protected function order(): Attribute
     {
         return Attribute::make(
-            get: static fn ($value) => (int)$value,
+            get: static fn ($value) => (int) $value,
         );
     }
 
     protected function transactionTypeId(): Attribute
     {
         return Attribute::make(
-            get: static fn ($value) => (int)$value,
+            get: static fn ($value) => (int) $value,
         );
     }
 }

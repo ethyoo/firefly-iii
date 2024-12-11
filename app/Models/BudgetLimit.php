@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace FireflyIII\Models;
 
+use FireflyIII\Casts\SeparateTimezoneCaster;
 use FireflyIII\Events\Model\BudgetLimit\Created;
 use FireflyIII\Events\Model\BudgetLimit\Deleted;
 use FireflyIII\Events\Model\BudgetLimit\Updated;
@@ -43,9 +44,10 @@ class BudgetLimit extends Model
                         = [
             'created_at'  => 'datetime',
             'updated_at'  => 'datetime',
-            'start_date'  => 'date',
-            'end_date'    => 'date',
+            'start_date'  => SeparateTimezoneCaster::class,
+            'end_date'    => SeparateTimezoneCaster::class,
             'auto_budget' => 'boolean',
+            'amount'      => 'string',
         ];
     protected $dispatchesEvents
                         = [
@@ -54,7 +56,7 @@ class BudgetLimit extends Model
             'deleted' => Deleted::class,
         ];
 
-    protected $fillable = ['budget_id', 'start_date', 'end_date', 'amount', 'transaction_currency_id'];
+    protected $fillable = ['budget_id', 'start_date', 'end_date', 'start_date_tz', 'end_date_tz', 'amount', 'transaction_currency_id'];
 
     /**
      * Route binder. Converts the key in the URL to the specified object (or throw 404).

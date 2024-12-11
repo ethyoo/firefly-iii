@@ -1,12 +1,12 @@
 // date ranges
 var ranges = {};
 {% for title, range in dateRangeConfig.ranges %}
-    ranges["{{ title }}"] = [moment("{{ range[0].format('Y-m-d') }}"), moment("{{ range[1].format('Y-m-d') }}")];
+    ranges["{{ title|escape('js') }}"] = [moment("{{ range[0].format('Y-m-d') }}"), moment("{{ range[1].format('Y-m-d') }}")];
 {% endfor %}
 
 // date range meta configuration
 var dateRangeMeta = {
-title: "{{ dateRangeTitle }}",
+title: "{{ dateRangeTitle|escape('js') }}",
 url: "{{ route('daterange') }}",
 labels: {
 apply: "{{ 'apply'|_ }}",
@@ -44,6 +44,7 @@ var todayText = ' {{ trans('firefly.today')|escape('js') }}';
 
 // some formatting stuff:
 var month_and_day_js = "{{ trans('config.month_and_day_js') }}";
+var date_time_js = "{{ trans('config.date_time_js') }}";
 var acc_config_new = {format: accountingConfig};
 
 // strings and translations used often:
