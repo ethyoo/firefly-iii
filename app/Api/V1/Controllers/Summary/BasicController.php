@@ -27,11 +27,11 @@ namespace FireflyIII\Api\V1\Controllers\Summary;
 use Carbon\Carbon;
 use FireflyIII\Api\V1\Controllers\Controller;
 use FireflyIII\Api\V1\Requests\Data\DateRequest;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Helpers\Collector\GroupCollectorInterface;
 use FireflyIII\Helpers\Report\NetWorthInterface;
 use FireflyIII\Models\Account;
 use FireflyIII\Models\AccountType;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\Repositories\Bill\BillRepositoryInterface;
 use FireflyIII\Repositories\Budget\AvailableBudgetRepositoryInterface;
@@ -129,7 +129,7 @@ class BasicController extends Controller
         // collect income of user using the new group collector.
         /** @var GroupCollectorInterface $collector */
         $collector = app(GroupCollectorInterface::class);
-        $collector->setRange($start, $end)->setPage($this->parameters->get('page'))->setTypes([TransactionType::DEPOSIT]);
+        $collector->setRange($start, $end)->setPage($this->parameters->get('page'))->setTypes([TransactionTypeEnum::DEPOSIT->value]);
 
         $set       = $collector->getExtractedJournals();
 
@@ -148,7 +148,7 @@ class BasicController extends Controller
         // collect expenses of user using the new group collector.
         /** @var GroupCollectorInterface $collector */
         $collector = app(GroupCollectorInterface::class);
-        $collector->setRange($start, $end)->setPage($this->parameters->get('page'))->setTypes([TransactionType::WITHDRAWAL]);
+        $collector->setRange($start, $end)->setPage($this->parameters->get('page'))->setTypes([TransactionTypeEnum::WITHDRAWAL->value]);
         $set       = $collector->getExtractedJournals();
 
         /** @var array $transactionJournal */

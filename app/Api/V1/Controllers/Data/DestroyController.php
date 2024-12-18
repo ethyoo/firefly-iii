@@ -1,4 +1,5 @@
 <?php
+
 /*
  * DestroyController.php
  * Copyright (c) 2021 james@firefly-iii.org
@@ -25,11 +26,11 @@ namespace FireflyIII\Api\V1\Controllers\Data;
 
 use FireflyIII\Api\V1\Controllers\Controller;
 use FireflyIII\Api\V1\Requests\Data\DestroyRequest;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Models\Account;
 use FireflyIII\Models\AccountType;
 use FireflyIII\Models\TransactionJournal;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\Repositories\Bill\BillRepositoryInterface;
 use FireflyIII\Repositories\Budget\AvailableBudgetRepositoryInterface;
@@ -68,7 +69,7 @@ class DestroyController extends Controller
         $allExceptAssets = [AccountType::BENEFICIARY, AccountType::CASH, AccountType::CREDITCARD, AccountType::DEFAULT, AccountType::EXPENSE, AccountType::IMPORT, AccountType::INITIAL_BALANCE, AccountType::LIABILITY_CREDIT, AccountType::RECONCILIATION, AccountType::REVENUE];
         $all             = [AccountType::ASSET, AccountType::BENEFICIARY, AccountType::CASH, AccountType::CREDITCARD, AccountType::DEBT, AccountType::DEFAULT, AccountType::EXPENSE, AccountType::IMPORT, AccountType::INITIAL_BALANCE, AccountType::LIABILITY_CREDIT, AccountType::LOAN, AccountType::MORTGAGE, AccountType::RECONCILIATION];
         $liabilities     = [AccountType::DEBT, AccountType::LOAN, AccountType::MORTGAGE, AccountType::CREDITCARD];
-        $transactions    = [TransactionType::WITHDRAWAL, TransactionType::DEPOSIT, TransactionType::TRANSFER, TransactionType::RECONCILIATION];
+        $transactions    = [TransactionTypeEnum::WITHDRAWAL->value, TransactionTypeEnum::DEPOSIT->value, TransactionTypeEnum::TRANSFER->value, TransactionTypeEnum::RECONCILIATION->value];
 
         match ($objects) {
             'budgets'                => $this->destroyBudgets(),
@@ -86,9 +87,9 @@ class DestroyController extends Controller
             'revenue_accounts'       => $this->destroyAccounts([AccountType::REVENUE]),
             'liabilities'            => $this->destroyAccounts($liabilities),
             'transactions'           => $this->destroyTransactions($transactions),
-            'withdrawals'            => $this->destroyTransactions([TransactionType::WITHDRAWAL]),
-            'deposits'               => $this->destroyTransactions([TransactionType::DEPOSIT]),
-            'transfers'              => $this->destroyTransactions([TransactionType::TRANSFER]),
+            'withdrawals'            => $this->destroyTransactions([TransactionTypeEnum::WITHDRAWAL->value]),
+            'deposits'               => $this->destroyTransactions([TransactionTypeEnum::DEPOSIT->value]),
+            'transfers'              => $this->destroyTransactions([TransactionTypeEnum::TRANSFER->value]),
             default                  => throw new FireflyException(sprintf('200033: This endpoint can\'t handle object "%s"', $objects)),
         };
 
