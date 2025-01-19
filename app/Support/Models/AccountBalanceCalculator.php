@@ -156,7 +156,7 @@ class AccountBalanceCalculator
          * @var array $currencies
          */
         foreach ($balances as $accountId => $currencies) {
-            /** @var Account $account */
+            /** @var null|Account $account */
             $account = Account::find($accountId);
             if (null === $account) {
                 Log::error(sprintf('Could not find account #%d, will not save account balance.', $accountId));
@@ -169,7 +169,7 @@ class AccountBalanceCalculator
              * @var array $balance
              */
             foreach ($currencies as $currencyId => $balance) {
-                /** @var TransactionCurrency $currency */
+                /** @var null|TransactionCurrency $currency */
                 $currency        = TransactionCurrency::find($currencyId);
                 if (null === $currency) {
                     Log::error(sprintf('Could not find currency #%d, will not save account balance.', $currencyId));
@@ -206,45 +206,5 @@ class AccountBalanceCalculator
             $accounts->push($transaction->account);
         }
         $object->optimizedCalculation($accounts, $transactionJournal->date);
-    }
-
-    private function getAccountBalanceByAccount(int $account, int $currency): AccountBalance
-    {
-        $query                          = AccountBalance::where('title', 'balance')->where('account_id', $account)->where('transaction_currency_id', $currency);
-
-        $entry                          = $query->first();
-        if (null !== $entry) {
-            // Log::debug(sprintf('Found account balance "balance" for account #%d and currency #%d: %s', $account, $currency, $entry->balance));
-
-            return $entry;
-        }
-        $entry                          = new AccountBalance();
-        $entry->title                   = 'balance';
-        $entry->account_id              = $account;
-        $entry->transaction_currency_id = $currency;
-        $entry->balance                 = '0';
-        $entry->save();
-        // Log::debug(sprintf('Created new account balance for account #%d and currency #%d: %s', $account, $currency, $entry->balance));
-
-        return $entry;
-    }
-
-    private function getAccountBalanceByJournal(string $title, int $account, int $journal, int $currency): AccountBalance
-    {
-        $query                          = AccountBalance::where('title', $title)->where('account_id', $account)->where('transaction_journal_id', $journal)->where('transaction_currency_id', $currency);
-
-        $entry                          = $query->first();
-        if (null !== $entry) {
-            return $entry;
-        }
-        $entry                          = new AccountBalance();
-        $entry->title                   = $title;
-        $entry->account_id              = $account;
-        $entry->transaction_journal_id  = $journal;
-        $entry->transaction_currency_id = $currency;
-        $entry->balance                 = '0';
-        $entry->save();
-
-        return $entry;
     }
 }

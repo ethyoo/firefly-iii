@@ -39,7 +39,11 @@ interface SearchInterface
 
     public function getOperators(): Collection;
 
+    public function getWords(): array;
+
     public function getWordsAsString(): string;
+
+    public function getExcludedWords(): array;
 
     public function hasModifiers(): bool;
 

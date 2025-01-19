@@ -24,11 +24,11 @@ declare(strict_types=1);
 
 namespace FireflyIII\Http\Controllers\Recurring;
 
+use FireflyIII\Enums\RecurrenceRepetitionWeekend;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Helpers\Attachments\AttachmentHelperInterface;
 use FireflyIII\Http\Controllers\Controller;
 use FireflyIII\Http\Requests\RecurrenceFormRequest;
-use FireflyIII\Models\RecurrenceRepetition;
 use FireflyIII\Models\Transaction;
 use FireflyIII\Models\TransactionJournal;
 use FireflyIII\Repositories\Bill\BillRepositoryInterface;
@@ -100,10 +100,10 @@ class CreateController extends Controller
             'times'      => (string) trans('firefly.repeat_times'),
         ];
         $weekendResponses  = [
-            RecurrenceRepetition::WEEKEND_DO_NOTHING    => (string) trans('firefly.do_nothing'),
-            RecurrenceRepetition::WEEKEND_SKIP_CREATION => (string) trans('firefly.skip_transaction'),
-            RecurrenceRepetition::WEEKEND_TO_FRIDAY     => (string) trans('firefly.jump_to_friday'),
-            RecurrenceRepetition::WEEKEND_TO_MONDAY     => (string) trans('firefly.jump_to_monday'),
+            RecurrenceRepetitionWeekend::WEEKEND_DO_NOTHING->value    => (string) trans('firefly.do_nothing'),
+            RecurrenceRepetitionWeekend::WEEKEND_SKIP_CREATION->value => (string) trans('firefly.skip_transaction'),
+            RecurrenceRepetitionWeekend::WEEKEND_TO_FRIDAY->value     => (string) trans('firefly.jump_to_friday'),
+            RecurrenceRepetitionWeekend::WEEKEND_TO_MONDAY->value     => (string) trans('firefly.jump_to_monday'),
         ];
         $hasOldInput       = null !== $request->old('_token'); // flash some data
         $preFilled         = [
@@ -123,7 +123,7 @@ class CreateController extends Controller
     /**
      * @return Factory|\Illuminate\Contracts\View\View
      *
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings("PHPMD.ExcessiveMethodLength")
      */
     public function createFromJournal(Request $request, TransactionJournal $journal)
     {
@@ -145,10 +145,10 @@ class CreateController extends Controller
             'times'      => (string) trans('firefly.repeat_times'),
         ];
         $weekendResponses  = [
-            RecurrenceRepetition::WEEKEND_DO_NOTHING    => (string) trans('firefly.do_nothing'),
-            RecurrenceRepetition::WEEKEND_SKIP_CREATION => (string) trans('firefly.skip_transaction'),
-            RecurrenceRepetition::WEEKEND_TO_FRIDAY     => (string) trans('firefly.jump_to_friday'),
-            RecurrenceRepetition::WEEKEND_TO_MONDAY     => (string) trans('firefly.jump_to_monday'),
+            RecurrenceRepetitionWeekend::WEEKEND_DO_NOTHING->value    => (string) trans('firefly.do_nothing'),
+            RecurrenceRepetitionWeekend::WEEKEND_SKIP_CREATION->value => (string) trans('firefly.skip_transaction'),
+            RecurrenceRepetitionWeekend::WEEKEND_TO_FRIDAY->value     => (string) trans('firefly.jump_to_friday'),
+            RecurrenceRepetitionWeekend::WEEKEND_TO_MONDAY->value     => (string) trans('firefly.jump_to_monday'),
         ];
 
         // fill prefilled with journal info

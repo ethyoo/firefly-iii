@@ -27,6 +27,7 @@ namespace FireflyIII\Helpers\Collector;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Exception;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Helpers\Collector\Extensions\AccountCollection;
 use FireflyIII\Helpers\Collector\Extensions\AmountCollection;
@@ -37,7 +38,6 @@ use FireflyIII\Helpers\Collector\Extensions\TimeCollection;
 use FireflyIII\Models\TransactionCurrency;
 use FireflyIII\Models\TransactionGroup;
 use FireflyIII\Models\TransactionJournal;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Models\UserGroup;
 use FireflyIII\User;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
@@ -155,7 +155,7 @@ class GroupCollector implements GroupCollectorInterface
     public function descriptionDoesNotEnd(array $array): GroupCollectorInterface
     {
         $this->query->where(
-            static function (EloquentBuilder $q) use ($array): void { // @phpstan-ignore-line
+            static function (EloquentBuilder $q) use ($array): void {
                 $q->where(
                     static function (EloquentBuilder $q1) use ($array): void {
                         foreach ($array as $word) {
@@ -182,7 +182,7 @@ class GroupCollector implements GroupCollectorInterface
     public function descriptionDoesNotStart(array $array): GroupCollectorInterface
     {
         $this->query->where(
-            static function (EloquentBuilder $q) use ($array): void { // @phpstan-ignore-line
+            static function (EloquentBuilder $q) use ($array): void {
                 $q->where(
                     static function (EloquentBuilder $q1) use ($array): void {
                         foreach ($array as $word) {
@@ -209,7 +209,7 @@ class GroupCollector implements GroupCollectorInterface
     public function descriptionEnds(array $array): GroupCollectorInterface
     {
         $this->query->where(
-            static function (EloquentBuilder $q) use ($array): void { // @phpstan-ignore-line
+            static function (EloquentBuilder $q) use ($array): void {
                 $q->where(
                     static function (EloquentBuilder $q1) use ($array): void {
                         foreach ($array as $word) {
@@ -235,7 +235,7 @@ class GroupCollector implements GroupCollectorInterface
     public function descriptionIs(string $value): GroupCollectorInterface
     {
         $this->query->where(
-            static function (EloquentBuilder $q) use ($value): void { // @phpstan-ignore-line
+            static function (EloquentBuilder $q) use ($value): void {
                 $q->where('transaction_journals.description', '=', $value);
                 $q->orWhere('transaction_groups.title', '=', $value);
             }
@@ -247,7 +247,7 @@ class GroupCollector implements GroupCollectorInterface
     public function descriptionIsNot(string $value): GroupCollectorInterface
     {
         $this->query->where(
-            static function (EloquentBuilder $q) use ($value): void { // @phpstan-ignore-line
+            static function (EloquentBuilder $q) use ($value): void {
                 $q->where('transaction_journals.description', '!=', $value);
                 $q->where(
                     static function (EloquentBuilder $q2) use ($value): void {
@@ -264,7 +264,7 @@ class GroupCollector implements GroupCollectorInterface
     public function descriptionStarts(array $array): GroupCollectorInterface
     {
         $this->query->where(
-            static function (EloquentBuilder $q) use ($array): void { // @phpstan-ignore-line
+            static function (EloquentBuilder $q) use ($array): void {
                 $q->where(
                     static function (EloquentBuilder $q1) use ($array): void {
                         foreach ($array as $word) {
@@ -320,7 +320,7 @@ class GroupCollector implements GroupCollectorInterface
     public function excludeCurrency(TransactionCurrency $currency): GroupCollectorInterface
     {
         $this->query->where(
-            static function (EloquentBuilder $q) use ($currency): void { // @phpstan-ignore-line
+            static function (EloquentBuilder $q) use ($currency): void {
                 $q->where('source.transaction_currency_id', '!=', $currency->id);
                 $q->where(
                     static function (EloquentBuilder $q2) use ($currency): void {
@@ -375,10 +375,13 @@ class GroupCollector implements GroupCollectorInterface
     public function excludeSearchWords(array $array): GroupCollectorInterface
     {
         if (0 === count($array)) {
+            Log::debug('No excluded search words provided, skipping.');
+
             return $this;
         }
+        Log::debug(sprintf('%d excluded search words provided.', count($array)));
         $this->query->where(
-            static function (EloquentBuilder $q) use ($array): void { // @phpstan-ignore-line
+            static function (EloquentBuilder $q) use ($array): void {
                 $q->where(
                     static function (EloquentBuilder $q1) use ($array): void {
                         foreach ($array as $word) {
@@ -414,7 +417,7 @@ class GroupCollector implements GroupCollectorInterface
         $this->query->whereNull('transaction_groups.deleted_at');
         $this->query->whereNotIn(
             'transaction_types.type',
-            [TransactionType::LIABILITY_CREDIT, TransactionType::OPENING_BALANCE, TransactionType::RECONCILIATION]
+            [TransactionTypeEnum::LIABILITY_CREDIT->value, TransactionTypeEnum::OPENING_BALANCE->value, TransactionTypeEnum::RECONCILIATION->value]
         );
 
         return $this;
@@ -515,7 +518,7 @@ class GroupCollector implements GroupCollectorInterface
                     'user_id'          => $augumentedJournal->user_id,
                     'user_group_id'    => $augumentedJournal->user_group_id,
                     // Field transaction_group_title was added by the query.
-                    'title'            => $augumentedJournal->transaction_group_title, // @phpstan-ignore-line
+                    'title'            => $augumentedJournal->transaction_group_title,
                     'created_at'       => new Carbon($augumentedJournal->group_created_at, config('app.timezone')),
                     'updated_at'       => new Carbon($augumentedJournal->group_updated_at, config('app.timezone')),
                     'transaction_type' => $parsedGroup['transaction_type_type'],
@@ -524,7 +527,7 @@ class GroupCollector implements GroupCollectorInterface
                     'transactions'     => [],
                 ];
                 // Field transaction_journal_id was added by the query.
-                $journalId                              = (int) $augumentedJournal->transaction_journal_id; // @phpstan-ignore-line
+                $journalId                              = (int) $augumentedJournal->transaction_journal_id;
                 $groupArray['transactions'][$journalId] = $parsedGroup;
                 $groups[$groupId]                       = $groupArray;
 
@@ -532,7 +535,7 @@ class GroupCollector implements GroupCollectorInterface
             }
             // or parse the rest.
             // Field transaction_journal_id was added by the query.
-            $journalId = (int) $augumentedJournal->transaction_journal_id; // @phpstan-ignore-line
+            $journalId = (int) $augumentedJournal->transaction_journal_id;
             if (array_key_exists($journalId, $groups[$groupId]['transactions'])) {
                 // append data to existing group + journal (for multiple tags or multiple attachments)
                 $groups[$groupId]['transactions'][$journalId] = $this->mergeTags($groups[$groupId]['transactions'][$journalId], $augumentedJournal);
@@ -865,7 +868,7 @@ class GroupCollector implements GroupCollectorInterface
     public function setCurrency(TransactionCurrency $currency): GroupCollectorInterface
     {
         $this->query->where(
-            static function (EloquentBuilder $q) use ($currency): void { // @phpstan-ignore-line
+            static function (EloquentBuilder $q) use ($currency): void {
                 $q->where('source.transaction_currency_id', $currency->id);
                 $q->orWhere('source.foreign_currency_id', $currency->id);
             }
@@ -949,10 +952,13 @@ class GroupCollector implements GroupCollectorInterface
     public function setSearchWords(array $array): GroupCollectorInterface
     {
         if (0 === count($array)) {
+            Log::debug('No words in array');
+
             return $this;
         }
+        Log::debug(sprintf('%d word(s) in array', count($array)));
         $this->query->where(
-            static function (EloquentBuilder $q) use ($array): void { // @phpstan-ignore-line
+            static function (EloquentBuilder $q) use ($array): void {
                 $q->where(
                     static function (EloquentBuilder $q1) use ($array): void {
                         foreach ($array as $word) {

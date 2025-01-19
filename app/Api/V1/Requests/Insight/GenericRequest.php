@@ -25,8 +25,8 @@ declare(strict_types=1);
 namespace FireflyIII\Api\V1\Requests\Insight;
 
 use Carbon\Carbon;
+use FireflyIII\Enums\AccountTypeEnum;
 use FireflyIII\Models\Account;
-use FireflyIII\Models\AccountType;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\Repositories\Bill\BillRepositoryInterface;
 use FireflyIII\Repositories\Budget\BudgetRepositoryInterface;
@@ -70,7 +70,7 @@ class GenericRequest extends FormRequest
         /** @var Account $account */
         foreach ($this->accounts as $account) {
             $type = $account->accountType->type;
-            if (in_array($type, [AccountType::ASSET, AccountType::LOAN, AccountType::DEBT, AccountType::MORTGAGE], true)) {
+            if (in_array($type, [AccountTypeEnum::ASSET->value, AccountTypeEnum::LOAN->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::MORTGAGE->value], true)) {
                 $return->push($account);
             }
         }
@@ -191,7 +191,7 @@ class GenericRequest extends FormRequest
         /** @var Account $account */
         foreach ($this->accounts as $account) {
             $type = $account->accountType->type;
-            if (AccountType::EXPENSE === $type) {
+            if (AccountTypeEnum::EXPENSE->value === $type) {
                 $return->push($account);
             }
         }
@@ -207,7 +207,7 @@ class GenericRequest extends FormRequest
         /** @var Account $account */
         foreach ($this->accounts as $account) {
             $type = $account->accountType->type;
-            if (AccountType::REVENUE === $type) {
+            if (AccountTypeEnum::REVENUE->value === $type) {
                 $return->push($account);
             }
         }

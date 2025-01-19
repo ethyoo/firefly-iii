@@ -40,26 +40,17 @@ class OwnerTestNotificationNtfy extends Notification
 {
     use Queueable;
 
-    public OwnerNotifiable $owner;
-
-    public function __construct(OwnerNotifiable $owner)
-    {
-        $this->owner = $owner;
-    }
-
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
-     *
-     * @param mixed $notifiable
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toArray($notifiable)
+    public function toArray(OwnerNotifiable $notifiable): array
     {
         return [
         ];
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function toNtfy(OwnerNotifiable $notifiable): Message
     {
@@ -74,9 +65,9 @@ class OwnerTestNotificationNtfy extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function via(OwnerNotifiable $notifiable)
+    public function via(OwnerNotifiable $notifiable): array
     {
         return [NtfyChannel::class];
     }

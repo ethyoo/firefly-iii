@@ -195,7 +195,7 @@ class Preferences
         return $result;
     }
 
-    public function getEncrypted(string $name, $default = null): ?Preference
+    public function getEncrypted(string $name, mixed $default = null): ?Preference
     {
         $result = $this->get($name, $default);
         if (null === $result) {
@@ -210,6 +210,10 @@ class Preferences
         try {
             $result->data = decrypt($result->data);
         } catch (DecryptException $e) {
+            if ('The MAC is invalid.' === $e->getMessage()) {
+                Log::debug('Set data to NULL');
+                $result->data = null;
+            }
             Log::error(sprintf('Could not decrypt preference "%s": %s', $name, $e->getMessage()));
 
             return $result;
@@ -230,6 +234,10 @@ class Preferences
         try {
             $result->data = decrypt($result->data);
         } catch (DecryptException $e) {
+            if ('The MAC is invalid.' === $e->getMessage()) {
+                Log::debug('Set data to NULL');
+                $result->data = null;
+            }
             Log::error(sprintf('Could not decrypt preference "%s": %s', $name, $e->getMessage()));
 
             return $result;

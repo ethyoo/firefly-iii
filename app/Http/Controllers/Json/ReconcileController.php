@@ -25,12 +25,12 @@ declare(strict_types=1);
 namespace FireflyIII\Http\Controllers\Json;
 
 use Carbon\Carbon;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Helpers\Collector\GroupCollectorInterface;
 use FireflyIII\Http\Controllers\Controller;
 use FireflyIII\Models\Account;
 use FireflyIII\Models\TransactionCurrency;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\Support\Facades\Steam;
 use Illuminate\Http\JsonResponse;
@@ -123,10 +123,10 @@ class ReconcileController extends Controller
         Log::debug(sprintf('End balance: "%s"', $endBalance));
         Log::debug(sprintf('Cleared amount: "%s"', $clearedAmount));
         Log::debug(sprintf('Amount: "%s"', $amount));
-        $difference      = bcadd(bcadd(bcsub($startBalance ?? '0', $endBalance ?? '0'), $clearedAmount ?? '0'), $amount);
+        $difference      = bcadd(bcadd(bcsub($startBalance ?? '0', $endBalance ?? '0'), $clearedAmount), $amount);
         $diffCompare     = bccomp($difference, '0');
         $countCleared    = count($clearedJournals);
-        $reconSum        = bcadd(bcadd($startBalance ?? '0', $amount ?? '0'), $clearedAmount ?? '0');
+        $reconSum        = bcadd(bcadd($startBalance ?? '0', $amount), $clearedAmount);
 
         try {
             $view = view('accounts.reconcile.overview', compact('account', 'start', 'diffCompare', 'difference', 'end', 'clearedAmount', 'startBalance', 'endBalance', 'amount', 'route', 'countCleared', 'reconSum', 'selectedIds'))->render();
@@ -241,16 +241,16 @@ class ReconcileController extends Controller
         foreach ($array as $journal) {
             $inverse    = false;
 
-            if (TransactionType::DEPOSIT === $journal['transaction_type_type']) {
+            if (TransactionTypeEnum::DEPOSIT->value === $journal['transaction_type_type']) {
                 $inverse = true;
             }
             // transfer to this account? then positive amount:
-            if (TransactionType::TRANSFER === $journal['transaction_type_type'] && $account->id === $journal['destination_account_id']) {
+            if (TransactionTypeEnum::TRANSFER->value === $journal['transaction_type_type'] && $account->id === $journal['destination_account_id']) {
                 $inverse = true;
             }
 
             // opening balance into account? then positive amount:
-            if (TransactionType::OPENING_BALANCE === $journal['transaction_type_type']
+            if (TransactionTypeEnum::OPENING_BALANCE->value === $journal['transaction_type_type']
                 && $account->id === $journal['destination_account_id']) {
                 $inverse = true;
             }

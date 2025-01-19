@@ -25,7 +25,7 @@ declare(strict_types=1);
 namespace FireflyIII\Console\Commands\Correction;
 
 use FireflyIII\Console\Commands\ShowsFriendlyMessages;
-use FireflyIII\Models\AccountType;
+use FireflyIII\Enums\AccountTypeEnum;
 use FireflyIII\Models\Preference;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\User;
@@ -73,7 +73,7 @@ class CorrectsFrontpageAccounts extends Command
                 $accountIdInt = (int) $accountId;
                 $account      = $repository->find($accountIdInt);
                 if (null !== $account
-                    && in_array($account->accountType->type, [AccountType::ASSET, AccountType::DEBT, AccountType::LOAN, AccountType::MORTGAGE], true)
+                    && in_array($account->accountType->type, [AccountTypeEnum::ASSET->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::LOAN->value, AccountTypeEnum::MORTGAGE->value], true)
                     && true === $account->active) {
                     $fixed[] = $account->id;
                 }

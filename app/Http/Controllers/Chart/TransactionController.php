@@ -25,10 +25,10 @@ declare(strict_types=1);
 namespace FireflyIII\Http\Controllers\Chart;
 
 use Carbon\Carbon;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Generator\Chart\Basic\GeneratorInterface;
 use FireflyIII\Helpers\Collector\GroupCollectorInterface;
 use FireflyIII\Http\Controllers\Controller;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Support\CacheProperties;
 use Illuminate\Http\JsonResponse;
 
@@ -66,7 +66,7 @@ class TransactionController extends Controller
         $collector = app(GroupCollectorInterface::class);
         $collector->setRange($start, $end);
         $collector->withBudgetInformation();
-        $collector->setTypes([TransactionType::WITHDRAWAL]);
+        $collector->setTypes([TransactionTypeEnum::WITHDRAWAL->value]);
 
         $result    = $collector->getExtractedJournals();
         $data      = [];
@@ -109,13 +109,13 @@ class TransactionController extends Controller
         $collector->withCategoryInformation();
 
         if ('withdrawal' === $objectType) {
-            $collector->setTypes([TransactionType::WITHDRAWAL]);
+            $collector->setTypes([TransactionTypeEnum::WITHDRAWAL->value]);
         }
         if ('deposit' === $objectType) {
-            $collector->setTypes([TransactionType::DEPOSIT]);
+            $collector->setTypes([TransactionTypeEnum::DEPOSIT->value]);
         }
         if ('transfer' === $objectType || 'transfers' === $objectType) {
-            $collector->setTypes([TransactionType::TRANSFER]);
+            $collector->setTypes([TransactionTypeEnum::TRANSFER->value]);
         }
 
         $result    = $collector->getExtractedJournals();
@@ -159,13 +159,13 @@ class TransactionController extends Controller
         $collector->withAccountInformation();
 
         if ('withdrawal' === $objectType) {
-            $collector->setTypes([TransactionType::WITHDRAWAL]);
+            $collector->setTypes([TransactionTypeEnum::WITHDRAWAL->value]);
         }
         if ('deposit' === $objectType) {
-            $collector->setTypes([TransactionType::DEPOSIT]);
+            $collector->setTypes([TransactionTypeEnum::DEPOSIT->value]);
         }
         if ('transfer' === $objectType || 'transfers' === $objectType) {
-            $collector->setTypes([TransactionType::TRANSFER]);
+            $collector->setTypes([TransactionTypeEnum::TRANSFER->value]);
         }
 
         $result    = $collector->getExtractedJournals();
@@ -209,13 +209,13 @@ class TransactionController extends Controller
         $collector->withAccountInformation();
 
         if ('withdrawal' === $objectType) {
-            $collector->setTypes([TransactionType::WITHDRAWAL]);
+            $collector->setTypes([TransactionTypeEnum::WITHDRAWAL->value]);
         }
         if ('deposit' === $objectType) {
-            $collector->setTypes([TransactionType::DEPOSIT]);
+            $collector->setTypes([TransactionTypeEnum::DEPOSIT->value]);
         }
         if ('transfer' === $objectType || 'transfers' === $objectType) {
-            $collector->setTypes([TransactionType::TRANSFER]);
+            $collector->setTypes([TransactionTypeEnum::TRANSFER->value]);
         }
 
         $result    = $collector->getExtractedJournals();

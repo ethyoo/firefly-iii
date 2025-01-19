@@ -40,24 +40,17 @@ class OwnerTestNotificationPushover extends Notification
 {
     use Queueable;
 
-    private OwnerNotifiable $owner;
-
-    public function __construct(OwnerNotifiable $owner)
-    {
-        $this->owner = $owner;
-    }
-
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toArray(OwnerNotifiable $notifiable)
+    public function toArray(OwnerNotifiable $notifiable): array
     {
         return [
         ];
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function toPushover(OwnerNotifiable $notifiable): PushoverMessage
     {
@@ -69,9 +62,9 @@ class OwnerTestNotificationPushover extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function via(OwnerNotifiable $notifiable)
+    public function via(OwnerNotifiable $notifiable): array
     {
         return [PushoverChannel::class];
     }

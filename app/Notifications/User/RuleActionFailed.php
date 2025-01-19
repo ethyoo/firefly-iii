@@ -57,9 +57,9 @@ class RuleActionFailed extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toArray(User $notifiable)
+    public function toArray(User $notifiable): array
     {
         return [
         ];
@@ -76,7 +76,7 @@ class RuleActionFailed extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function toPushover(User $notifiable): PushoverMessage
     {
@@ -84,9 +84,9 @@ class RuleActionFailed extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toSlack(User $notifiable)
+    public function toSlack(User $notifiable): SlackMessage
     {
         $groupTitle = $this->groupTitle;
         $groupLink  = $this->groupLink;
@@ -101,9 +101,9 @@ class RuleActionFailed extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function via(User $notifiable)
+    public function via(User $notifiable): array
     {
         $channels = ReturnsAvailableChannels::returnChannels('user', $notifiable);
         if (($key = array_search('mail', $channels, true)) !== false) {

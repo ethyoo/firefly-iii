@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## 6.2.0 - 2025-01-xx
+## 6.2.0 - 2025-01-19 (or later)
 
 ### Added
 
@@ -11,14 +11,17 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Notifications support Nfty, Pushover, Slack and Discord.
 - Many new security related notifications.
 - [Issue 5523](https://github.com/firefly-iii/firefly-iii/issues/5523) (Add comment on a budget for a given month) reported by @n-serrette
-- [Issue 8531](https://github.com/firefly-iii/firefly-iii/issues/8531) (Add `notes` to transaction audit report) reported by @clouserw
-- [Issue 8307](https://github.com/firefly-iii/firefly-iii/issues/8307) (Notification support for Ntfy (and other push notification tools)) reported by @ragnarkarlsson
-- [Issue 7945](https://github.com/firefly-iii/firefly-iii/issues/7945) ("Rules" that only trigger manually) reported by @SekoiaTree
-- [Issue 6760](https://github.com/firefly-iii/firefly-iii/issues/6760) (Add a new trigger for automated rules) reported by @Gsyltc
-- [Issue 6557](https://github.com/firefly-iii/firefly-iii/issues/6557) (Piggy Banks - Draw Funds from Multiple Accounts) reported by @BugPhobic
 - [Issue 5532](https://github.com/firefly-iii/firefly-iii/issues/5532) (Asset prices and exchange rates) reported by @svozniuk
 - [Issue 6314](https://github.com/firefly-iii/firefly-iii/issues/6314) (Currencies and exchange rates) reported by @JC5
+- [Issue 6557](https://github.com/firefly-iii/firefly-iii/issues/6557) (Piggy Banks - Draw Funds from Multiple Accounts) reported by @BugPhobic
+- [Issue 6760](https://github.com/firefly-iii/firefly-iii/issues/6760) (Add a new trigger for automated rules) reported by @Gsyltc
+- [Issue 7945](https://github.com/firefly-iii/firefly-iii/issues/7945) ("Rules" that only trigger manually) reported by @SekoiaTree
+- [Issue 8307](https://github.com/firefly-iii/firefly-iii/issues/8307) (Notification support for Ntfy (and other push notification tools)) reported by @ragnarkarlsson
+- [Issue 8531](https://github.com/firefly-iii/firefly-iii/issues/8531) (Add `notes` to transaction audit report) reported by @clouserw
+- [Discussion 9576](https://github.com/orgs/firefly-iii/discussions/9576) (How to Mark Reconciled Transactions as Unreconciled) started by @softpoint-arch
+- [Issue 9667](https://github.com/firefly-iii/firefly-iii/issues/9667) (Exported data only exports negative amounts?) reported by @electricmessiah
 - [Issue 9586](https://github.com/firefly-iii/firefly-iii/issues/9586) (Non en_US translated string in sign-up mail) reported by @benni347
+- [PR 9598](https://github.com/firefly-iii/firefly-iii/pull/9598) (New Query Parser for Search Engine and Rules) reported by @Sobuno
 
 ### Changed
 
@@ -26,6 +29,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - [Issue 9501](https://github.com/firefly-iii/firefly-iii/issues/9501) (PHP8.4 support) reported by @JC5
 - Docker container no longer runs under root.
 - "Bills" are now called "subscriptions" to better reflect their purpose.
+- Rename "administration" to "settings" to prevent confusion with "financial administrations"
+- Rename 'default currency' to 'native currency'
+- Move native currency setting to financial administration edit screen to better reflect where it belongs
 
 ### Removed
 

@@ -25,10 +25,10 @@ declare(strict_types=1);
 namespace FireflyIII\Http\Controllers\Category;
 
 use Carbon\Carbon;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Helpers\Collector\GroupCollectorInterface;
 use FireflyIII\Http\Controllers\Controller;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Journal\JournalRepositoryInterface;
 use FireflyIII\Support\Http\Controllers\PeriodOverview;
 use Illuminate\Contracts\View\Factory;
@@ -74,10 +74,11 @@ class NoCategoryController extends Controller
     public function show(Request $request, ?Carbon $start = null, ?Carbon $end = null)
     {
         app('log')->debug('Start of noCategory()');
-        // @var Carbon $start
         $start ??= session('start');
-        // @var Carbon $end
         $end   ??= session('end');
+
+        /** @var Carbon $start */
+        /** @var Carbon $end */
         $page      = (int) $request->get('page');
         $pageSize  = (int) app('preferences')->get('listPageSize', 50)->data;
         $subTitle  = trans(
@@ -94,7 +95,7 @@ class NoCategoryController extends Controller
         $collector->setRange($start, $end)
             ->setLimit($pageSize)->setPage($page)->withoutCategory()
             ->withAccountInformation()->withBudgetInformation()
-            ->setTypes([TransactionType::WITHDRAWAL, TransactionType::DEPOSIT, TransactionType::TRANSFER])
+            ->setTypes([TransactionTypeEnum::WITHDRAWAL->value, TransactionTypeEnum::DEPOSIT->value, TransactionTypeEnum::TRANSFER->value])
         ;
         $groups    = $collector->getPaginatedGroups();
         $groups->setPath(route('categories.no-category', [$start->format('Y-m-d'), $end->format('Y-m-d')]));
@@ -127,7 +128,7 @@ class NoCategoryController extends Controller
         $collector = app(GroupCollectorInterface::class);
         $collector->setRange($start, $end)->setLimit($pageSize)->setPage($page)->withoutCategory()
             ->withAccountInformation()->withBudgetInformation()
-            ->setTypes([TransactionType::WITHDRAWAL, TransactionType::DEPOSIT, TransactionType::TRANSFER])
+            ->setTypes([TransactionTypeEnum::WITHDRAWAL->value, TransactionTypeEnum::DEPOSIT->value, TransactionTypeEnum::TRANSFER->value])
         ;
         $groups    = $collector->getPaginatedGroups();
         $groups->setPath(route('categories.no-category.all'));

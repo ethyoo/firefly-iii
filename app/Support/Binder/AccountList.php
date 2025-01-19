@@ -23,7 +23,7 @@ declare(strict_types=1);
 
 namespace FireflyIII\Support\Binder;
 
-use FireflyIII\Models\AccountType;
+use FireflyIII\Enums\AccountTypeEnum;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Collection;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -44,7 +44,7 @@ class AccountList implements BinderInterface
                 /** @var Collection $collection */
                 $collection = auth()->user()->accounts()
                     ->leftJoin('account_types', 'account_types.id', '=', 'accounts.account_type_id')
-                    ->whereIn('account_types.type', [AccountType::ASSET, AccountType::LOAN, AccountType::DEBT, AccountType::MORTGAGE])
+                    ->whereIn('account_types.type', [AccountTypeEnum::ASSET->value, AccountTypeEnum::LOAN->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::MORTGAGE->value])
                     ->orderBy('accounts.name', 'ASC')
                     ->get(['accounts.*'])
                 ;

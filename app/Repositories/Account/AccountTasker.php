@@ -24,10 +24,10 @@ declare(strict_types=1);
 namespace FireflyIII\Repositories\Account;
 
 use Carbon\Carbon;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Helpers\Collector\GroupCollectorInterface;
 use FireflyIII\Models\Account;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\UserGroups\Currency\CurrencyRepositoryInterface;
 use FireflyIII\User;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -53,7 +53,7 @@ class AccountTasker implements AccountTaskerInterface
 
         /** @var AccountRepositoryInterface $repository */
         $repository      = app(AccountRepositoryInterface::class);
-        $defaultCurrency = app('amount')->getDefaultCurrencyByUserGroup($this->user->userGroup);
+        $defaultCurrency = app('amount')->getNativeCurrencyByUserGroup($this->user->userGroup);
 
         $return          = [
             'accounts' => [],
@@ -90,7 +90,7 @@ class AccountTasker implements AccountTaskerInterface
             $entry['end_balance']                   = $endSet[$account->id]['balance'] ?? '0';
 
             // first journal exists, and is on start, then this is the actual opening balance:
-            if (null !== $first && $first->date->isSameDay($start) && TransactionType::OPENING_BALANCE === $first->transactionType->type) {
+            if (null !== $first && $first->date->isSameDay($start) && TransactionTypeEnum::OPENING_BALANCE->value === $first->transactionType->type) {
                 app('log')->debug(sprintf('Date of first journal for %s is %s', $account->name, $first->date->format('Y-m-d')));
                 $entry['start_balance'] = $first->transactions()->where('account_id', $account->id)->first()->amount;
                 app('log')->debug(sprintf('Account %s was opened on %s, so opening balance is %f', $account->name, $start->format('Y-m-d'), $entry['start_balance']));
@@ -121,7 +121,7 @@ class AccountTasker implements AccountTaskerInterface
 
         $collector->setSourceAccounts($accounts)->setRange($start, $end);
         $collector->excludeDestinationAccounts($accounts);
-        $collector->setTypes([TransactionType::WITHDRAWAL, TransactionType::TRANSFER])->withAccountInformation();
+        $collector->setTypes([TransactionTypeEnum::WITHDRAWAL->value, TransactionTypeEnum::TRANSFER->value])->withAccountInformation();
         $journals  = $collector->getExtractedJournals();
 
         $report    = $this->groupExpenseByDestination($journals);
@@ -143,7 +143,7 @@ class AccountTasker implements AccountTaskerInterface
      */
     private function groupExpenseByDestination(array $array): array
     {
-        $defaultCurrency = app('amount')->getDefaultCurrencyByUserGroup($this->user->userGroup);
+        $defaultCurrency = app('amount')->getNativeCurrencyByUserGroup($this->user->userGroup);
 
         /** @var CurrencyRepositoryInterface $currencyRepos */
         $currencyRepos   = app(CurrencyRepositoryInterface::class);
@@ -211,7 +211,7 @@ class AccountTasker implements AccountTaskerInterface
         $collector = app(GroupCollectorInterface::class);
         $collector->setDestinationAccounts($accounts)->setRange($start, $end);
         $collector->excludeSourceAccounts($accounts);
-        $collector->setTypes([TransactionType::DEPOSIT, TransactionType::TRANSFER])->withAccountInformation();
+        $collector->setTypes([TransactionTypeEnum::DEPOSIT->value, TransactionTypeEnum::TRANSFER->value])->withAccountInformation();
         $report    = $this->groupIncomeBySource($collector->getExtractedJournals());
 
         // sort the result
@@ -231,7 +231,7 @@ class AccountTasker implements AccountTaskerInterface
      */
     private function groupIncomeBySource(array $array): array
     {
-        $defaultCurrency = app('amount')->getDefaultCurrencyByUserGroup($this->user->userGroup);
+        $defaultCurrency = app('amount')->getNativeCurrencyByUserGroup($this->user->userGroup);
 
         /** @var CurrencyRepositoryInterface $currencyRepos */
         $currencyRepos   = app(CurrencyRepositoryInterface::class);

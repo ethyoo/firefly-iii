@@ -41,14 +41,7 @@ class PiggyBankFactory
 {
     use CreatesObjectGroups;
 
-    public User                          $user {
-        set(User $value) {
-        $this->user = $value;
-        $this->currencyRepository->setUser($value);
-        $this->accountRepository->setUser($value);
-        $this->piggyBankRepository->setUser($value);
-    }
-    }
+    public User                          $user;
     private AccountRepositoryInterface   $accountRepository;
     private CurrencyRepositoryInterface  $currencyRepository;
     private PiggyBankRepositoryInterface $piggyBankRepository;
@@ -58,6 +51,14 @@ class PiggyBankFactory
         $this->currencyRepository  = app(CurrencyRepositoryInterface::class);
         $this->accountRepository   = app(AccountRepositoryInterface::class);
         $this->piggyBankRepository = app(PiggyBankRepositoryInterface::class);
+    }
+
+    public function setUser(User $user): void
+    {
+        $this->user = $user;
+        $this->currencyRepository->setUser($user);
+        $this->accountRepository->setUser($user);
+        $this->piggyBankRepository->setUser($user);
     }
 
     /**
@@ -120,7 +121,7 @@ class PiggyBankFactory
     private function getCurrency(array $data): TransactionCurrency
     {
         // currency:
-        $defaultCurrency = app('amount')->getDefaultCurrency();
+        $defaultCurrency = app('amount')->getNativeCurrency();
         $currency        = null;
         if (array_key_exists('transaction_currency_code', $data)) {
             $currency = $this->currencyRepository->findByCode((string) ($data['transaction_currency_code'] ?? ''));
@@ -229,8 +230,8 @@ class PiggyBankFactory
             foreach ($accounts as $info) {
                 if ($account->id === $info['account_id']) {
                     if (array_key_exists($account->id, $accounts)) {
-                        $toBeLinked[$account->id] = ['current_amount' => $account->pivot?->current_amount ?? '0'];
-                        Log::debug(sprintf('Prefilled for account #%d with amount %s', $account->id, $account->pivot?->current_amount ?? '0'));
+                        $toBeLinked[$account->id] = ['current_amount' => $account->pivot->current_amount ?? '0'];
+                        Log::debug(sprintf('Prefilled for account #%d with amount %s', $account->id, $account->pivot->current_amount ?? '0'));
                     }
                 }
             }
@@ -245,7 +246,7 @@ class PiggyBankFactory
             }
             if (array_key_exists('current_amount', $info)) {
                 $toBeLinked[$account->id] = ['current_amount' => $info['current_amount']];
-                Log::debug(sprintf('Will link account #%d with amount %s', $account->id, $account->pivot?->current_amount ?? '0'));
+                Log::debug(sprintf('Will link account #%d with amount %s', $account->id, $account->pivot->current_amount ?? '0'));
             }
             if (!array_key_exists('current_amount', $info)) {
                 $toBeLinked[$account->id] ??= [];

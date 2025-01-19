@@ -115,8 +115,9 @@ class PiggyBankTransformer extends AbstractTransformer
 
         // grab repetitions (for current amount):
         $repetitions         = PiggyBankRepetition::whereIn('piggy_bank_id', $piggyBanks)->get();
-
-        throw new FireflyException('[d] Piggy bank repetitions are EOL.');
+        if ('en_US' === config('app.fallback_locale')) {
+            throw new FireflyException('[d] Piggy bank repetitions are EOL.');
+        }
 
         /** @var PiggyBankRepetition $repetition */
         foreach ($repetitions as $repetition) {
@@ -136,7 +137,7 @@ class PiggyBankTransformer extends AbstractTransformer
         }
 
         Log::debug(sprintf('Created new ExchangeRateConverter in %s', __METHOD__));
-        $this->default       = app('amount')->getDefaultCurrencyByUserGroup(auth()->user()->userGroup);
+        $this->default       = app('amount')->getNativeCurrencyByUserGroup(auth()->user()->userGroup);
         $this->converter     = new ExchangeRateConverter();
 
         return $objects;
@@ -155,7 +156,7 @@ class PiggyBankTransformer extends AbstractTransformer
         //        $this->piggyRepos->setUser($account->user);
 
         // get currency from account, or use default.
-        //        $currency = $this->accountRepos->getAccountCurrency($account) ?? app('amount')->getDefaultCurrencyByUser($account->user);
+        //        $currency = $this->accountRepos->getAccountCurrency($account) ?? app('amount')->getNativeCurrencyByUser($account->user);
 
         // note
         //        $notes = $this->piggyRepos->getNoteText($piggyBank);

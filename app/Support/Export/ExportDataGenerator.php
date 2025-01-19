@@ -25,6 +25,8 @@ declare(strict_types=1);
 namespace FireflyIII\Support\Export;
 
 use Carbon\Carbon;
+use FireflyIII\Enums\AccountTypeEnum;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Helpers\Collector\GroupCollectorInterface;
 use FireflyIII\Models\Account;
@@ -50,6 +52,8 @@ use FireflyIII\Repositories\Recurring\RecurringRepositoryInterface;
 use FireflyIII\Repositories\Rule\RuleRepositoryInterface;
 use FireflyIII\Repositories\Tag\TagRepositoryInterface;
 use FireflyIII\Repositories\TransactionGroup\TransactionGroupRepositoryInterface;
+use FireflyIII\Support\Facades\Amount;
+use FireflyIII\Support\Facades\Steam;
 use FireflyIII\Support\Request\ConvertsDataTypes;
 use FireflyIII\User;
 use Illuminate\Support\Collection;
@@ -713,7 +717,7 @@ class ExportDataGenerator
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function get(string $key, mixed $default = null): mixed
     {
@@ -728,16 +732,15 @@ class ExportDataGenerator
     private function exportTransactions(): string
     {
         // TODO better place for keys?
-        $header     = ['user_id', 'group_id', 'journal_id', 'created_at', 'updated_at', 'group_title', 'type', 'amount', 'foreign_amount', 'currency_code', 'foreign_currency_code', 'description', 'date', 'source_name', 'source_iban', 'source_type', 'destination_name', 'destination_iban', 'destination_type', 'reconciled', 'category', 'budget', 'bill', 'tags', 'notes'];
+        $header     = ['user_id', 'group_id', 'journal_id', 'created_at', 'updated_at', 'group_title', 'type', 'currency_code', 'amount', 'foreign_currency_code', 'foreign_amount', 'native_currency_code', 'native_amount', 'native_foreign_amount', 'description', 'date', 'source_name', 'source_iban', 'source_type', 'destination_name', 'destination_iban', 'destination_type', 'reconciled', 'category', 'budget', 'bill', 'tags', 'notes'];
 
         $metaFields = config('firefly.journal_meta_fields');
         $header     = array_merge($header, $metaFields);
+        $default    = Amount::getNativeCurrency();
 
         $collector  = app(GroupCollectorInterface::class);
         $collector->setUser($this->user);
-        $collector->setRange($this->start, $this->end)->withAccountInformation()->withCategoryInformation()->withBillInformation()
-            ->withBudgetInformation()->withTagInformation()->withNotes()
-        ;
+        $collector->setRange($this->start, $this->end)->withAccountInformation()->withCategoryInformation()->withBillInformation()->withBudgetInformation()->withTagInformation()->withNotes();
         if (0 !== $this->accounts->count()) {
             $collector->setAccounts($this->accounts);
         }
@@ -752,9 +755,34 @@ class ExportDataGenerator
 
         /** @var array $journal */
         foreach ($journals as $journal) {
-            $metaData  = $repository->getMetaFields($journal['transaction_journal_id'], $metaFields);
-            $records[] = [
-                $journal['user_id'], $journal['transaction_group_id'], $journal['transaction_journal_id'], $journal['created_at']->toAtomString(), $journal['updated_at']->toAtomString(), $journal['transaction_group_title'], $journal['transaction_type_type'], $journal['amount'], $journal['foreign_amount'], $journal['currency_code'], $journal['foreign_currency_code'], $journal['description'], $journal['date']->toAtomString(), $journal['source_account_name'], $journal['source_account_iban'], $journal['source_account_type'], $journal['destination_account_name'], $journal['destination_account_iban'], $journal['destination_account_type'], $journal['reconciled'], $journal['category_name'], $journal['budget_name'], $journal['bill_name'],
+            $metaData            = $repository->getMetaFields($journal['transaction_journal_id'], $metaFields);
+            $amount              = Steam::bcround(Steam::negative($journal['amount']), $journal['currency_decimal_places']);
+            $foreignAmount       = null === $journal['foreign_amount'] ? null : Steam::bcround(Steam::negative($journal['foreign_amount']), $journal['foreign_currency_decimal_places']);
+            $nativeAmount        = null === $journal['native_amount'] ? null : Steam::bcround(Steam::negative($journal['native_amount']), $default->decimal_places);
+            $nativeForeignAmount = null === $journal['native_foreign_amount'] ? null : Steam::bcround(Steam::negative($journal['native_foreign_amount']), $default->decimal_places);
+
+            if (TransactionTypeEnum::WITHDRAWAL->value !== $journal['transaction_type_type']) {
+                $amount              = Steam::bcround(Steam::positive($journal['amount']), $journal['currency_decimal_places']);
+                $foreignAmount       = null === $journal['foreign_amount'] ? null : Steam::bcround(Steam::positive($journal['foreign_amount']), $journal['foreign_currency_decimal_places']);
+                $nativeAmount        = null === $journal['native_amount'] ? null : Steam::bcround(Steam::positive($journal['native_amount']), $default->decimal_places);
+                $nativeForeignAmount = null === $journal['native_foreign_amount'] ? null : Steam::bcround(Steam::positive($journal['native_foreign_amount']), $default->decimal_places);
+            }
+
+            // opening balance depends on source account type.
+            if (TransactionTypeEnum::OPENING_BALANCE->value === $journal['transaction_type_type'] && AccountTypeEnum::ASSET->value === $journal['source_account_type']) {
+                $amount              = Steam::bcround(Steam::negative($journal['amount']), $journal['currency_decimal_places']);
+                $foreignAmount       = null === $journal['foreign_amount'] ? null : Steam::bcround(Steam::negative($journal['foreign_amount']), $journal['foreign_currency_decimal_places']);
+                $nativeAmount        = null === $journal['native_amount'] ? null : Steam::bcround(Steam::negative($journal['native_amount']), $default->decimal_places);
+                $nativeForeignAmount = null === $journal['native_foreign_amount'] ? null : Steam::bcround(Steam::negative($journal['native_foreign_amount']), $default->decimal_places);
+            }
+
+            $records[]           = [
+                $journal['user_id'], $journal['transaction_group_id'], $journal['transaction_journal_id'], $journal['created_at']->toAtomString(), $journal['updated_at']->toAtomString(), $journal['transaction_group_title'], $journal['transaction_type_type'],
+                // amounts and currencies
+                $journal['currency_code'], $amount, $journal['foreign_currency_code'], $foreignAmount, $default->code, $nativeAmount, $nativeForeignAmount,
+
+                // more fields
+                $journal['description'], $journal['date']->toAtomString(), $journal['source_account_name'], $journal['source_account_iban'], $journal['source_account_type'], $journal['destination_account_name'], $journal['destination_account_iban'], $journal['destination_account_type'], $journal['reconciled'], $journal['category_name'], $journal['budget_name'], $journal['bill_name'],
                 $this->mergeTags($journal['tags']),
                 $this->clearStringKeepNewlines($journal['notes']),
 
@@ -815,7 +843,7 @@ class ExportDataGenerator
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function has(mixed $key): mixed
     {

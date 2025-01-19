@@ -24,12 +24,12 @@ declare(strict_types=1);
 
 namespace FireflyIII\Support\Http\Controllers;
 
+use FireflyIII\Enums\AccountTypeEnum;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Models\Account;
-use FireflyIII\Models\AccountType;
 use FireflyIII\Models\Transaction;
 use FireflyIII\Models\TransactionGroup;
 use FireflyIII\Models\TransactionJournal;
-use FireflyIII\Models\TransactionType;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
@@ -60,7 +60,7 @@ trait UserNavigation
      */
     final protected function isEditableAccount(Account $account): bool
     {
-        $editable = [AccountType::EXPENSE, AccountType::REVENUE, AccountType::ASSET, AccountType::LOAN, AccountType::DEBT, AccountType::MORTGAGE];
+        $editable = [AccountTypeEnum::EXPENSE->value, AccountTypeEnum::REVENUE->value, AccountTypeEnum::ASSET->value, AccountTypeEnum::LOAN->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::MORTGAGE->value];
         $type     = $account->accountType->type;
 
         return in_array($type, $editable, true);
@@ -74,7 +74,7 @@ trait UserNavigation
             return false;
         }
         $type     = $journal->transactionType->type;
-        $editable = [TransactionType::WITHDRAWAL, TransactionType::TRANSFER, TransactionType::DEPOSIT, TransactionType::RECONCILIATION];
+        $editable = [TransactionTypeEnum::WITHDRAWAL->value, TransactionTypeEnum::TRANSFER->value, TransactionTypeEnum::DEPOSIT->value, TransactionTypeEnum::RECONCILIATION->value];
 
         return in_array($type, $editable, true);
     }
@@ -85,7 +85,7 @@ trait UserNavigation
     final protected function redirectAccountToAccount(Account $account)
     {
         $type = $account->accountType->type;
-        if (AccountType::RECONCILIATION === $type || AccountType::INITIAL_BALANCE === $type || AccountType::LIABILITY_CREDIT === $type) {
+        if (AccountTypeEnum::RECONCILIATION->value === $type || AccountTypeEnum::INITIAL_BALANCE->value === $type || AccountTypeEnum::LIABILITY_CREDIT->value === $type) {
             // reconciliation must be stored somewhere in this account's transactions.
 
             /** @var null|Transaction $transaction */
@@ -127,7 +127,7 @@ trait UserNavigation
         }
         // prefer redirect to everything but expense and revenue:
         $transactions = $journal->transactions;
-        $ignore       = [AccountType::REVENUE, AccountType::EXPENSE, AccountType::RECONCILIATION, AccountType::INITIAL_BALANCE];
+        $ignore       = [AccountTypeEnum::REVENUE->value, AccountTypeEnum::EXPENSE->value, AccountTypeEnum::RECONCILIATION->value, AccountTypeEnum::INITIAL_BALANCE->value];
 
         /** @var Transaction $transaction */
         foreach ($transactions as $transaction) {

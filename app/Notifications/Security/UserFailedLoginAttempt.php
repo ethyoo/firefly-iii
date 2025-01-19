@@ -47,16 +47,16 @@ class UserFailedLoginAttempt extends Notification
         $this->user = $user;
     }
 
-    public function toArray(User $notifiable)
+    public function toArray(User $notifiable): array
     {
         return [
         ];
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toMail(User $notifiable)
+    public function toMail(User $notifiable): MailMessage
     {
         $subject   = (string) trans('email.failed_login_subject');
         $ip        = Request::ip();
@@ -79,7 +79,7 @@ class UserFailedLoginAttempt extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function toPushover(User $notifiable): PushoverMessage
     {
@@ -89,9 +89,9 @@ class UserFailedLoginAttempt extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toSlack(User $notifiable)
+    public function toSlack(User $notifiable): SlackMessage
     {
         $message = (string) trans('email.failed_login_message', ['email' => $this->user->email]);
 
@@ -99,9 +99,9 @@ class UserFailedLoginAttempt extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function via(User $notifiable)
+    public function via(User $notifiable): array
     {
         return ReturnsAvailableChannels::returnChannels('user', $notifiable);
     }

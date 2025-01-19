@@ -1,5 +1,11 @@
 {
     "firefly": {
+        "administrations_page_title": "Financial administrations",
+        "administrations_index_menu": "Financial administrations",
+        "temp_administrations_introduction": "Firefly III will soon get the ability to manage multiple financial administrations. Right now, you only have the one. You can set the title of this administration and its native currency. This replaces the previous setting where you would set your \"default currency\". This setting is now tied to the financial administration and can be different per administration.",
+        "administration_currency_form_help": "It may take a long time for the page to load if you change the native currency because transaction may need to be converted to your (new) native currency.",
+        "administrations_page_edit_sub_title_js": "Edit financial administration \"{title}\"",
+        "table": "Taula",
         "welcome_back": "Qu\u00e8 est\u00e0 passant?",
         "flash_error": "Error!",
         "flash_warning": "Atenci\u00f3!",
@@ -9,6 +15,7 @@
         "select_source_account": "Per favor, selecciona o escriu un nom de compte d'origen v\u00e0lid",
         "split_transaction_title": "Descripci\u00f3 de la transacci\u00f3 dividida",
         "errors_submission": "Hi ha hagut un error amb el teu enviament. Per favor, revisa els errors de sota.",
+        "is_reconciled": "Is reconciled",
         "split": "Dividir",
         "single_split": "Divisi\u00f3",
         "transaction_stored_link": "La <a href=\"transactions\/show\/{ID}\">Transacci\u00f3 #{ID} (\"{title}\")<\/a> s'ha desat.",
@@ -33,7 +40,7 @@
         "submit": "Enviar",
         "amount": "Import",
         "date": "Data",
-        "is_reconciled_fields_dropped": "Com aquesta transacci\u00f3 est\u00e0 reconciliada, no podr\u00e0s actualitzar els comptes, ni les quantitats.",
+        "is_reconciled_fields_dropped": "Because this transaction is reconciled, you will not be able to update the accounts, nor the amount(s) unless you remove the reconciliation flag.",
         "tags": "Etiquetes",
         "no_budget": "(cap pressupost)",
         "no_bill": "(no subscription)",
@@ -144,6 +151,7 @@
         "url": "URL",
         "active": "Actiu",
         "interest_date": "Data d'inter\u00e8s",
+        "administration_currency": "Native currency",
         "title": "T\u00edtol",
         "date": "Data",
         "book_date": "Data de registre",
@@ -161,7 +169,9 @@
         "rate": "Rate"
     },
     "list": {
+        "title": "T\u00edtol",
         "active": "Est\u00e0 actiu?",
+        "native_currency": "Native currency",
         "trigger": "Activador",
         "response": "Resposta",
         "delivery": "Lliurament",

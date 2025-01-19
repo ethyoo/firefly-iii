@@ -26,8 +26,8 @@ namespace FireflyIII\Api\V1\Controllers\Insight\Transfer;
 
 use FireflyIII\Api\V1\Controllers\Controller;
 use FireflyIII\Api\V1\Requests\Insight\GenericRequest;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Helpers\Collector\GroupCollectorInterface;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Tag\TagRepositoryInterface;
 use FireflyIII\Support\Facades\Amount;
 use Illuminate\Http\JsonResponse;
@@ -67,12 +67,12 @@ class TagController extends Controller
         $end             = $request->getEnd();
         $response        = [];
         $convertToNative = Amount::convertToNative();
-        $default         = Amount::getDefaultCurrency();
+        $default         = Amount::getNativeCurrency();
 
 
         // collect all expenses in this period (regardless of type) by the given bills and accounts.
         $collector       = app(GroupCollectorInterface::class);
-        $collector->setTypes([TransactionType::TRANSFER])->setRange($start, $end)->setDestinationAccounts($accounts);
+        $collector->setTypes([TransactionTypeEnum::TRANSFER->value])->setRange($start, $end)->setDestinationAccounts($accounts);
         $collector->withoutTags();
 
         $genericSet      = $collector->getExtractedJournals();
@@ -128,7 +128,7 @@ class TagController extends Controller
 
         // collect all expenses in this period (regardless of type) by the given bills and accounts.
         $collector  = app(GroupCollectorInterface::class);
-        $collector->setTypes([TransactionType::TRANSFER])->setRange($start, $end)->setDestinationAccounts($accounts);
+        $collector->setTypes([TransactionTypeEnum::TRANSFER->value])->setRange($start, $end)->setDestinationAccounts($accounts);
         $collector->setTags($tags);
         $genericSet = $collector->getExtractedJournals();
 

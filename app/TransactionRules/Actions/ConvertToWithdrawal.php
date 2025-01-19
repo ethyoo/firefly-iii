@@ -24,12 +24,13 @@ declare(strict_types=1);
 
 namespace FireflyIII\TransactionRules\Actions;
 
+use FireflyIII\Enums\AccountTypeEnum;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Events\Model\Rule\RuleActionFailedOnArray;
 use FireflyIII\Events\TriggeredAuditLog;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Factory\AccountFactory;
 use FireflyIII\Models\Account;
-use FireflyIII\Models\AccountType;
 use FireflyIII\Models\RuleAction;
 use FireflyIII\Models\Transaction;
 use FireflyIII\Models\TransactionJournal;
@@ -73,18 +74,18 @@ class ConvertToWithdrawal implements ActionInterface
         }
 
         $type        = $object->transactionType->type;
-        if (TransactionType::WITHDRAWAL === $type) {
+        if (TransactionTypeEnum::WITHDRAWAL->value === $type) {
             app('log')->error(sprintf('Journal #%d is already a withdrawal (rule #%d).', $journal['transaction_journal_id'], $this->action->rule_id));
             event(new RuleActionFailedOnArray($this->action, $journal, trans('rules.is_already_withdrawal')));
 
             return false;
         }
-        if (TransactionType::DEPOSIT !== $type && TransactionType::TRANSFER !== $type) {
+        if (TransactionTypeEnum::DEPOSIT->value !== $type && TransactionTypeEnum::TRANSFER->value !== $type) {
             event(new RuleActionFailedOnArray($this->action, $journal, trans('rules.unsupported_transaction_type_withdrawal', ['type' => $type])));
 
             return false;
         }
-        if (TransactionType::DEPOSIT === $type) {
+        if (TransactionTypeEnum::DEPOSIT->value === $type) {
             app('log')->debug('Going to transform a deposit to a withdrawal.');
 
             try {
@@ -96,7 +97,7 @@ class ConvertToWithdrawal implements ActionInterface
 
                 return false;
             }
-            event(new TriggeredAuditLog($this->action->rule, $object, 'update_transaction_type', TransactionType::DEPOSIT, TransactionType::WITHDRAWAL));
+            event(new TriggeredAuditLog($this->action->rule, $object, 'update_transaction_type', TransactionTypeEnum::DEPOSIT->value, TransactionTypeEnum::WITHDRAWAL->value));
 
             return $res;
         }
@@ -112,7 +113,7 @@ class ConvertToWithdrawal implements ActionInterface
 
             return false;
         }
-        event(new TriggeredAuditLog($this->action->rule, $object, 'update_transaction_type', TransactionType::TRANSFER, TransactionType::WITHDRAWAL));
+        event(new TriggeredAuditLog($this->action->rule, $object, 'update_transaction_type', TransactionTypeEnum::TRANSFER->value, TransactionTypeEnum::WITHDRAWAL->value));
 
         return $res;
     }
@@ -141,7 +142,7 @@ class ConvertToWithdrawal implements ActionInterface
         $validTypes      = config('firefly.expected_source_types.destination.Withdrawal');
         $opposingAccount = $repository->findByName($opposingName, $validTypes);
         if (null === $opposingAccount) {
-            $opposingAccount = $factory->findOrCreate($opposingName, AccountType::EXPENSE);
+            $opposingAccount = $factory->findOrCreate($opposingName, AccountTypeEnum::EXPENSE->value);
         }
 
         app('log')->debug(sprintf('ConvertToWithdrawal. Action value is "%s", expense name is "%s"', $actionValue, $opposingName));
@@ -161,7 +162,7 @@ class ConvertToWithdrawal implements ActionInterface
         ;
 
         // change transaction type of journal:
-        $newType         = TransactionType::whereType(TransactionType::WITHDRAWAL)->first();
+        $newType         = TransactionType::whereType(TransactionTypeEnum::WITHDRAWAL->value)->first();
         \DB::table('transaction_journals')
             ->where('id', '=', $journal->id)
             ->update(['transaction_type_id' => $newType->id])
@@ -227,7 +228,7 @@ class ConvertToWithdrawal implements ActionInterface
         $validTypes      = config('firefly.expected_source_types.destination.Withdrawal');
         $opposingAccount = $repository->findByName($opposingName, $validTypes);
         if (null === $opposingAccount) {
-            $opposingAccount = $factory->findOrCreate($opposingName, AccountType::EXPENSE);
+            $opposingAccount = $factory->findOrCreate($opposingName, AccountTypeEnum::EXPENSE->value);
         }
 
         app('log')->debug(sprintf('ConvertToWithdrawal. Action value is "%s", destination name is "%s"', $actionValue, $opposingName));
@@ -240,7 +241,7 @@ class ConvertToWithdrawal implements ActionInterface
         ;
 
         // change transaction type of journal:
-        $newType         = TransactionType::whereType(TransactionType::WITHDRAWAL)->first();
+        $newType         = TransactionType::whereType(TransactionTypeEnum::WITHDRAWAL->value)->first();
         \DB::table('transaction_journals')
             ->where('id', '=', $journal->id)
             ->update(['transaction_type_id' => $newType->id])

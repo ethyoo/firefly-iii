@@ -24,14 +24,15 @@ declare(strict_types=1);
 
 namespace FireflyIII\Validation;
 
+use FireflyIII\Enums\AccountTypeEnum;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Models\Account;
-use FireflyIII\Models\AccountType;
 use FireflyIII\Models\Transaction;
 use FireflyIII\Models\TransactionGroup;
 use FireflyIII\Models\TransactionJournal;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Models\UserGroup;
+use FireflyIII\Repositories\Account\AccountRepository;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\User;
 use Illuminate\Validation\Validator;
@@ -59,8 +60,8 @@ trait TransactionValidation
         app('log')->debug(sprintf('Going to loop %d transaction(s)', count($transactions)));
 
         /**
-         * @var null|int $index
-         * @var array    $transaction
+         * @var int|string $index
+         * @var array      $transaction
          */
         foreach ($transactions as $index => $transaction) {
             $transaction['user']       = $user;
@@ -89,7 +90,7 @@ trait TransactionValidation
     }
 
     /**
-     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings("PHPMD.NPathComplexity")
      */
     protected function validateSingleAccount(Validator $validator, int $index, string $transactionType, array $transaction): void
     {
@@ -153,12 +154,12 @@ trait TransactionValidation
     }
 
     /**
-     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+     * @SuppressWarnings("PHPMD.ExcessiveParameterList")
      */
     protected function sanityCheckReconciliation(Validator $validator, string $transactionType, int $index, array $source, array $destination): void
     {
         app('log')->debug('Now in sanityCheckReconciliation');
-        if (TransactionType::RECONCILIATION === ucfirst($transactionType)
+        if (TransactionTypeEnum::RECONCILIATION->value === ucfirst($transactionType)
             && null === $source['id'] && null === $source['name'] && null === $destination['id'] && null === $destination['name']
         ) {
             app('log')->debug('Both are NULL, error!');
@@ -168,7 +169,7 @@ trait TransactionValidation
             $validator->errors()->add(sprintf('transactions.%d.destination_name', $index), trans('validation.reconciliation_either_account'));
         }
 
-        if (TransactionType::RECONCILIATION === $transactionType
+        if (TransactionTypeEnum::RECONCILIATION->value === $transactionType
             && (null !== $source['id'] || null !== $source['name'])
             && (null !== $destination['id'] || null !== $destination['name'])) {
             app('log')->debug('Both are not NULL, error!');
@@ -182,8 +183,8 @@ trait TransactionValidation
     /**
      * TODO describe this method.
      *
-     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
-     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings("PHPMD.ExcessiveParameterList")
+     * @SuppressWarnings("PHPMD.NPathComplexity")
      */
     private function sanityCheckForeignCurrency(
         Validator        $validator,
@@ -220,9 +221,9 @@ trait TransactionValidation
             return;
         }
 
-        /** @var AccountRepositoryInterface $accountRepository */
+        /** @var AccountRepository $accountRepository */
         $accountRepository   = app(AccountRepositoryInterface::class);
-        $defaultCurrency     = app('amount')->getDefaultCurrency();
+        $defaultCurrency     = app('amount')->getNativeCurrency();
         $sourceCurrency      = $accountRepository->getAccountCurrency($source) ?? $defaultCurrency;
         $destinationCurrency = $accountRepository->getAccountCurrency($destination) ?? $defaultCurrency;
         // if both accounts have the same currency, continue.
@@ -236,7 +237,7 @@ trait TransactionValidation
 
         app('log')->debug(sprintf('Amount is %s', $transaction['amount']));
 
-        if (TransactionType::DEPOSIT === ucfirst($transactionType)) {
+        if (TransactionTypeEnum::DEPOSIT->value === ucfirst($transactionType)) {
             app('log')->debug(sprintf('Processing as a "%s"', $transactionType));
             // use case: deposit from liability account to an asset account
             // the foreign amount must be in the currency of the source
@@ -259,7 +260,7 @@ trait TransactionValidation
                 return;
             }
         }
-        if (TransactionType::TRANSFER === ucfirst($transactionType) || TransactionType::WITHDRAWAL === ucfirst($transactionType)) {
+        if (TransactionTypeEnum::TRANSFER->value === ucfirst($transactionType) || TransactionTypeEnum::WITHDRAWAL->value === ucfirst($transactionType)) {
             app('log')->debug(sprintf('Processing as a "%s"', $transactionType));
             // use case: withdrawal from asset account to a liability account.
             // the foreign amount must be in the currency of the destination
@@ -307,7 +308,7 @@ trait TransactionValidation
     {
         $type = $account->accountType->type;
 
-        return AccountType::ASSET === $type;
+        return AccountTypeEnum::ASSET->value === $type;
     }
 
     private function hasForeignCurrencyInfo(array $transaction): bool
@@ -345,8 +346,8 @@ trait TransactionValidation
         $transactions = $this->getTransactionsArray($validator);
 
         /**
-         * @var null|int $index
-         * @var array    $transaction
+         * @var int|string $index
+         * @var array      $transaction
          */
         foreach ($transactions as $index => $transaction) {
             if (!is_int($index)) {

@@ -27,7 +27,6 @@ namespace FireflyIII\Repositories\Category;
 use Carbon\Carbon;
 use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Helpers\Collector\GroupCollectorInterface;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Support\Facades\Amount;
 use FireflyIII\Support\Report\Summarizer\TransactionSummarizer;
 use FireflyIII\User;
@@ -53,7 +52,7 @@ class OperationsRepository implements OperationsRepositoryInterface
     {
         /** @var GroupCollectorInterface $collector */
         $collector = app(GroupCollectorInterface::class);
-        $collector->setUser($this->user)->setRange($start, $end)->setTypes([TransactionType::WITHDRAWAL]);
+        $collector->setUser($this->user)->setRange($start, $end)->setTypes([TransactionTypeEnum::WITHDRAWAL->value]);
         if (null !== $accounts && $accounts->count() > 0) {
             $collector->setAccounts($accounts);
         }
@@ -137,7 +136,7 @@ class OperationsRepository implements OperationsRepositoryInterface
     {
         /** @var GroupCollectorInterface $collector */
         $collector = app(GroupCollectorInterface::class);
-        $collector->setUser($this->user)->setRange($start, $end)->setTypes([TransactionType::DEPOSIT]);
+        $collector->setUser($this->user)->setRange($start, $end)->setTypes([TransactionTypeEnum::DEPOSIT->value]);
         if (null !== $accounts && $accounts->count() > 0) {
             $collector->setAccounts($accounts);
         }
@@ -200,7 +199,7 @@ class OperationsRepository implements OperationsRepositoryInterface
     {
         /** @var GroupCollectorInterface $collector */
         $collector = app(GroupCollectorInterface::class);
-        $collector->setUser($this->user)->setRange($start, $end)->setTypes([TransactionType::TRANSFER])
+        $collector->setUser($this->user)->setRange($start, $end)->setTypes([TransactionTypeEnum::TRANSFER->value])
             ->setDestinationAccounts($accounts)->excludeSourceAccounts($accounts)
         ;
         if (null !== $categories && $categories->count() > 0) {
@@ -263,7 +262,7 @@ class OperationsRepository implements OperationsRepositoryInterface
     {
         /** @var GroupCollectorInterface $collector */
         $collector = app(GroupCollectorInterface::class);
-        $collector->setUser($this->user)->setRange($start, $end)->setTypes([TransactionType::TRANSFER])
+        $collector->setUser($this->user)->setRange($start, $end)->setTypes([TransactionTypeEnum::TRANSFER->value])
             ->setSourceAccounts($accounts)->excludeDestinationAccounts($accounts)
         ;
         if (null !== $categories && $categories->count() > 0) {
@@ -365,7 +364,7 @@ class OperationsRepository implements OperationsRepositoryInterface
         $collector->setCategories($categories);
         $journals        = $collector->getExtractedJournals();
         $convertToNative = Amount::convertToNative($this->user);
-        $default         = Amount::getDefaultCurrency();
+        $default         = Amount::getNativeCurrency();
         $array           = [];
 
         foreach ($journals as $journal) {
@@ -422,7 +421,7 @@ class OperationsRepository implements OperationsRepositoryInterface
         /** @var GroupCollectorInterface $collector */
         $collector = app(GroupCollectorInterface::class);
         $collector->setUser($this->user)->setRange($start, $end)
-            ->setTypes([TransactionType::TRANSFER])
+            ->setTypes([TransactionTypeEnum::TRANSFER->value])
         ;
 
         if (null !== $accounts && $accounts->count() > 0) {

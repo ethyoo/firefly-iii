@@ -27,8 +27,8 @@ namespace FireflyIII\Console\Commands\Tools;
 use Carbon\Carbon;
 use FireflyIII\Console\Commands\ShowsFriendlyMessages;
 use FireflyIII\Console\Commands\VerifiesAccessToken;
+use FireflyIII\Enums\AccountTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
-use FireflyIII\Models\AccountType;
 use FireflyIII\Models\Rule;
 use FireflyIII\Models\RuleGroup;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
@@ -125,7 +125,7 @@ class ApplyRules extends Command
         $ruleEngine->addOperator(['type' => 'account_id', 'value' => $list]);
 
         // add the date as a filter:
-        $ruleEngine->addOperator(['type' => 'date_after', 'value' => $this->start_date->format('Y-m-d')]);
+        $ruleEngine->addOperator(['type' => 'date_after', 'value' => $this->startDate->format('Y-m-d')]);
         $ruleEngine->addOperator(['type' => 'date_before', 'value' => $this->endDate->format('Y-m-d')]);
 
         // start running rules.
@@ -154,7 +154,7 @@ class ApplyRules extends Command
         $this->ruleGroupSelection  = [];
         $this->ruleRepository      = app(RuleRepositoryInterface::class);
         $this->ruleGroupRepository = app(RuleGroupRepositoryInterface::class);
-        $this->acceptedAccounts    = [AccountType::DEFAULT, AccountType::DEBT, AccountType::ASSET, AccountType::LOAN, AccountType::MORTGAGE];
+        $this->acceptedAccounts    = [AccountTypeEnum::DEFAULT->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::ASSET->value, AccountTypeEnum::LOAN->value, AccountTypeEnum::MORTGAGE->value];
         $this->groups              = new Collection();
     }
 
@@ -226,7 +226,7 @@ class ApplyRules extends Command
 
         foreach ($ruleGroupList as $ruleGroupId) {
             $ruleGroup = $this->ruleGroupRepository->find((int) $ruleGroupId);
-            if ($ruleGroup->active) {
+            if (true === $ruleGroup->active) {
                 $this->ruleGroupSelection[] = $ruleGroup->id;
             }
             if (false === $ruleGroup->active) {
@@ -248,7 +248,7 @@ class ApplyRules extends Command
 
         foreach ($ruleList as $ruleId) {
             $rule = $this->ruleRepository->find((int) $ruleId);
-            if (null !== $rule && $rule->active) {
+            if (null !== $rule && true === $rule->active) {
                 $this->ruleSelection[] = $rule->id;
             }
         }
@@ -262,8 +262,8 @@ class ApplyRules extends Command
     private function verifyInputDates(): void
     {
         // parse start date.
-        $inputStart       = today(config('app.timezone'))->startOfMonth();
-        $startString      = $this->option('start_date');
+        $inputStart      = today(config('app.timezone'))->startOfMonth();
+        $startString     = $this->option('start_date');
         if (null === $startString) {
             /** @var JournalRepositoryInterface $repository */
             $repository = app(JournalRepositoryInterface::class);
@@ -278,8 +278,8 @@ class ApplyRules extends Command
         }
 
         // parse end date
-        $inputEnd         = today(config('app.timezone'));
-        $endString        = $this->option('end_date');
+        $inputEnd        = today(config('app.timezone'));
+        $endString       = $this->option('end_date');
         if (null !== $endString && '' !== $endString) {
             $inputEnd = Carbon::createFromFormat('Y-m-d', $endString);
         }
@@ -293,8 +293,8 @@ class ApplyRules extends Command
             [$inputEnd, $inputStart] = [$inputStart, $inputEnd];
         }
 
-        $this->start_date = $inputStart;
-        $this->endDate    = $inputEnd;
+        $this->startDate = $inputStart;
+        $this->endDate   = $inputEnd;
     }
 
     private function grabAllRules(): void

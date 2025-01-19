@@ -27,12 +27,12 @@ namespace FireflyIII\Api\V2\Controllers\Summary;
 use Carbon\Carbon;
 use FireflyIII\Api\V2\Controllers\Controller;
 use FireflyIII\Api\V2\Request\Generic\DateRequest;
+use FireflyIII\Enums\AccountTypeEnum;
 use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Helpers\Collector\GroupCollectorInterface;
 use FireflyIII\Helpers\Report\NetWorthInterface;
 use FireflyIII\Models\Account;
-use FireflyIII\Models\AccountType;
 use FireflyIII\Models\UserGroup;
 use FireflyIII\Repositories\UserGroups\Account\AccountRepositoryInterface;
 use FireflyIII\Repositories\UserGroups\Bill\BillRepositoryInterface;
@@ -94,7 +94,7 @@ class BasicController extends Controller
      *
      * @throws \Exception
      *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function basic(DateRequest $request): JsonResponse
     {
@@ -118,7 +118,7 @@ class BasicController extends Controller
     private function getBalanceInformation(Carbon $start, Carbon $end): array
     {
         $object    = new SummaryBalanceGrouped();
-        $default   = app('amount')->getDefaultCurrency();
+        $default   = app('amount')->getNativeCurrency();
 
         $object->setDefault($default);
 
@@ -222,7 +222,7 @@ class BasicController extends Controller
     }
 
     /**
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings("PHPMD.ExcessiveMethodLength")
      */
     private function getLeftToSpendInfo(Carbon $start, Carbon $end): array
     {
@@ -233,7 +233,7 @@ class BasicController extends Controller
         $available    = $this->abRepository->getAvailableBudgetWithCurrency($start, $end);
         $budgets      = $this->budgetRepository->getActiveBudgets();
         $spent        = $this->opsRepository->listExpenses($start, $end, null, $budgets);
-        $default      = app('amount')->getDefaultCurrency();
+        $default      = app('amount')->getNativeCurrency();
         $currencies   = [];
         $converter    = new ExchangeRateConverter();
 
@@ -353,7 +353,7 @@ class BasicController extends Controller
         $netWorthHelper = app(NetWorthInterface::class);
         $netWorthHelper->setUserGroup($userGroup);
         $allAccounts    = $this->accountRepository->getActiveAccountsByType(
-            [AccountType::ASSET, AccountType::DEFAULT, AccountType::LOAN, AccountType::MORTGAGE, AccountType::DEBT]
+            [AccountTypeEnum::ASSET->value, AccountTypeEnum::DEFAULT->value, AccountTypeEnum::LOAN->value, AccountTypeEnum::MORTGAGE->value, AccountTypeEnum::DEBT->value]
         );
 
         // filter list on preference of being included.

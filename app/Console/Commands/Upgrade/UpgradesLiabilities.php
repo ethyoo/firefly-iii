@@ -138,11 +138,13 @@ class UpgradesLiabilities extends Command
 
     private function getSourceTransaction(TransactionJournal $journal): ?Transaction
     {
+        /** @var null|Transaction */
         return $journal->transactions()->where('amount', '<', 0)->first();
     }
 
     private function getDestinationTransaction(TransactionJournal $journal): ?Transaction
     {
+        /** @var null|Transaction */
         return $journal->transactions()->where('amount', '>', 0)->first();
     }
 

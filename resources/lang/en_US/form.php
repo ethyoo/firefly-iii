@@ -20,12 +20,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// Ignore this comment
+
 
 declare(strict_types=1);
 
 return [
     // new user:
+    'administration_currency'      => 'Native currency',
     'bank_name'                    => 'Bank name',
     'bank_balance'                 => 'Balance',
     'current_balance'              => 'Current balance',
@@ -66,7 +67,7 @@ return [
     'tagMode'                      => 'Tag mode',
     'virtual_balance'              => 'Virtual balance',
 
-    // Ignore this comment
+
 
     'targetamount'                 => 'Target amount',
     'target_amount'                => 'Target amount',
@@ -168,7 +169,7 @@ return [
     'journal_areYouSure'           => 'Are you sure you want to delete the transaction described ":description"?',
     'mass_journal_are_you_sure'    => 'Are you sure you want to delete these transactions?',
 
-    // Ignore this comment
+
 
     'tag_areYouSure'               => 'Are you sure you want to delete the tag ":tag"?',
     'journal_link_areYouSure'      => 'Are you sure you want to delete the link between <a href=":source_link">:source</a> and <a href=":destination_link">:destination</a>?',
@@ -233,7 +234,7 @@ return [
     'fints_account'                => 'FinTS account',
     'local_account'                => 'Firefly III account',
 
-    // Ignore this comment
+
 
     'from_date'                    => 'Date from',
     'to_date'                      => 'Date to',
@@ -278,4 +279,3 @@ return [
     'ntfy_user'                    => 'Ntfy username',
     'ntfy_pass'                    => 'Ntfy password',
 ];
-// Ignore this comment

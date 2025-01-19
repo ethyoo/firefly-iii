@@ -51,18 +51,18 @@ class UserNewPassword extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toArray(User $notifiable)
+    public function toArray(User $notifiable): array
     {
         return [
         ];
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toMail(User $notifiable)
+    public function toMail(User $notifiable): MailMessage
     {
         $ip        = Request::ip();
         $host      = Steam::getHostName($ip);
@@ -86,7 +86,7 @@ class UserNewPassword extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function toPushover(User $notifiable): PushoverMessage
     {
@@ -94,14 +94,14 @@ class UserNewPassword extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toSlack(User $notifiable)
+    public function toSlack(User $notifiable): SlackMessage
     {
         return new SlackMessage()->content((string) trans('email.reset_pw_message'));
     }
 
-    public function via(User $notifiable)
+    public function via(User $notifiable): array
     {
         return ReturnsAvailableChannels::returnChannels('user', $notifiable);
     }

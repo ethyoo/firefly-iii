@@ -129,6 +129,7 @@ class CategoryRepository implements CategoryRepositoryInterface
      */
     public function find(int $categoryId): ?Category
     {
+        /** @var null|Category */
         return $this->user->categories()->find($categoryId);
     }
 
@@ -137,6 +138,7 @@ class CategoryRepository implements CategoryRepositoryInterface
      */
     public function findByName(string $name): ?Category
     {
+        /** @var null|Category */
         return $this->user->categories()->where('name', $name)->first(['categories.*']);
     }
 
@@ -246,7 +248,7 @@ class CategoryRepository implements CategoryRepositoryInterface
         $disk = \Storage::disk('upload');
 
         return $set->each(
-            static function (Attachment $attachment) use ($disk) {
+            static function (Attachment $attachment) use ($disk) { // @phpstan-ignore-line
                 $notes                   = $attachment->notes()->first();
                 $attachment->file_exists = $disk->exists($attachment->fileName());
                 $attachment->notes_text  = null !== $notes ? $notes->text : '';

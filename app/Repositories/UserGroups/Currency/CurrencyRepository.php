@@ -180,11 +180,11 @@ class CurrencyRepository implements CurrencyRepositoryInterface
             $hasId                     = $local->contains(static function (TransactionCurrency $entry) use ($current) {
                 return $entry->id === $current->id;
             });
-            $isDefault                 = $local->contains(static function (TransactionCurrency $entry) use ($current) {
+            $isNative                  = $local->contains(static function (TransactionCurrency $entry) use ($current) {
                 return 1 === (int) $entry->pivot->group_default && $entry->id === $current->id;
             });
             $current->userGroupEnabled = $hasId;
-            $current->userGroupDefault = $isDefault;
+            $current->userGroupNative  = $isNative;
 
             return $current;
         });
@@ -193,13 +193,14 @@ class CurrencyRepository implements CurrencyRepositoryInterface
     public function get(): Collection
     {
         $all = $this->userGroup->currencies()->orderBy('code', 'ASC')->withPivot(['group_default'])->get();
-        $all->map(static function (TransactionCurrency $current) {
+        $all->map(static function (TransactionCurrency $current) { // @phpstan-ignore-line
             $current->userGroupEnabled = true;
-            $current->userGroupDefault = 1 === (int) $current->pivot->group_default;
+            $current->userGroupNative  = 1 === (int) $current->pivot->group_default;
 
             return $current;
         });
 
+        /** @var Collection */
         return $all;
     }
 
@@ -244,7 +245,7 @@ class CurrencyRepository implements CurrencyRepositoryInterface
             app('log')->debug('Grabbing default currency for this user...');
 
             /** @var null|TransactionCurrency $result */
-            $result = app('amount')->getDefaultCurrencyByUserGroup($this->user->userGroup);
+            $result = app('amount')->getNativeCurrencyByUserGroup($this->user->userGroup);
         }
 
         app('log')->debug(sprintf('Final result: %s', $result->code));
@@ -375,7 +376,7 @@ class CurrencyRepository implements CurrencyRepositoryInterface
 
     public function makeDefault(TransactionCurrency $currency): void
     {
-        $current = app('amount')->getDefaultCurrencyByUserGroup($this->userGroup);
+        $current = app('amount')->getNativeCurrencyByUserGroup($this->userGroup);
         app('log')->debug(sprintf('Enabled + made default currency %s for user #%d', $currency->code, $this->userGroup->id));
         $this->userGroup->currencies()->detach($currency->id);
         foreach ($this->userGroup->currencies()->get() as $item) {

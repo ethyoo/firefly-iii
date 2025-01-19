@@ -39,18 +39,18 @@ class UserRegistration extends Notification
     public function __construct() {}
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toArray(User $notifiable)
+    public function toArray(User $notifiable): array
     {
         return [
         ];
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toMail(User $notifiable)
+    public function toMail(User $notifiable): MailMessage
     {
         return (new MailMessage())
             ->markdown('emails.registered', ['address' => route('index')])
@@ -59,9 +59,9 @@ class UserRegistration extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function via(User $notifiable)
+    public function via(User $notifiable): array
     {
         // other settings will not be available at this point anyway.
         return ['mail'];

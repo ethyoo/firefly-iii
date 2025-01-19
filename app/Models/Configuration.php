@@ -27,9 +27,6 @@ use FireflyIII\Support\Models\ReturnsIntegerIdTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-/**
- * @mixin IdeHelperConfiguration
- */
 class Configuration extends Model
 {
     use ReturnsIntegerIdTrait;
@@ -42,7 +39,6 @@ class Configuration extends Model
             'deleted_at' => 'datetime',
         ];
 
-    /** @var string The table to store the data in */
     protected $table = 'configuration';
 
     /**

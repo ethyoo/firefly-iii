@@ -25,9 +25,9 @@ declare(strict_types=1);
 namespace FireflyIII\Helpers\Report;
 
 use Carbon\Carbon;
+use FireflyIII\Enums\AccountTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Models\Account;
-use FireflyIII\Models\AccountType;
 use FireflyIII\Models\UserGroup;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\Repositories\UserGroups\Account\AccountRepositoryInterface as AdminAccountRepositoryInterface;
@@ -77,7 +77,7 @@ class NetWorth implements NetWorthInterface
             return $cache->get();
         }
         Log::debug(sprintf('Now in byAccounts("%s", "%s")', $ids, $date->format('Y-m-d H:i:s')));
-        $default         = Amount::getDefaultCurrency();
+        $default         = Amount::getNativeCurrency();
         $netWorth        = [];
         $balances        = Steam::finalAccountsBalance($accounts, $date);
 
@@ -187,7 +187,7 @@ class NetWorth implements NetWorthInterface
     private function getAccounts(): Collection
     {
         $accounts = $this->getRepository()->getAccountsByType(
-            [AccountType::ASSET, AccountType::DEFAULT, AccountType::LOAN, AccountType::DEBT, AccountType::MORTGAGE]
+            [AccountTypeEnum::ASSET->value, AccountTypeEnum::DEFAULT->value, AccountTypeEnum::LOAN->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::MORTGAGE->value]
         );
         $filtered = new Collection();
 

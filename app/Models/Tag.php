@@ -34,9 +34,6 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-/**
- * @mixin IdeHelperTag
- */
 class Tag extends Model
 {
     use ReturnsIntegerIdTrait;

@@ -38,35 +38,28 @@ class UserTestNotificationSlack extends Notification
 {
     use Queueable;
 
-    private User $user;
-
-    public function __construct(User $user)
-    {
-        $this->user = $user;
-    }
-
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toArray(User $user)
+    public function toArray(User $user): array
     {
         return [
         ];
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toSlack(User $user)
+    public function toSlack(User $user): SlackMessage
     {
         return new SlackMessage()->content((string) trans('email.admin_test_subject'));
         // return new SlackMessage()->text((string) trans('email.admin_test_subject'))->to($url);
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function via(User $user)
+    public function via(User $user): array
     {
         return ['slack'];
     }

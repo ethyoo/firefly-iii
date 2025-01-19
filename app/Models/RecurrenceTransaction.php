@@ -31,9 +31,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-/**
- * @mixin IdeHelperRecurrenceTransaction
- */
 class RecurrenceTransaction extends Model
 {
     use ReturnsIntegerIdTrait;
@@ -61,7 +58,6 @@ class RecurrenceTransaction extends Model
             'description',
         ];
 
-    /** @var string The table to store the data in */
     protected $table = 'recurrences_transactions';
 
     public function destinationAccount(): BelongsTo

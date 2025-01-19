@@ -1,5 +1,11 @@
 {
     "firefly": {
+        "administrations_page_title": "Financial administrations",
+        "administrations_index_menu": "Financial administrations",
+        "temp_administrations_introduction": "Firefly III will soon get the ability to manage multiple financial administrations. Right now, you only have the one. You can set the title of this administration and its native currency. This replaces the previous setting where you would set your \"default currency\". This setting is now tied to the financial administration and can be different per administration.",
+        "administration_currency_form_help": "It may take a long time for the page to load if you change the native currency because transaction may need to be converted to your (new) native currency.",
+        "administrations_page_edit_sub_title_js": "Edit financial administration \"{title}\"",
+        "table": "Tabela",
         "welcome_back": "O que est\u00e1 acontecendo?",
         "flash_error": "Erro!",
         "flash_warning": "Aten\u00e7\u00e3o!",
@@ -9,6 +15,7 @@
         "select_source_account": "Por favor, selecione ou digite um nome de conta de origem v\u00e1lido",
         "split_transaction_title": "Descri\u00e7\u00e3o da transa\u00e7\u00e3o dividida",
         "errors_submission": "Algo deu errado com seu envio. Por favor, verifique os erros abaixo.",
+        "is_reconciled": "Is reconciled",
         "split": "Dividir",
         "single_split": "Divis\u00e3o",
         "transaction_stored_link": "<a href=\"transactions\/show\/{ID}\">Transa\u00e7\u00e3o #{ID} (\"{title}\")<\/a> foi salva.",
@@ -33,7 +40,7 @@
         "submit": "Enviar",
         "amount": "Valor",
         "date": "Data",
-        "is_reconciled_fields_dropped": "Como a transa\u00e7\u00e3o est\u00e1 reconciliada, voc\u00ea n\u00e3o pode atualizar as contas, nem o(s) valor(es).",
+        "is_reconciled_fields_dropped": "Because this transaction is reconciled, you will not be able to update the accounts, nor the amount(s) unless you remove the reconciliation flag.",
         "tags": "Tags",
         "no_budget": "(sem or\u00e7amento)",
         "no_bill": "(no subscription)",
@@ -144,6 +151,7 @@
         "url": "URL",
         "active": "Ativo",
         "interest_date": "Data do juros",
+        "administration_currency": "Native currency",
         "title": "T\u00edtulo",
         "date": "Data",
         "book_date": "Data de lan\u00e7amento",
@@ -161,7 +169,9 @@
         "rate": "Rate"
     },
     "list": {
+        "title": "T\u00edtulo",
         "active": "Est\u00e1 ativo?",
+        "native_currency": "Native currency",
         "trigger": "Gatilho",
         "response": "Resposta",
         "delivery": "Entrega",

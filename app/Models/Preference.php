@@ -30,9 +30,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-/**
- * @mixin IdeHelperPreference
- */
 class Preference extends Model
 {
     use ReturnsIntegerIdTrait;
@@ -80,6 +77,7 @@ class Preference extends Model
                 $preference = $user->preferences()->where('id', (int) $value)->first();
             }
             if (null !== $preference) {
+                /** @var Preference $preference */
                 return $preference;
             }
             $default     = config('firefly.default_preferences');

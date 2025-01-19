@@ -40,24 +40,17 @@ class UserTestNotificationNtfy extends Notification
 {
     use Queueable;
 
-    public User $user;
-
-    public function __construct(User $user)
-    {
-        $this->user = $user;
-    }
-
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toArray(User $notifiable)
+    public function toArray(User $notifiable): array
     {
         return [
         ];
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function toNtfy(User $user): Message
     {
@@ -72,9 +65,9 @@ class UserTestNotificationNtfy extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function via(User $user)
+    public function via(User $user): array
     {
         return [NtfyChannel::class];
     }

@@ -23,26 +23,8 @@ declare(strict_types=1);
 
 namespace FireflyIII\Support\Facades;
 
-use Carbon\Carbon;
-use FireflyIII\Models\Account;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Facade;
 
-/**
- * Class Steam.
- *
- * @method string balance(Account $account, Carbon $date)
- * @method string balanceIgnoreVirtual(Account $account, Carbon $date)
- * @method array  balanceInRange(Account $account, Carbon $start, Carbon $end)
- * @method array  balancesByAccounts(Collection $accounts, Carbon $date)
- * @method decrypt(int $isEncrypted, string $value)
- * @method array       getLastActivities(array $accounts)
- * @method string      negative(string $amount)
- * @method null|string opposite(string $amount = null)
- * @method int         phpBytes(string $string)
- * @method string      positive(string $amount)
- * @method array       balancesPerCurrencyByAccounts(Collection $accounts, Carbon $date)
- */
 class Steam extends Facade
 {
     /**

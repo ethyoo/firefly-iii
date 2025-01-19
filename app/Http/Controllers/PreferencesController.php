@@ -23,12 +23,12 @@ declare(strict_types=1);
 
 namespace FireflyIII\Http\Controllers;
 
+use FireflyIII\Enums\AccountTypeEnum;
 use FireflyIII\Events\Preferences\UserGroupChangedDefaultCurrency;
 use FireflyIII\Events\Test\UserTestNotificationChannel;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Http\Requests\PreferencesRequest;
 use FireflyIII\Models\Account;
-use FireflyIII\Models\AccountType;
 use FireflyIII\Models\Preference;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\User;
@@ -70,8 +70,8 @@ class PreferencesController extends Controller
      */
     public function index(AccountRepositoryInterface $repository)
     {
-        $accounts                       = $repository->getAccountsByType([AccountType::DEFAULT, AccountType::ASSET, AccountType::LOAN, AccountType::DEBT, AccountType::MORTGAGE]);
-        $isDocker                       = env('IS_DOCKER', false);
+        $accounts                       = $repository->getAccountsByType([AccountTypeEnum::DEFAULT->value, AccountTypeEnum::ASSET->value, AccountTypeEnum::LOAN->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::MORTGAGE->value]);
+        $isDocker                       = env('IS_DOCKER', false); // @phpstan-ignore-line
         $groupedAccounts                = [];
 
         /** @var Account $account */
@@ -79,7 +79,7 @@ class PreferencesController extends Controller
             $type                                                                        = $account->accountType->type;
             $role                                                                        = sprintf('opt_group_%s', $repository->getMetaValue($account, 'account_role'));
 
-            if (in_array($type, [AccountType::MORTGAGE, AccountType::DEBT, AccountType::LOAN], true)) {
+            if (in_array($type, [AccountTypeEnum::MORTGAGE->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::LOAN->value], true)) {
                 $role = sprintf('opt_group_l_%s', $type);
             }
 
@@ -128,10 +128,10 @@ class PreferencesController extends Controller
         // notification preferences
         $notifications                  = [];
         foreach (config('notifications.notifications.user') as $key => $info) {
-            if ($info['enabled']) {
+            if (true === $info['enabled']) {
                 $notifications[$key]
                     = [
-                        'enabled'      => app('preferences')->get(sprintf('notification_%s', $key), true)->data,
+                        'enabled'      => true === app('preferences')->get(sprintf('notification_%s', $key), true)->data,
                         'configurable' => $info['configurable'],
                     ];
             }
@@ -210,8 +210,8 @@ class PreferencesController extends Controller
      *
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
-     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings("PHPMD.ExcessiveMethodLength")
+     * @SuppressWarnings("PHPMD.NPathComplexity")
      */
     public function postIndex(PreferencesRequest $request)
     {

@@ -124,7 +124,7 @@ export default {
     },
     downloadWebhook: function (id) {
       axios.get('./api/v1/webhooks/' + id).then(response => {
-        console.log(response.data.data.attributes);
+        // console.log(response.data.data.attributes);
         this.title = response.data.data.attributes.title;
         this.id = parseInt(response.data.data.id);
 
@@ -187,7 +187,7 @@ export default {
 
       // post!
       axios.put('./api/v1/webhooks/' + this.id, data).then((response) => {
-        let webhookId = response.data.data.id;
+        let webhookId = parseInt(response.data.data.id);
         window.location.href = window.previousUrl + '?webhook_id=' + webhookId + '&message=updated';
       }).catch((error) => {
 

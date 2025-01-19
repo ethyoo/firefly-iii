@@ -24,11 +24,12 @@ declare(strict_types=1);
 namespace FireflyIII\Http\Controllers\Transaction;
 
 use Exception;
+use FireflyIII\Enums\AccountTypeEnum;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Events\UpdatedTransactionGroup;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Http\Controllers\Controller;
 use FireflyIII\Models\Account;
-use FireflyIII\Models\AccountType;
 use FireflyIII\Models\TransactionGroup;
 use FireflyIII\Models\TransactionJournal;
 use FireflyIII\Models\TransactionType;
@@ -139,9 +140,9 @@ class ConvertController extends Controller
     private function getValidDepositSources(): array
     {
         // make repositories
-        $liabilityTypes = [AccountType::MORTGAGE, AccountType::DEBT, AccountType::CREDITCARD, AccountType::LOAN];
+        $liabilityTypes = [AccountTypeEnum::MORTGAGE->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::CREDITCARD->value, AccountTypeEnum::LOAN->value];
         $accountList    = $this->accountRepository
-            ->getActiveAccountsByType([AccountType::REVENUE, AccountType::CASH, AccountType::LOAN, AccountType::DEBT, AccountType::MORTGAGE])
+            ->getActiveAccountsByType([AccountTypeEnum::REVENUE->value, AccountTypeEnum::CASH->value, AccountTypeEnum::LOAN->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::MORTGAGE->value])
         ;
         $grouped        = [];
 
@@ -158,11 +159,11 @@ class ConvertController extends Controller
             if (in_array($account->accountType->type, $liabilityTypes, true)) {
                 $role = 'l_'.$account->accountType->type;
             }
-            if (AccountType::CASH === $account->accountType->type) {
+            if (AccountTypeEnum::CASH->value === $account->accountType->type) {
                 $role = 'cash_account';
                 $name = sprintf('(%s)', trans('firefly.cash'));
             }
-            if (AccountType::REVENUE === $account->accountType->type) {
+            if (AccountTypeEnum::REVENUE->value === $account->accountType->type) {
                 $role = 'revenue_account';
             }
 
@@ -176,9 +177,9 @@ class ConvertController extends Controller
     private function getValidWithdrawalDests(): array
     {
         // make repositories
-        $liabilityTypes = [AccountType::MORTGAGE, AccountType::DEBT, AccountType::CREDITCARD, AccountType::LOAN];
+        $liabilityTypes = [AccountTypeEnum::MORTGAGE->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::CREDITCARD->value, AccountTypeEnum::LOAN->value];
         $accountList    = $this->accountRepository->getActiveAccountsByType(
-            [AccountType::EXPENSE, AccountType::CASH, AccountType::LOAN, AccountType::DEBT, AccountType::MORTGAGE]
+            [AccountTypeEnum::EXPENSE->value, AccountTypeEnum::CASH->value, AccountTypeEnum::LOAN->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::MORTGAGE->value]
         );
         $grouped        = [];
 
@@ -195,11 +196,11 @@ class ConvertController extends Controller
             if (in_array($account->accountType->type, $liabilityTypes, true)) {
                 $role = 'l_'.$account->accountType->type;
             }
-            if (AccountType::CASH === $account->accountType->type) {
+            if (AccountTypeEnum::CASH->value === $account->accountType->type) {
                 $role = 'cash_account';
                 $name = sprintf('(%s)', trans('firefly.cash'));
             }
-            if (AccountType::EXPENSE === $account->accountType->type) {
+            if (AccountTypeEnum::EXPENSE->value === $account->accountType->type) {
                 $role = 'expense_account';
             }
 
@@ -216,7 +217,7 @@ class ConvertController extends Controller
     private function getLiabilities(): array
     {
         // make repositories
-        $accountList = $this->accountRepository->getActiveAccountsByType([AccountType::LOAN, AccountType::DEBT, AccountType::MORTGAGE]);
+        $accountList = $this->accountRepository->getActiveAccountsByType([AccountTypeEnum::LOAN->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::MORTGAGE->value]);
         $grouped     = [];
 
         // group accounts:
@@ -238,7 +239,7 @@ class ConvertController extends Controller
     private function getAssetAccounts(): array
     {
         // make repositories
-        $accountList = $this->accountRepository->getActiveAccountsByType([AccountType::ASSET]);
+        $accountList = $this->accountRepository->getActiveAccountsByType([AccountTypeEnum::ASSET->value]);
         $grouped     = [];
 
         // group accounts:
@@ -331,7 +332,7 @@ class ConvertController extends Controller
         ];
 
         // also set the currency to the currency of the source account, in case you're converting a deposit into a transfer.
-        if (TransactionType::TRANSFER === $transactionType->type && TransactionType::DEPOSIT === $journal->transactionType->type) {
+        if (TransactionTypeEnum::TRANSFER->value === $transactionType->type && TransactionTypeEnum::DEPOSIT->value === $journal->transactionType->type) {
             $source         = $this->accountRepository->find((int) $sourceId);
             $sourceCurrency = $this->accountRepository->getAccountCurrency($source);
             $dest           = $this->accountRepository->find((int) $destinationId);

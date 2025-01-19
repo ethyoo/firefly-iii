@@ -28,7 +28,6 @@ use Carbon\Carbon;
 use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Helpers\Collector\GroupCollectorInterface;
 use FireflyIII\Models\TransactionCurrency;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Support\Report\Summarizer\TransactionSummarizer;
 use FireflyIII\User;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -92,7 +91,7 @@ class NoBudgetRepository implements NoBudgetRepositoryInterface
     {
         /** @var GroupCollectorInterface $collector */
         $collector  = app(GroupCollectorInterface::class);
-        $collector->setUser($this->user)->setRange($start, $end)->setTypes([TransactionType::WITHDRAWAL]);
+        $collector->setUser($this->user)->setRange($start, $end)->setTypes([TransactionTypeEnum::WITHDRAWAL->value]);
 
         if (null !== $accounts && $accounts->count() > 0) {
             $collector->setAccounts($accounts);

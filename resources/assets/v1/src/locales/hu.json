@@ -1,5 +1,11 @@
 {
     "firefly": {
+        "administrations_page_title": "Financial administrations",
+        "administrations_index_menu": "Financial administrations",
+        "temp_administrations_introduction": "Firefly III will soon get the ability to manage multiple financial administrations. Right now, you only have the one. You can set the title of this administration and its native currency. This replaces the previous setting where you would set your \"default currency\". This setting is now tied to the financial administration and can be different per administration.",
+        "administration_currency_form_help": "It may take a long time for the page to load if you change the native currency because transaction may need to be converted to your (new) native currency.",
+        "administrations_page_edit_sub_title_js": "Edit financial administration \"{title}\"",
+        "table": "T\u00e1bl\u00e1zat",
         "welcome_back": "Mi a helyzet?",
         "flash_error": "Hiba!",
         "flash_warning": "Figyelmeztet\u00e9s!",
@@ -9,6 +15,7 @@
         "select_source_account": "Please select or type a valid source account name",
         "split_transaction_title": "Felosztott tranzakci\u00f3 le\u00edr\u00e1sa",
         "errors_submission": "Hiba t\u00f6rt\u00e9nt a bek\u00fcld\u00e9s sor\u00e1n. K\u00e9rlek jav\u00edtsd az al\u00e1bbi hib\u00e1kat.",
+        "is_reconciled": "Is reconciled",
         "split": "Feloszt\u00e1s",
         "single_split": "Feloszt\u00e1s",
         "transaction_stored_link": "<a href=\"transactions\/show\/{ID}\">Transaction #{ID} (\"{title}\")<\/a> mentve.",
@@ -33,7 +40,7 @@
         "submit": "Bek\u00fcld\u00e9s",
         "amount": "\u00d6sszeg",
         "date": "D\u00e1tum",
-        "is_reconciled_fields_dropped": "Because this transaction is reconciled, you will not be able to update the accounts, nor the amount(s).",
+        "is_reconciled_fields_dropped": "Because this transaction is reconciled, you will not be able to update the accounts, nor the amount(s) unless you remove the reconciliation flag.",
         "tags": "C\u00edmk\u00e9k",
         "no_budget": "(nincs k\u00f6lts\u00e9gkeret)",
         "no_bill": "(no subscription)",
@@ -144,6 +151,7 @@
         "url": "URL",
         "active": "Akt\u00edv",
         "interest_date": "Kamatfizet\u00e9si id\u0151pont",
+        "administration_currency": "Native currency",
         "title": "C\u00edm",
         "date": "D\u00e1tum",
         "book_date": "K\u00f6nyvel\u00e9s d\u00e1tuma",
@@ -161,7 +169,9 @@
         "rate": "Rate"
     },
     "list": {
+        "title": "C\u00edm",
         "active": "Akt\u00edv?",
+        "native_currency": "Native currency",
         "trigger": "Trigger",
         "response": "Response",
         "delivery": "Delivery",

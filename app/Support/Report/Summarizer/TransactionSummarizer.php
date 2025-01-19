@@ -45,7 +45,7 @@ class TransactionSummarizer
     public function setUser(User $user): void
     {
         $this->user            = $user;
-        $this->default         = Amount::getDefaultCurrencyByUserGroup($user->userGroup);
+        $this->default         = Amount::getNativeCurrencyByUserGroup($user->userGroup);
         $this->convertToNative = Amount::convertToNative($user);
     }
 
@@ -53,14 +53,14 @@ class TransactionSummarizer
     {
         $array = [];
         foreach ($journals as $journal) {
-            $field                     = 'amount';
+            $field                 = 'amount';
 
             // grab default currency information.
-            $currencyId                = (int) $journal['currency_id'];
-            $currencyName              = $journal['currency_name'];
-            $currencySymbol            = $journal['currency_symbol'];
-            $currencyCode              = $journal['currency_code'];
-            $currencyDecimalPlaces     = $journal['currency_decimal_places'];
+            $currencyId            = (int) $journal['currency_id'];
+            $currencyName          = $journal['currency_name'];
+            $currencySymbol        = $journal['currency_symbol'];
+            $currencyCode          = $journal['currency_code'];
+            $currencyDecimalPlaces = $journal['currency_decimal_places'];
             if ($this->convertToNative) {
                 // if convert to native, use the native amount yes or no?
                 $useNative  = $this->default->id !== (int) $journal['currency_id'];
@@ -87,7 +87,7 @@ class TransactionSummarizer
             if (!$this->convertToNative) {
                 // default to the normal amount, but also
             }
-            $amount                    = (string) ($journal[$field] ?? '0');
+            $amount                = (string) ($journal[$field] ?? '0');
             $array[$currencyId] ??= [
                 'sum'                     => '0',
                 'currency_id'             => $currencyId,
@@ -96,7 +96,13 @@ class TransactionSummarizer
                 'currency_code'           => $currencyCode,
                 'currency_decimal_places' => $currencyDecimalPlaces,
             ];
-            $array[$currencyId]['sum'] = bcadd($array[$currencyId]['sum'], app('steam')->{$method}($amount));
+            if ('positive' === $method) {
+                $array[$currencyId]['sum'] = bcadd($array[$currencyId]['sum'], app('steam')->positive($amount));
+            }
+            if ('negative' === $method) {
+                $array[$currencyId]['sum'] = bcadd($array[$currencyId]['sum'], app('steam')->negative($amount));
+            }
+            // $array[$currencyId]['sum'] = bcadd($array[$currencyId]['sum'], app('steam')->{$method}($amount));
             // Log::debug(sprintf('Journal #%d adds amount %s %s', $journal['transaction_journal_id'], $currencyCode, $amount));
         }
         Log::debug('End of sumExpenses.', $array);
@@ -111,7 +117,7 @@ class TransactionSummarizer
         $idKey           = sprintf('%s_account_id', $direction);
         $nameKey         = sprintf('%s_account_name', $direction);
         $convertToNative = Amount::convertToNative($this->user);
-        $default         = Amount::getDefaultCurrencyByUserGroup($this->user->userGroup);
+        $default         = Amount::getNativeCurrencyByUserGroup($this->user->userGroup);
 
 
 

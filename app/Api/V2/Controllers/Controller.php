@@ -47,8 +47,8 @@ use Symfony\Component\HttpFoundation\ParameterBag;
 /**
  * Class Controller
  *
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- * @SuppressWarnings(PHPMD.NumberOfChildren)
+ * @SuppressWarnings("PHPMD.CouplingBetweenObjects")
+ * @SuppressWarnings("PHPMD.NumberOfChildren")
  */
 class Controller extends BaseController
 {
@@ -74,7 +74,7 @@ class Controller extends BaseController
      * TODO duplicate from V1 controller
      * Method to grab all parameters from the URL.
      *
-     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings("PHPMD.NPathComplexity")
      */
     private function getParameters(): ParameterBag
     {

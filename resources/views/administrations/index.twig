@@ -1,1 +1,8 @@
-This feature is only available in the v2 layout.
+{% set VUE_SCRIPT_NAME = 'administrations/index' %}
+{% extends './layout/default' %}
+{% block breadcrumbs %}
+    {{ Breadcrumbs.render }}
+{% endblock %}
+{% block content %}
+    <div id="administrations_index"></div>
+{% endblock %}

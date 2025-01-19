@@ -23,8 +23,8 @@ declare(strict_types=1);
 
 namespace FireflyIII\Rules;
 
+use FireflyIII\Enums\AccountTypeEnum;
 use FireflyIII\Models\Account;
-use FireflyIII\Models\AccountType;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 /**
@@ -33,7 +33,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 class IsAssetAccountId implements ValidationRule
 {
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function validate(string $attribute, mixed $value, \Closure $fail): void
     {
@@ -46,7 +46,7 @@ class IsAssetAccountId implements ValidationRule
 
             return;
         }
-        if (AccountType::ASSET !== $account->accountType->type && AccountType::DEFAULT !== $account->accountType->type) {
+        if (AccountTypeEnum::ASSET->value !== $account->accountType->type && AccountTypeEnum::DEFAULT->value !== $account->accountType->type) {
             $fail('validation.no_asset_account')->translate();
         }
     }

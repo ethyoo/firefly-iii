@@ -25,8 +25,8 @@ declare(strict_types=1);
 namespace FireflyIII\Validation;
 
 use FireflyIII\Enums\AccountTypeEnum;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Models\Account;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Models\UserGroup;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\Repositories\UserGroups\Account\AccountRepositoryInterface as UserGroupAccountRepositoryInterface;
@@ -140,32 +140,32 @@ class AccountValidator
 
                 break;
 
-            case TransactionType::WITHDRAWAL:
+            case TransactionTypeEnum::WITHDRAWAL->value:
                 $result          = $this->validateWithdrawalDestination($array);
 
                 break;
 
-            case TransactionType::DEPOSIT:
+            case TransactionTypeEnum::DEPOSIT->value:
                 $result          = $this->validateDepositDestination($array);
 
                 break;
 
-            case TransactionType::TRANSFER:
+            case TransactionTypeEnum::TRANSFER->value:
                 $result          = $this->validateTransferDestination($array);
 
                 break;
 
-            case TransactionType::OPENING_BALANCE:
+            case TransactionTypeEnum::OPENING_BALANCE->value:
                 $result          = $this->validateOBDestination($array);
 
                 break;
 
-            case TransactionType::LIABILITY_CREDIT:
+            case TransactionTypeEnum::LIABILITY_CREDIT->value:
                 $result          = $this->validateLCDestination($array);
 
                 break;
 
-            case TransactionType::RECONCILIATION:
+            case TransactionTypeEnum::RECONCILIATION->value:
                 $result          = $this->validateReconciliationDestination($array);
 
                 break;
@@ -185,32 +185,32 @@ class AccountValidator
 
                 break;
 
-            case TransactionType::WITHDRAWAL:
+            case TransactionTypeEnum::WITHDRAWAL->value:
                 $result = $this->validateWithdrawalSource($array);
 
                 break;
 
-            case TransactionType::DEPOSIT:
+            case TransactionTypeEnum::DEPOSIT->value:
                 $result = $this->validateDepositSource($array);
 
                 break;
 
-            case TransactionType::TRANSFER:
+            case TransactionTypeEnum::TRANSFER->value:
                 $result = $this->validateTransferSource($array);
 
                 break;
 
-            case TransactionType::OPENING_BALANCE:
+            case TransactionTypeEnum::OPENING_BALANCE->value:
                 $result = $this->validateOBSource($array);
 
                 break;
 
-            case TransactionType::LIABILITY_CREDIT:
+            case TransactionTypeEnum::LIABILITY_CREDIT->value:
                 $result = $this->validateLCSource($array);
 
                 break;
 
-            case TransactionType::RECONCILIATION:
+            case TransactionTypeEnum::RECONCILIATION->value:
                 app('log')->debug('Calling validateReconciliationSource');
                 $result = $this->validateReconciliationSource($array);
 
@@ -250,9 +250,9 @@ class AccountValidator
     /**
      * It's a long and fairly complex method, but I don't mind.
      *
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
-     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings("PHPMD.CyclomaticComplexity")
+     * @SuppressWarnings("PHPMD.BooleanArgumentFlag")
+     * @SuppressWarnings("PHPMD.NPathComplexity")
      */
     protected function findExistingAccount(array $validTypes, array $data, bool $inverse = false): ?Account
     {

@@ -251,8 +251,14 @@ trait AccountCollection
                 if (0 === $accountId) {
                     return false;
                 }
+
                 // in theory, this could lead to finding other users accounts.
-                $balance   = Steam::finalAccountBalance(Account::find($accountId), $transaction['date']);
+                /** @var null|Account $account */
+                $account   = Account::find($accountId);
+                if (null === $account) {
+                    continue;
+                }
+                $balance   = Steam::finalAccountBalance($account, $transaction['date']);
                 $result    = bccomp($balance['balance'], $value);
                 Log::debug(sprintf('"%s" vs "%s" is %d', $balance['balance'], $value, $result));
 

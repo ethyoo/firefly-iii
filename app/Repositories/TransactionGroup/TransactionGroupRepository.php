@@ -25,6 +25,7 @@ declare(strict_types=1);
 namespace FireflyIII\Repositories\TransactionGroup;
 
 use Carbon\Carbon;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Exceptions\DuplicateTransactionException;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Factory\TransactionGroupFactory;
@@ -38,7 +39,6 @@ use FireflyIII\Models\TransactionCurrency;
 use FireflyIII\Models\TransactionGroup;
 use FireflyIII\Models\TransactionJournal;
 use FireflyIII\Models\TransactionJournalLink;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Attachment\AttachmentRepositoryInterface;
 use FireflyIII\Services\Internal\Destroy\TransactionGroupDestroyService;
 use FireflyIII\Services\Internal\Update\GroupUpdateService;
@@ -68,6 +68,7 @@ class TransactionGroupRepository implements TransactionGroupRepositoryInterface
      */
     public function find(int $groupId): ?TransactionGroup
     {
+        /** @var null|TransactionGroup */
         return $this->user->transactionGroups()->find($groupId);
     }
 
@@ -155,7 +156,7 @@ class TransactionGroupRepository implements TransactionGroupRepositoryInterface
             $current['file_exists']   = true;
             $current['notes']         = $repository->getNoteText($attachment);
             // already determined that this attachable is a TransactionJournal.
-            $current['journal_title'] = $attachment->attachable->description; // @phpstan-ignore-line
+            $current['journal_title'] = $attachment->attachable->description;
             $result[$journalId][]     = $current;
         }
 
@@ -219,7 +220,7 @@ class TransactionGroupRepository implements TransactionGroupRepositoryInterface
                     'link'           => $entry->outward,
                     'group'          => $entry->destination->transaction_group_id,
                     'description'    => $entry->destination->description,
-                    'editable'       => 1 === (int) $entry->editable, // @phpstan-ignore-line
+                    'editable'       => 1 === (int) $entry->editable,
                     'amount'         => $amount,
                     'foreign_amount' => $foreignAmount,
                 ];
@@ -232,7 +233,7 @@ class TransactionGroupRepository implements TransactionGroupRepositoryInterface
                     'link'           => $entry->inward,
                     'group'          => $entry->source->transaction_group_id,
                     'description'    => $entry->source->description,
-                    'editable'       => 1 === (int) $entry->editable, // @phpstan-ignore-line
+                    'editable'       => 1 === (int) $entry->editable,
                     'amount'         => $amount,
                     'foreign_amount' => $foreignAmount,
                 ];
@@ -250,10 +251,10 @@ class TransactionGroupRepository implements TransactionGroupRepositoryInterface
         $type        = $journal->transactionType->type;
         $amount      = app('steam')->positive($transaction->amount);
         $return      = '';
-        if (TransactionType::WITHDRAWAL === $type) {
+        if (TransactionTypeEnum::WITHDRAWAL->value === $type) {
             $return = app('amount')->formatAnything($currency, app('steam')->negative($amount));
         }
-        if (TransactionType::WITHDRAWAL !== $type) {
+        if (TransactionTypeEnum::WITHDRAWAL->value !== $type) {
             $return = app('amount')->formatAnything($currency, $amount);
         }
 
@@ -274,10 +275,10 @@ class TransactionGroupRepository implements TransactionGroupRepositoryInterface
         $type        = $journal->transactionType->type;
         $amount      = app('steam')->positive($transaction->foreign_amount);
         $return      = '';
-        if (TransactionType::WITHDRAWAL === $type) {
+        if (TransactionTypeEnum::WITHDRAWAL->value === $type) {
             $return = app('amount')->formatAnything($currency, app('steam')->negative($amount));
         }
-        if (TransactionType::WITHDRAWAL !== $type) {
+        if (TransactionTypeEnum::WITHDRAWAL->value !== $type) {
             $return = app('amount')->formatAnything($currency, $amount);
         }
 
@@ -289,6 +290,7 @@ class TransactionGroupRepository implements TransactionGroupRepositoryInterface
         /** @var TransactionJournal $journal */
         $journal = $this->user->transactionJournals()->find($journalId);
 
+        /** @var null|Location */
         return $journal->locations()->first();
     }
 
@@ -343,7 +345,7 @@ class TransactionGroupRepository implements TransactionGroupRepositoryInterface
     {
         $return   = [];
         $journals = $group->transactionJournals->pluck('id')->toArray();
-        $currency = app('amount')->getDefaultCurrencyByUserGroup($this->user->userGroup);
+        $currency = app('amount')->getNativeCurrencyByUserGroup($this->user->userGroup);
         $data     = PiggyBankEvent::whereIn('transaction_journal_id', $journals)
             ->with('piggyBank', 'piggyBank.account')
             ->get(['piggy_bank_events.*'])

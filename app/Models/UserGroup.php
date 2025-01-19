@@ -25,7 +25,6 @@ declare(strict_types=1);
 namespace FireflyIII\Models;
 
 use FireflyIII\Enums\UserRoleEnum;
-use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Support\Models\ReturnsIntegerIdTrait;
 use FireflyIII\User;
 use Illuminate\Database\Eloquent\Model;
@@ -34,9 +33,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-/**
- * @mixin IdeHelperUserGroup
- */
 class UserGroup extends Model
 {
     use ReturnsIntegerIdTrait;
@@ -151,7 +147,7 @@ class UserGroup extends Model
      */
     public function piggyBanks(): HasManyThrough
     {
-        throw new FireflyException('This user group method is EOL.');
+        return $this->hasManyThrough(PiggyBank::class, Account::class);
     }
 
     public function recurrences(): HasMany

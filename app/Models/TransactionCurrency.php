@@ -32,15 +32,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-/**
- * @mixin IdeHelperTransactionCurrency
- */
 class TransactionCurrency extends Model
 {
     use ReturnsIntegerIdTrait;
     use SoftDeletes;
 
-    public ?bool $userGroupDefault = null;
+    public ?bool $userGroupNative  = null;
     public ?bool $userGroupEnabled = null;
     protected $casts
                                    = [
@@ -76,8 +73,8 @@ class TransactionCurrency extends Model
     public function refreshForUser(User $user): void
     {
         $current                = $user->userGroup->currencies()->where('transaction_currencies.id', $this->id)->first();
-        $default                = app('amount')->getDefaultCurrencyByUserGroup($user->userGroup);
-        $this->userGroupDefault = $default->id === $this->id;
+        $native                 = app('amount')->getNativeCurrencyByUserGroup($user->userGroup);
+        $this->userGroupNative  = $native->id === $this->id;
         $this->userGroupEnabled = null !== $current;
     }
 

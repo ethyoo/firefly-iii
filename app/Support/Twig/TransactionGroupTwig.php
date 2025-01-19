@@ -25,11 +25,11 @@ declare(strict_types=1);
 namespace FireflyIII\Support\Twig;
 
 use Carbon\Carbon;
-use FireflyIII\Models\AccountType;
+use FireflyIII\Enums\AccountTypeEnum;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Models\Transaction;
 use FireflyIII\Models\TransactionJournal;
 use FireflyIII\Models\TransactionJournalMeta;
-use FireflyIII\Models\TransactionType;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
@@ -76,18 +76,18 @@ class TransactionGroupTwig extends AbstractExtension
      */
     private function normalJournalArrayAmount(array $array): string
     {
-        $type       = $array['transaction_type_type'] ?? TransactionType::WITHDRAWAL;
+        $type       = $array['transaction_type_type'] ?? TransactionTypeEnum::WITHDRAWAL->value;
         $amount     = $array['amount'] ?? '0';
         $colored    = true;
         $sourceType = $array['source_account_type'] ?? 'invalid';
         $amount     = $this->signAmount($amount, $type, $sourceType);
 
-        if (TransactionType::TRANSFER === $type) {
+        if (TransactionTypeEnum::TRANSFER->value === $type) {
             $colored = false;
         }
 
         $result     = app('amount')->formatFlat($array['currency_symbol'], (int) $array['currency_decimal_places'], $amount, $colored);
-        if (TransactionType::TRANSFER === $type) {
+        if (TransactionTypeEnum::TRANSFER->value === $type) {
             $result = sprintf('<span class="text-info money-transfer">%s</span>', $result);
         }
 
@@ -97,17 +97,17 @@ class TransactionGroupTwig extends AbstractExtension
     private function signAmount(string $amount, string $transactionType, string $sourceType): string
     {
         // withdrawals stay negative
-        if (TransactionType::WITHDRAWAL !== $transactionType) {
+        if (TransactionTypeEnum::WITHDRAWAL->value !== $transactionType) {
             $amount = bcmul($amount, '-1');
         }
 
         // opening balance and it comes from initial balance? its expense.
-        if (TransactionType::OPENING_BALANCE === $transactionType && AccountType::INITIAL_BALANCE !== $sourceType) {
+        if (TransactionTypeEnum::OPENING_BALANCE->value === $transactionType && AccountTypeEnum::INITIAL_BALANCE->value !== $sourceType) {
             $amount = bcmul($amount, '-1');
         }
 
         // reconciliation and it comes from reconciliation?
-        if (TransactionType::RECONCILIATION === $transactionType && AccountType::RECONCILIATION !== $sourceType) {
+        if (TransactionTypeEnum::RECONCILIATION->value === $transactionType && AccountTypeEnum::RECONCILIATION->value !== $sourceType) {
             $amount = bcmul($amount, '-1');
         }
 
@@ -119,18 +119,18 @@ class TransactionGroupTwig extends AbstractExtension
      */
     private function foreignJournalArrayAmount(array $array): string
     {
-        $type       = $array['transaction_type_type'] ?? TransactionType::WITHDRAWAL;
+        $type       = $array['transaction_type_type'] ?? TransactionTypeEnum::WITHDRAWAL->value;
         $amount     = $array['foreign_amount'] ?? '0';
         $colored    = true;
 
         $sourceType = $array['source_account_type'] ?? 'invalid';
         $amount     = $this->signAmount($amount, $type, $sourceType);
 
-        if (TransactionType::TRANSFER === $type) {
+        if (TransactionTypeEnum::TRANSFER->value === $type) {
             $colored = false;
         }
         $result     = app('amount')->formatFlat($array['foreign_currency_symbol'], (int) $array['foreign_currency_decimal_places'], $amount, $colored);
-        if (TransactionType::TRANSFER === $type) {
+        if (TransactionTypeEnum::TRANSFER->value === $type) {
             $result = sprintf('<span class="text-info money-transfer">%s</span>', $result);
         }
 
@@ -164,19 +164,21 @@ class TransactionGroupTwig extends AbstractExtension
     private function normalJournalObjectAmount(TransactionJournal $journal): string
     {
         $type       = $journal->transactionType->type;
+
+        /** @var Transaction $first */
         $first      = $journal->transactions()->where('amount', '<', 0)->first();
         $currency   = $journal->transactionCurrency;
         $amount     = $first->amount ?? '0';
         $colored    = true;
-        $sourceType = $first->account()->first()->accountType()->first()->type;
+        $sourceType = $first->account->accountType()->first()->type;
 
         $amount     = $this->signAmount($amount, $type, $sourceType);
 
-        if (TransactionType::TRANSFER === $type) {
+        if (TransactionTypeEnum::TRANSFER->value === $type) {
             $colored = false;
         }
         $result     = app('amount')->formatFlat($currency->symbol, $currency->decimal_places, $amount, $colored);
-        if (TransactionType::TRANSFER === $type) {
+        if (TransactionTypeEnum::TRANSFER->value === $type) {
             $result = sprintf('<span class="text-info money-transfer">%s</span>', $result);
         }
 
@@ -203,15 +205,15 @@ class TransactionGroupTwig extends AbstractExtension
         $currency   = $first->foreignCurrency;
         $amount     = '' === $first->foreign_amount ? '0' : $first->foreign_amount;
         $colored    = true;
-        $sourceType = $first->account()->first()->accountType()->first()->type;
+        $sourceType = $first->account->accountType()->first()->type;
 
         $amount     = $this->signAmount($amount, $type, $sourceType);
 
-        if (TransactionType::TRANSFER === $type) {
+        if (TransactionTypeEnum::TRANSFER->value === $type) {
             $colored = false;
         }
         $result     = app('amount')->formatFlat($currency->symbol, $currency->decimal_places, $amount, $colored);
-        if (TransactionType::TRANSFER === $type) {
+        if (TransactionTypeEnum::TRANSFER->value === $type) {
             $result = sprintf('<span class="text-info money-transfer">%s</span>', $result);
         }
 

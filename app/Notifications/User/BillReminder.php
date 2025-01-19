@@ -54,18 +54,18 @@ class BillReminder extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toArray(User $notifiable)
+    public function toArray(User $notifiable): array
     {
         return [
         ];
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toMail(User $notifiable)
+    public function toMail(User $notifiable): MailMessage
     {
         return (new MailMessage())
             ->markdown('emails.bill-warning', ['field' => $this->field, 'diff' => $this->diff, 'bill' => $this->bill])
@@ -95,7 +95,7 @@ class BillReminder extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function toPushover(User $notifiable): PushoverMessage
     {
@@ -105,9 +105,9 @@ class BillReminder extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toSlack(User $notifiable)
+    public function toSlack(User $notifiable): SlackMessage
     {
         $bill = $this->bill;
         $url  = route('bills.show', [$bill->id]);
@@ -122,9 +122,9 @@ class BillReminder extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function via(User $notifiable)
+    public function via(User $notifiable): array
     {
         return ReturnsAvailableChannels::returnChannels('user', $notifiable);
     }

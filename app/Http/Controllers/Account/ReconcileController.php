@@ -24,14 +24,14 @@ declare(strict_types=1);
 namespace FireflyIII\Http\Controllers\Account;
 
 use Carbon\Carbon;
+use FireflyIII\Enums\AccountTypeEnum;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Exceptions\DuplicateTransactionException;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Factory\TransactionGroupFactory;
 use FireflyIII\Http\Controllers\Controller;
 use FireflyIII\Http\Requests\ReconciliationStoreRequest;
 use FireflyIII\Models\Account;
-use FireflyIII\Models\AccountType;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\Repositories\Journal\JournalRepositoryInterface;
 use FireflyIII\Support\Facades\Steam;
@@ -81,7 +81,7 @@ class ReconcileController extends Controller
         if (!$this->isEditableAccount($account)) {
             return $this->redirectAccountToAccount($account);
         }
-        if (AccountType::ASSET !== $account->accountType->type) {
+        if (AccountTypeEnum::ASSET->value !== $account->accountType->type) {
             session()->flash('error', (string) trans('firefly.must_be_asset_account'));
 
             return redirect(route('accounts.index', [config(sprintf('firefly.shortNamesByFullName.%s', $account->accountType->type))]));
@@ -223,7 +223,7 @@ class ReconcileController extends Controller
             'transactions' => [
                 [
                     'user'                => auth()->user()->id,
-                    'type'                => strtolower(TransactionType::RECONCILIATION),
+                    'type'                => strtolower(TransactionTypeEnum::RECONCILIATION->value),
                     'date'                => $end,
                     'order'               => 0,
                     'currency_id'         => $currency->id,

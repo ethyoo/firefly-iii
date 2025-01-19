@@ -110,7 +110,7 @@ class UserEventHandler
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function createExchangeRates(RegisteredUser $event): void
     {
@@ -203,7 +203,7 @@ class UserEventHandler
             if (false === $entry['notified']) {
                 try {
                     Notification::send($user, new UserLogin());
-                } catch (\Exception $e) { // @phpstan-ignore-line
+                } catch (\Exception $e) {
                     $message = $e->getMessage();
                     if (str_contains($message, 'Bcc')) {
                         app('log')->warning('[Bcc] Could not send notification. Please validate your email settings, use the .env.example file as a guide.');
@@ -232,8 +232,8 @@ class UserEventHandler
             $owner = $event->owner;
 
             try {
-                Notification::send($owner, new AdminRegistrationNotification($event->owner, $event->user));
-            } catch (\Exception $e) { // @phpstan-ignore-line
+                Notification::send($owner, new AdminRegistrationNotification($event->user));
+            } catch (\Exception $e) {
                 $message = $e->getMessage();
                 if (str_contains($message, 'Bcc')) {
                     app('log')->warning('[Bcc] Could not send notification. Please validate your email settings, use the .env.example file as a guide.');
@@ -304,7 +304,7 @@ class UserEventHandler
     {
         try {
             Notification::send($event->user, new UserFailedLoginAttempt($event->user));
-        } catch (\Exception $e) { // @phpstan-ignore-line
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             if (str_contains($message, 'Bcc')) {
                 app('log')->warning('[Bcc] Could not send notification. Please validate your email settings, use the .env.example file as a guide.');
@@ -328,7 +328,7 @@ class UserEventHandler
     {
         try {
             Notification::send($event->user, new UserNewPassword(route('password.reset', [$event->token])));
-        } catch (\Exception $e) { // @phpstan-ignore-line
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             if (str_contains($message, 'Bcc')) {
                 app('log')->warning('[Bcc] Could not send notification. Please validate your email settings, use the .env.example file as a guide.');
@@ -374,7 +374,7 @@ class UserEventHandler
         if ($sendMail) {
             try {
                 Notification::send($event->user, new UserRegistrationNotification());
-            } catch (\Exception $e) { // @phpstan-ignore-line
+            } catch (\Exception $e) {
                 $message = $e->getMessage();
                 if (str_contains($message, 'Bcc')) {
                     app('log')->warning('[Bcc] Could not send notification. Please validate your email settings, use the .env.example file as a guide.');
@@ -428,8 +428,8 @@ class UserEventHandler
         Log::debug(sprintf('Will send %s as a notification.', $class));
 
         try {
-            Notification::send($event->user, new $class($event->user));
-        } catch (\Exception $e) { // @phpstan-ignore-line
+            Notification::send($event->user, new $class());
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             if (str_contains($message, 'Bcc')) {
                 app('log')->warning('[Bcc] Could not send notification. Please validate your email settings, use the .env.example file as a guide.');

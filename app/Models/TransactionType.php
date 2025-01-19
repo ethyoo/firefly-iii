@@ -23,15 +23,13 @@ declare(strict_types=1);
 
 namespace FireflyIII\Models;
 
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Support\Models\ReturnsIntegerIdTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-/**
- * @mixin IdeHelperTransactionType
- */
 class TransactionType extends Model
 {
     use ReturnsIntegerIdTrait;
@@ -86,22 +84,22 @@ class TransactionType extends Model
 
     public function isDeposit(): bool
     {
-        return self::DEPOSIT === $this->type;
+        return TransactionTypeEnum::DEPOSIT->value === $this->type;
     }
 
     public function isOpeningBalance(): bool
     {
-        return self::OPENING_BALANCE === $this->type;
+        return TransactionTypeEnum::OPENING_BALANCE->value === $this->type;
     }
 
     public function isTransfer(): bool
     {
-        return self::TRANSFER === $this->type;
+        return TransactionTypeEnum::TRANSFER->value === $this->type;
     }
 
     public function isWithdrawal(): bool
     {
-        return self::WITHDRAWAL === $this->type;
+        return TransactionTypeEnum::WITHDRAWAL->value === $this->type;
     }
 
     public function transactionJournals(): HasMany

@@ -36,23 +36,16 @@ class UserTestNotificationEmail extends Notification
 {
     use Queueable;
 
-    private User $user;
-
-    public function __construct(User $user)
-    {
-        $this->user = $user;
-    }
-
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toArray(User $notifiable)
+    public function toArray(User $notifiable): array
     {
         return [
         ];
     }
 
-    public function toMail(User $notifiable)
+    public function toMail(User $notifiable): MailMessage
     {
         $address = (string) $notifiable->email;
 
@@ -63,9 +56,9 @@ class UserTestNotificationEmail extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function via(User $notifiable)
+    public function via(User $notifiable): array
     {
         return ['mail'];
     }

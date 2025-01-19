@@ -25,8 +25,10 @@ declare(strict_types=1);
 namespace FireflyIII\Transformers;
 
 use FireflyIII\Models\BudgetLimit;
+use FireflyIII\Models\TransactionCurrency;
 use FireflyIII\Repositories\Budget\BudgetLimitRepositoryInterface;
 use FireflyIII\Repositories\Budget\OperationsRepository;
+use FireflyIII\Support\Facades\Amount;
 use Illuminate\Support\Collection;
 use League\Fractal\Resource\Item;
 
@@ -39,6 +41,15 @@ class BudgetLimitTransformer extends AbstractTransformer
         = [
             'budget',
         ];
+
+    protected TransactionCurrency $default;
+    protected bool                $convertToNative;
+
+    public function __construct()
+    {
+        $this->default         = Amount::getNativeCurrency();
+        $this->convertToNative = Amount::convertToNative();
+    }
 
     /**
      * Include Budget
@@ -83,24 +94,34 @@ class BudgetLimitTransformer extends AbstractTransformer
             $currencyDecimalPlaces = $currency->decimal_places;
         }
         $amount                = app('steam')->bcround($amount, $currencyDecimalPlaces);
+        $default               = $this->default;
+        if (!$this->convertToNative) {
+            $default = null;
+        }
+
 
         return [
-            'id'                      => (string) $budgetLimit->id,
-            'created_at'              => $budgetLimit->created_at->toAtomString(),
-            'updated_at'              => $budgetLimit->updated_at->toAtomString(),
-            'start'                   => $budgetLimit->start_date->toAtomString(),
-            'end'                     => $budgetLimit->end_date->endOfDay()->toAtomString(),
-            'budget_id'               => (string) $budgetLimit->budget_id,
-            'currency_id'             => (string) $currencyId,
-            'currency_code'           => $currencyCode,
-            'currency_name'           => $currencyName,
-            'currency_decimal_places' => $currencyDecimalPlaces,
-            'currency_symbol'         => $currencySymbol,
-            'amount'                  => $amount,
-            'period'                  => $budgetLimit->period,
-            'spent'                   => $expenses[$currencyId]['sum'] ?? '0',
-            'notes'                   => '' === $notes ? null : $notes,
-            'links'                   => [
+            'id'                             => (string) $budgetLimit->id,
+            'created_at'                     => $budgetLimit->created_at->toAtomString(),
+            'updated_at'                     => $budgetLimit->updated_at->toAtomString(),
+            'start'                          => $budgetLimit->start_date->toAtomString(),
+            'end'                            => $budgetLimit->end_date->endOfDay()->toAtomString(),
+            'budget_id'                      => (string) $budgetLimit->budget_id,
+            'currency_id'                    => (string) $currencyId,
+            'currency_code'                  => $currencyCode,
+            'currency_name'                  => $currencyName,
+            'currency_decimal_places'        => $currencyDecimalPlaces,
+            'currency_symbol'                => $currencySymbol,
+            'native_currency_id'             => null === $default ? null : (string) $default->id,
+            'native_currency_code'           => $default?->code,
+            'native_currency_symbol'         => $default?->symbol,
+            'native_currency_decimal_places' => $default?->decimal_places,
+            'amount'                         => $amount,
+            'native_amount'                  => $this->convertToNative ? app('steam')->bcround($budgetLimit->native_amount, $default->decimal_places) : null,
+            'period'                         => $budgetLimit->period,
+            'spent'                          => $expenses[$currencyId]['sum'] ?? '0', // will be in native if convertToNative.
+            'notes'                          => '' === $notes ? null : $notes,
+            'links'                          => [
                 [
                     'rel' => 'self',
                     'uri' => '/budgets/limits/'.$budgetLimit->id,

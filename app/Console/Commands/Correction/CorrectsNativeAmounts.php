@@ -1,9 +1,9 @@
 <?php
 
-declare(strict_types=1);
+
 /*
- * RecalculateNativeAmounts.php
- * Copyright (c) 2024 james@firefly-iii.org.
+ * CorrectsNativeAmounts.php
+ * Copyright (c) 2025 james@firefly-iii.org.
  *
  * This file is part of Firefly III (https://github.com/firefly-iii).
  *
@@ -20,6 +20,8 @@ declare(strict_types=1);
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
+
+declare(strict_types=1);
 
 namespace FireflyIII\Console\Commands\Correction;
 
@@ -59,7 +61,7 @@ class CorrectsNativeAmounts extends Command
      */
     public function handle(): int
     {
-        if (!config('cer.enabled')) {
+        if (false === config('cer.enabled')) {
             $this->friendlyInfo('This command will not run because currency exchange rates are disabled.');
 
             return 0;
@@ -86,7 +88,7 @@ class CorrectsNativeAmounts extends Command
 
         // do a check with the group's currency so we can skip some stuff.
         Preferences::mark();
-        $currency = app('amount')->getDefaultCurrencyByUserGroup($userGroup);
+        $currency = app('amount')->getNativeCurrencyByUserGroup($userGroup);
 
         $this->recalculatePiggyBanks($userGroup, $currency);
         $this->recalculateBudgets($userGroup, $currency);
@@ -144,7 +146,7 @@ class CorrectsNativeAmounts extends Command
     {
         $set = $piggyBank->piggyBankEvents()->get();
         $set->each(
-            static function (PiggyBankEvent $event): void {
+            static function (PiggyBankEvent $event): void { // @phpstan-ignore-line
                 $event->touch();
             }
         );
@@ -234,8 +236,9 @@ class CorrectsNativeAmounts extends Command
         TransactionObserver::$recalculate = false;
         foreach ($set as $item) {
             // here we are.
+            /** @var null|Transaction $transaction */
             $transaction = Transaction::find($item->id);
-            $transaction->touch();
+            $transaction?->touch();
         }
         TransactionObserver::$recalculate = true;
         Log::debug(sprintf('Recalculated %d transactions.', $set->count()));

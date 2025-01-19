@@ -25,12 +25,12 @@ declare(strict_types=1);
 namespace FireflyIII\Console\Commands\Upgrade;
 
 use FireflyIII\Console\Commands\ShowsFriendlyMessages;
+use FireflyIII\Enums\AccountTypeEnum;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Models\Account;
-use FireflyIII\Models\AccountType;
 use FireflyIII\Models\Transaction;
 use FireflyIII\Models\TransactionCurrency;
 use FireflyIII\Models\TransactionJournal;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\Repositories\Journal\JournalCLIRepositoryInterface;
 use FireflyIII\Repositories\Journal\JournalRepositoryInterface;
@@ -103,7 +103,7 @@ class UpgradesVariousCurrencyInformation extends Command
     private function updateOtherJournalsCurrencies(): void
     {
         $set = $this->cliRepos->getAllJournals(
-            [TransactionType::WITHDRAWAL, TransactionType::DEPOSIT, TransactionType::OPENING_BALANCE, TransactionType::RECONCILIATION]
+            [TransactionTypeEnum::WITHDRAWAL->value, TransactionTypeEnum::DEPOSIT->value, TransactionTypeEnum::OPENING_BALANCE->value, TransactionTypeEnum::RECONCILIATION->value]
         );
 
         /** @var TransactionJournal $journal */
@@ -173,46 +173,47 @@ class UpgradesVariousCurrencyInformation extends Command
      */
     private function getLeadTransaction(TransactionJournal $journal): ?Transaction
     {
-        /** @var Transaction $lead */
+        /** @var null|Transaction $lead */
         $lead = null;
 
         switch ($journal->transactionType->type) {
             default:
                 break;
 
-            case TransactionType::WITHDRAWAL:
+            case TransactionTypeEnum::WITHDRAWAL->value:
                 $lead = $journal->transactions()->where('amount', '<', 0)->first();
 
                 break;
 
-            case TransactionType::DEPOSIT:
+            case TransactionTypeEnum::DEPOSIT->value:
                 $lead = $journal->transactions()->where('amount', '>', 0)->first();
 
                 break;
 
-            case TransactionType::OPENING_BALANCE:
+            case TransactionTypeEnum::OPENING_BALANCE->value:
                 // whichever isn't an initial balance account:
                 $lead = $journal->transactions()->leftJoin('accounts', 'transactions.account_id', '=', 'accounts.id')->leftJoin(
                     'account_types',
                     'accounts.account_type_id',
                     '=',
                     'account_types.id'
-                )->where('account_types.type', '!=', AccountType::INITIAL_BALANCE)->first(['transactions.*']);
+                )->where('account_types.type', '!=', AccountTypeEnum::INITIAL_BALANCE->value)->first(['transactions.*']);
 
                 break;
 
-            case TransactionType::RECONCILIATION:
+            case TransactionTypeEnum::RECONCILIATION->value:
                 // whichever isn't the reconciliation account:
                 $lead = $journal->transactions()->leftJoin('accounts', 'transactions.account_id', '=', 'accounts.id')->leftJoin(
                     'account_types',
                     'accounts.account_type_id',
                     '=',
                     'account_types.id'
-                )->where('account_types.type', '!=', AccountType::RECONCILIATION)->first(['transactions.*']);
+                )->where('account_types.type', '!=', AccountTypeEnum::RECONCILIATION->value)->first(['transactions.*']);
 
                 break;
         }
 
+        /** @var null|Transaction */
         return $lead;
     }
 
@@ -238,8 +239,8 @@ class UpgradesVariousCurrencyInformation extends Command
 
     private function isMultiCurrency(Account $account): bool
     {
-        $value = $this->accountRepos->getMetaValue($account, 'is_multi_currency', false);
-        if (false === $value || null === $value) {
+        $value = $this->accountRepos->getMetaValue($account, 'is_multi_currency');
+        if (null === $value) {
             return false;
         }
 

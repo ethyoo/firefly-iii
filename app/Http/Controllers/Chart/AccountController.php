@@ -25,13 +25,13 @@ namespace FireflyIII\Http\Controllers\Chart;
 
 use Carbon\Carbon;
 use FireflyIII\Enums\AccountTypeEnum;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Generator\Chart\Basic\GeneratorInterface;
 use FireflyIII\Helpers\Collector\GroupCollectorInterface;
 use FireflyIII\Http\Controllers\Controller;
 use FireflyIII\Models\Account;
 use FireflyIII\Models\TransactionCurrency;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\Repositories\UserGroups\Currency\CurrencyRepositoryInterface;
 use FireflyIII\Support\CacheProperties;
@@ -114,7 +114,7 @@ class AccountController extends Controller
 
         // loop the accounts, then check for balance and currency info.
         foreach ($accounts as $account) {
-            Log::debug(sprintf('Now in account #%d ("%s")', $account->id, $account->name));
+            // Log::debug(sprintf('[a] Now in account #%d ("%s")', $account->id, $account->name));
             $expenses = $endBalances[$account->id] ?? false;
             if (false === $expenses) {
                 Log::error(sprintf('Found no end balance for account #%d', $account->id));
@@ -137,13 +137,13 @@ class AccountController extends Controller
 
                     continue;
                 }
-                Log::debug(sprintf('Will process expense array "%s" with amount %s', $key, $endBalance));
+                // Log::debug(sprintf('Will process expense array "%s" with amount %s', $key, $endBalance));
                 $searchCode   = $this->convertToNative ? $this->defaultCurrency->code : $key;
-                Log::debug(sprintf('Search code is %s', $searchCode));
+                // Log::debug(sprintf('Search code is %s', $searchCode));
                 // see if there is an accompanying start amount.
                 // grab the difference and find the currency.
                 $startBalance = ($startBalances[$account->id][$key] ?? '0');
-                Log::debug(sprintf('Start balance is %s', $startBalance));
+                //                Log::debug(sprintf('Start balance is %s', $startBalance));
                 $diff         = bcsub($endBalance, $startBalance);
                 $currencies[$searchCode] ??= $this->currencyRepository->findByCode($searchCode);
                 if (0 !== bccomp($diff, '0')) {
@@ -225,7 +225,7 @@ class AccountController extends Controller
 
         /** @var GroupCollectorInterface $collector */
         $collector = app(GroupCollectorInterface::class);
-        $collector->setAccounts(new Collection([$account]))->setRange($start, $end)->withBudgetInformation()->setTypes([TransactionType::WITHDRAWAL]);
+        $collector->setAccounts(new Collection([$account]))->setRange($start, $end)->withBudgetInformation()->setTypes([TransactionTypeEnum::WITHDRAWAL->value]);
         $journals  = $collector->getExtractedJournals();
         $chartData = [];
         $result    = [];
@@ -290,7 +290,7 @@ class AccountController extends Controller
 
         /** @var GroupCollectorInterface $collector */
         $collector = app(GroupCollectorInterface::class);
-        $collector->setAccounts(new Collection([$account]))->setRange($start, $end)->withCategoryInformation()->setTypes([TransactionType::WITHDRAWAL]);
+        $collector->setAccounts(new Collection([$account]))->setRange($start, $end)->withCategoryInformation()->setTypes([TransactionTypeEnum::WITHDRAWAL->value]);
         $journals  = $collector->getExtractedJournals();
         $result    = [];
         $chartData = [];
@@ -376,7 +376,7 @@ class AccountController extends Controller
         /** @var GroupCollectorInterface $collector */
         $collector = app(GroupCollectorInterface::class);
 
-        $collector->setAccounts(new Collection([$account]))->setRange($start, $end)->withCategoryInformation()->setTypes([TransactionType::DEPOSIT]);
+        $collector->setAccounts(new Collection([$account]))->setRange($start, $end)->withCategoryInformation()->setTypes([TransactionTypeEnum::DEPOSIT->value]);
         $journals  = $collector->getExtractedJournals();
         $result    = [];
         $chartData = [];
@@ -573,7 +573,7 @@ class AccountController extends Controller
 
         // loop the accounts, then check for balance and currency info.
         foreach ($accounts as $account) {
-            Log::debug(sprintf('Now in account #%d ("%s")', $account->id, $account->name));
+            // Log::debug(sprintf('[b] Now in account #%d ("%s")', $account->id, $account->name));
             $expenses = $endBalances[$account->id] ?? false;
             if (false === $expenses) {
                 Log::error(sprintf('Found no end balance for account #%d', $account->id));
@@ -596,13 +596,13 @@ class AccountController extends Controller
 
                     continue;
                 }
-                Log::debug(sprintf('Will process expense array "%s" with amount %s', $key, $endBalance));
+                // Log::debug(sprintf('Will process expense array "%s" with amount %s', $key, $endBalance));
                 $searchCode   = $this->convertToNative ? $this->defaultCurrency->code : $key;
-                Log::debug(sprintf('Search code is %s', $searchCode));
+                // Log::debug(sprintf('Search code is %s', $searchCode));
                 // see if there is an accompanying start amount.
                 // grab the difference and find the currency.
                 $startBalance = ($startBalances[$account->id][$key] ?? '0');
-                Log::debug(sprintf('Start balance is %s', $startBalance));
+                // Log::debug(sprintf('Start balance is %s', $startBalance));
                 $diff         = bcsub($endBalance, $startBalance);
                 $currencies[$searchCode] ??= $this->currencyRepository->findByCode($searchCode);
                 if (0 !== bccomp($diff, '0')) {

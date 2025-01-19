@@ -26,9 +26,9 @@ namespace FireflyIII\Console\Commands\Correction;
 
 use FireflyIII\Console\Commands\ShowsFriendlyMessages;
 use FireflyIII\Enums\AccountTypeEnum;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Factory\AccountFactory;
-use FireflyIII\Models\AccountType;
 use FireflyIII\Models\Transaction;
 use FireflyIII\Models\TransactionJournal;
 use FireflyIII\Models\TransactionType;
@@ -111,6 +111,8 @@ class CorrectsAccountTypes extends Command
             $this->friendlyLine(sprintf('Found %d journals that need to be fixed.', $resultSet->count()));
             foreach ($resultSet as $entry) {
                 app('log')->debug(sprintf('Now fixing journal #%d', $entry->id));
+
+                /** @var null|TransactionJournal $journal */
                 $journal = TransactionJournal::find($entry->id);
                 if (null !== $journal) {
                     $this->inspectJournal($journal);
@@ -245,18 +247,18 @@ class CorrectsAccountTypes extends Command
 
     private function shouldBeTransfer(string $transactionType, string $sourceType, string $destinationType): bool
     {
-        return TransactionType::TRANSFER === $transactionType && AccountType::ASSET === $sourceType && $this->isLiability($destinationType);
+        return TransactionTypeEnum::TRANSFER->value === $transactionType && AccountTypeEnum::ASSET->value === $sourceType && $this->isLiability($destinationType);
     }
 
     private function isLiability(string $destinationType): bool
     {
-        return AccountType::LOAN === $destinationType || AccountType::DEBT === $destinationType || AccountType::MORTGAGE === $destinationType;
+        return AccountTypeEnum::LOAN->value === $destinationType || AccountTypeEnum::DEBT->value === $destinationType || AccountTypeEnum::MORTGAGE->value === $destinationType;
     }
 
     private function makeTransfer(TransactionJournal $journal): void
     {
         // from an asset to a liability should be a withdrawal:
-        $withdrawal = TransactionType::whereType(TransactionType::WITHDRAWAL)->first();
+        $withdrawal = TransactionType::whereType(TransactionTypeEnum::WITHDRAWAL->value)->first();
         $journal->transactionType()->associate($withdrawal);
         $journal->save();
         $message    = sprintf('Converted transaction #%d from a transfer to a withdrawal.', $journal->id);
@@ -268,13 +270,13 @@ class CorrectsAccountTypes extends Command
 
     private function shouldBeDeposit(string $transactionType, string $sourceType, string $destinationType): bool
     {
-        return TransactionType::TRANSFER === $transactionType && $this->isLiability($sourceType) && AccountType::ASSET === $destinationType;
+        return TransactionTypeEnum::TRANSFER->value === $transactionType && $this->isLiability($sourceType) && AccountTypeEnum::ASSET->value === $destinationType;
     }
 
     private function makeDeposit(TransactionJournal $journal): void
     {
         // from a liability to an asset should be a deposit.
-        $deposit = TransactionType::whereType(TransactionType::DEPOSIT)->first();
+        $deposit = TransactionType::whereType(TransactionTypeEnum::DEPOSIT->value)->first();
         $journal->transactionType()->associate($deposit);
         $journal->save();
         $message = sprintf('Converted transaction #%d from a transfer to a deposit.', $journal->id);
@@ -286,7 +288,7 @@ class CorrectsAccountTypes extends Command
 
     private function shouldGoToExpenseAccount(string $transactionType, string $sourceType, string $destinationType): bool
     {
-        return TransactionType::WITHDRAWAL === $transactionType && AccountType::ASSET === $sourceType && AccountType::REVENUE === $destinationType;
+        return TransactionTypeEnum::WITHDRAWAL->value === $transactionType && AccountTypeEnum::ASSET->value === $sourceType && AccountTypeEnum::REVENUE->value === $destinationType;
     }
 
     private function makeExpenseDestination(TransactionJournal $journal, Transaction $destination): void
@@ -294,7 +296,7 @@ class CorrectsAccountTypes extends Command
         // withdrawals with a revenue account as destination instead of an expense account.
         $this->factory->setUser($journal->user);
         $oldDest = $destination->account;
-        $result  = $this->factory->findOrCreate($destination->account->name, AccountType::EXPENSE);
+        $result  = $this->factory->findOrCreate($destination->account->name, AccountTypeEnum::EXPENSE->value);
         $destination->account()->associate($result);
         $destination->save();
         $message = sprintf(
@@ -312,7 +314,7 @@ class CorrectsAccountTypes extends Command
 
     private function shouldComeFromRevenueAccount(string $transactionType, string $sourceType, string $destinationType): bool
     {
-        return TransactionType::DEPOSIT === $transactionType && AccountType::EXPENSE === $sourceType && AccountType::ASSET === $destinationType;
+        return TransactionTypeEnum::DEPOSIT->value === $transactionType && AccountTypeEnum::EXPENSE->value === $sourceType && AccountTypeEnum::ASSET->value === $destinationType;
     }
 
     private function makeRevenueSource(TransactionJournal $journal, Transaction $source): void
@@ -320,7 +322,7 @@ class CorrectsAccountTypes extends Command
         // deposits with an expense account as source instead of a revenue account.
         // find revenue account.
         $this->factory->setUser($journal->user);
-        $result    = $this->factory->findOrCreate($source->account->name, AccountType::REVENUE);
+        $result    = $this->factory->findOrCreate($source->account->name, AccountTypeEnum::REVENUE->value);
         $oldSource = $source->account;
         $source->account()->associate($result);
         $source->save();

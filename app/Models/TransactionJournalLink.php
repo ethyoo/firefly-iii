@@ -30,9 +30,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-/**
- * @mixin IdeHelperTransactionJournalLink
- */
 class TransactionJournalLink extends Model
 {
     use ReturnsIntegerIdTrait;
@@ -43,7 +40,6 @@ class TransactionJournalLink extends Model
             'updated_at' => 'datetime',
         ];
 
-    /** @var string The table to store the data in */
     protected $table = 'journal_links';
 
     /**

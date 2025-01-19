@@ -24,7 +24,7 @@ declare(strict_types=1);
 
 namespace FireflyIII\Support\Http\Api;
 
-use FireflyIII\Models\TransactionType;
+use FireflyIII\Enums\TransactionTypeEnum;
 
 /**
  * Trait TransactionFilter
@@ -38,27 +38,27 @@ trait TransactionFilter
     {
         $types  = [
             'all'             => [
-                TransactionType::WITHDRAWAL,
-                TransactionType::DEPOSIT,
-                TransactionType::TRANSFER,
-                TransactionType::OPENING_BALANCE,
-                TransactionType::RECONCILIATION,
+                TransactionTypeEnum::WITHDRAWAL->value,
+                TransactionTypeEnum::DEPOSIT->value,
+                TransactionTypeEnum::TRANSFER->value,
+                TransactionTypeEnum::OPENING_BALANCE->value,
+                TransactionTypeEnum::RECONCILIATION->value,
             ],
-            'withdrawal'      => [TransactionType::WITHDRAWAL],
-            'withdrawals'     => [TransactionType::WITHDRAWAL],
-            'expense'         => [TransactionType::WITHDRAWAL],
-            'expenses'        => [TransactionType::WITHDRAWAL],
-            'income'          => [TransactionType::DEPOSIT],
-            'deposit'         => [TransactionType::DEPOSIT],
-            'deposits'        => [TransactionType::DEPOSIT],
-            'transfer'        => [TransactionType::TRANSFER],
-            'transfers'       => [TransactionType::TRANSFER],
-            'opening_balance' => [TransactionType::OPENING_BALANCE],
-            'reconciliation'  => [TransactionType::RECONCILIATION],
-            'reconciliations' => [TransactionType::RECONCILIATION],
-            'special'         => [TransactionType::OPENING_BALANCE, TransactionType::RECONCILIATION],
-            'specials'        => [TransactionType::OPENING_BALANCE, TransactionType::RECONCILIATION],
-            'default'         => [TransactionType::WITHDRAWAL, TransactionType::DEPOSIT, TransactionType::TRANSFER],
+            'withdrawal'      => [TransactionTypeEnum::WITHDRAWAL->value],
+            'withdrawals'     => [TransactionTypeEnum::WITHDRAWAL->value],
+            'expense'         => [TransactionTypeEnum::WITHDRAWAL->value],
+            'expenses'        => [TransactionTypeEnum::WITHDRAWAL->value],
+            'income'          => [TransactionTypeEnum::DEPOSIT->value],
+            'deposit'         => [TransactionTypeEnum::DEPOSIT->value],
+            'deposits'        => [TransactionTypeEnum::DEPOSIT->value],
+            'transfer'        => [TransactionTypeEnum::TRANSFER->value],
+            'transfers'       => [TransactionTypeEnum::TRANSFER->value],
+            'opening_balance' => [TransactionTypeEnum::OPENING_BALANCE->value],
+            'reconciliation'  => [TransactionTypeEnum::RECONCILIATION->value],
+            'reconciliations' => [TransactionTypeEnum::RECONCILIATION->value],
+            'special'         => [TransactionTypeEnum::OPENING_BALANCE->value, TransactionTypeEnum::RECONCILIATION->value],
+            'specials'        => [TransactionTypeEnum::OPENING_BALANCE->value, TransactionTypeEnum::RECONCILIATION->value],
+            'default'         => [TransactionTypeEnum::WITHDRAWAL->value, TransactionTypeEnum::DEPOSIT->value, TransactionTypeEnum::TRANSFER->value],
         ];
         $return = [];
         $parts  = explode(',', $type);

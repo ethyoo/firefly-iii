@@ -25,10 +25,10 @@ namespace FireflyIII\Models;
 
 use Carbon\Carbon;
 use FireflyIII\Casts\SeparateTimezoneCaster;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Support\Models\ReturnsIntegerIdTrait;
 use FireflyIII\Support\Models\ReturnsIntegerUserIdTrait;
 use FireflyIII\User;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -41,7 +41,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * @mixin IdeHelperTransactionJournal
+ * @method        EloquentBuilder|static before()
+ * @method        EloquentBuilder|static after()
+ * @method static EloquentBuilder|static query()
  */
 class TransactionJournal extends Model
 {
@@ -143,7 +145,7 @@ class TransactionJournal extends Model
     public function isTransfer(): bool
     {
         if (null !== $this->transaction_type_type) {
-            return TransactionType::TRANSFER === $this->transaction_type_type;
+            return TransactionTypeEnum::TRANSFER->value === $this->transaction_type_type;
         }
 
         return $this->transactionType->isTransfer();
@@ -190,7 +192,7 @@ class TransactionJournal extends Model
     /**
      * Checks if tables are joined.
      */
-    public static function isJoined(Builder $query, string $table): bool
+    public static function isJoined(EloquentBuilder $query, string $table): bool
     {
         $joins = $query->getQuery()->joins;
         foreach ($joins as $join) {

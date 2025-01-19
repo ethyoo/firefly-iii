@@ -34,7 +34,6 @@ use FireflyIII\Models\Transaction;
 use FireflyIII\Models\TransactionCurrency;
 use FireflyIII\Models\TransactionJournal;
 use FireflyIII\Models\TransactionJournalMeta;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\Repositories\Bill\BillRepositoryInterface;
 use FireflyIII\Repositories\Budget\BudgetRepositoryInterface;
@@ -54,7 +53,7 @@ use Illuminate\Support\Facades\Log;
 /**
  * Class TransactionJournalFactory
  *
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @SuppressWarnings("PHPMD.CouplingBetweenObjects")
  */
 class TransactionJournalFactory
 {
@@ -151,7 +150,7 @@ class TransactionJournalFactory
      * @throws DuplicateTransactionException
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings("PHPMD.ExcessiveMethodLength")
      */
     private function createJournal(NullArrayObject $row): ?TransactionJournal
     {
@@ -166,7 +165,7 @@ class TransactionJournalFactory
         $currency              = $this->currencyRepository->findCurrency((int) $row['currency_id'], $row['currency_code']);
         $foreignCurrency       = $this->currencyRepository->findCurrencyNull($row['foreign_currency_id'], $row['foreign_currency_code']);
         $bill                  = $this->billRepository->findBill((int) $row['bill_id'], $row['bill_name']);
-        $billId                = TransactionType::WITHDRAWAL === $type->type && null !== $bill ? $bill->id : null;
+        $billId                = TransactionTypeEnum::WITHDRAWAL->value === $type->type && null !== $bill ? $bill->id : null;
         $description           = (string) $row['description'];
 
         // Manipulate basic fields
@@ -174,7 +173,7 @@ class TransactionJournalFactory
 
         // 2024-11-19, overrule timezone with UTC and store it as UTC.
 
-        if (FireflyConfig::get('utc', false)->data) {
+        if (true === FireflyConfig::get('utc', false)->data) {
             $carbon->setTimezone('UTC');
         }
         // $carbon->setTimezone('UTC');
@@ -279,7 +278,7 @@ class TransactionJournalFactory
         $amount                = (string) $row['amount'];
         $foreignAmount         = (string) $row['foreign_amount'];
         if (null !== $foreignCurrency && $foreignCurrency->id !== $currency->id
-            && TransactionType::TRANSFER === $type->type
+            && TransactionTypeEnum::TRANSFER->value === $type->type
         ) {
             $transactionFactory->setCurrency($foreignCurrency);
             $transactionFactory->setForeignCurrency($currency);
@@ -423,7 +422,7 @@ class TransactionJournalFactory
 
             return [$sourceAccount, $destinationAccount];
         }
-        if (null === $destinationAccount) { // @phpstan-ignore-line
+        if (null === $destinationAccount) {
             app('log')->debug('Destination account is NULL, source account is not.');
             $account = $this->accountRepository->getReconciliation($sourceAccount);
             app('log')->debug(sprintf('Will return account #%d ("%s") of type "%s"', $account->id, $account->name, $account->accountType->type));
@@ -451,8 +450,8 @@ class TransactionJournalFactory
         app('log')->debug('Now in getCurrencyByAccount()');
 
         return match ($type) {
-            default                  => $this->getCurrency($currency, $source),
-            TransactionType::DEPOSIT => $this->getCurrency($currency, $destination),
+            default                             => $this->getCurrency($currency, $source),
+            TransactionTypeEnum::DEPOSIT->value => $this->getCurrency($currency, $destination),
         };
     }
 
@@ -467,7 +466,7 @@ class TransactionJournalFactory
         $preference = $this->accountRepository->getAccountCurrency($account);
         if (null === $preference && null === $currency) {
             // return user's default:
-            return app('amount')->getDefaultCurrencyByUserGroup($this->user->userGroup);
+            return app('amount')->getNativeCurrencyByUserGroup($this->user->userGroup);
         }
         $result     = $preference ?? $currency;
         app('log')->debug(sprintf('Currency is now #%d (%s) because of account #%d (%s)', $result->id, $result->code, $account->id, $account->name));
@@ -495,7 +494,7 @@ class TransactionJournalFactory
      */
     private function getForeignByAccount(string $type, ?TransactionCurrency $foreignCurrency, Account $destination): ?TransactionCurrency
     {
-        if (TransactionType::TRANSFER === $type) {
+        if (TransactionTypeEnum::TRANSFER->value === $type) {
             return $this->getCurrency($foreignCurrency, $destination);
         }
 

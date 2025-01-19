@@ -38,8 +38,8 @@ use Route;
 /**
  * Class Controller.
  *
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- * @SuppressWarnings(PHPMD.NumberOfChildren)
+ * @SuppressWarnings("PHPMD.CouplingBetweenObjects")
+ * @SuppressWarnings("PHPMD.NumberOfChildren")
  */
 abstract class Controller extends BaseController
 {
@@ -118,7 +118,7 @@ abstract class Controller extends BaseController
                 $this->defaultCurrency   =null;
                 // get shown-intro-preference:
                 if (auth()->check()) {
-                    $this->defaultCurrency   = Amount::getDefaultCurrency();
+                    $this->defaultCurrency   = Amount::getNativeCurrency();
                     $language  = Steam::getLanguage();
                     $locale    = Steam::getLocale();
                     $darkMode  = app('preferences')->get('darkMode', 'browser')->data;

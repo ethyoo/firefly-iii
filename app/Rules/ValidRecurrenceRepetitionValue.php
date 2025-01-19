@@ -33,7 +33,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 class ValidRecurrenceRepetitionValue implements ValidationRule
 {
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function validate(string $attribute, mixed $value, \Closure $fail): void
     {
@@ -79,8 +79,8 @@ class ValidRecurrenceRepetitionValue implements ValidationRule
         if (2 !== count($parameters)) {
             return false;
         }
-        $nthDay     = (int) ($parameters[0] ?? 0.0);
-        $dayOfWeek  = (int) ($parameters[1] ?? 0.0);
+        $nthDay     = (int) $parameters[0];
+        $dayOfWeek  = (int) $parameters[1];
         if ($nthDay < 1 || $nthDay > 5) {
             return false;
         }
@@ -102,7 +102,7 @@ class ValidRecurrenceRepetitionValue implements ValidationRule
 
         try {
             Carbon::createFromFormat('Y-m-d', $dateString);
-        } catch (\InvalidArgumentException $e) { // @phpstan-ignore-line
+        } catch (\InvalidArgumentException $e) {
             app('log')->debug(sprintf('Could not parse date %s: %s', $dateString, $e->getMessage()));
 
             return false;

@@ -24,7 +24,7 @@ declare(strict_types=1);
 
 namespace FireflyIII\Support\Http\Api;
 
-use FireflyIII\Models\AccountType;
+use FireflyIII\Enums\AccountTypeEnum;
 use Illuminate\Support\Collection;
 
 trait CollectsAccountsFromFilter
@@ -52,7 +52,7 @@ trait CollectsAccountsFromFilter
         }
         // if no preselected, but no accounts:
         if ('empty' === $queryParameters['preselected'] && 0 === $collection->count()) {
-            $defaultSet = $this->repository->getAccountsByType([AccountType::ASSET, AccountType::DEFAULT])->pluck('id')->toArray();
+            $defaultSet = $this->repository->getAccountsByType([AccountTypeEnum::ASSET->value, AccountTypeEnum::DEFAULT->value])->pluck('id')->toArray();
             $frontpage  = app('preferences')->get('frontpageAccounts', $defaultSet);
 
             if (!(is_array($frontpage->data) && count($frontpage->data) > 0)) {
@@ -65,13 +65,13 @@ trait CollectsAccountsFromFilter
 
         // both options are overruled by "preselected"
         if ('all' === $queryParameters['preselected']) {
-            return $this->repository->getAccountsByType([AccountType::ASSET, AccountType::DEFAULT, AccountType::LOAN, AccountType::DEBT, AccountType::MORTGAGE]);
+            return $this->repository->getAccountsByType([AccountTypeEnum::ASSET->value, AccountTypeEnum::DEFAULT->value, AccountTypeEnum::LOAN->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::MORTGAGE->value]);
         }
         if ('assets' === $queryParameters['preselected']) {
-            return $this->repository->getAccountsByType([AccountType::ASSET, AccountType::DEFAULT]);
+            return $this->repository->getAccountsByType([AccountTypeEnum::ASSET->value, AccountTypeEnum::DEFAULT->value]);
         }
         if ('liabilities' === $queryParameters['preselected']) {
-            return $this->repository->getAccountsByType([AccountType::LOAN, AccountType::DEBT, AccountType::MORTGAGE]);
+            return $this->repository->getAccountsByType([AccountTypeEnum::LOAN->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::MORTGAGE->value]);
         }
 
         return $collection;

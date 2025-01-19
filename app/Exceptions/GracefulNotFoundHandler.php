@@ -24,12 +24,12 @@ declare(strict_types=1);
 
 namespace FireflyIII\Exceptions;
 
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Models\Account;
 use FireflyIII\Models\Attachment;
 use FireflyIII\Models\Bill;
 use FireflyIII\Models\TransactionGroup;
 use FireflyIII\Models\TransactionJournal;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\User;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Request;
@@ -47,7 +47,7 @@ class GracefulNotFoundHandler extends ExceptionHandler
      *
      * @throws \Throwable
      *
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings("PHPMD.CyclomaticComplexity")
      */
     public function render($request, \Throwable $e): Response
     {
@@ -208,7 +208,7 @@ class GracefulNotFoundHandler extends ExceptionHandler
         $type    = $journal->transactionType->type;
         $request->session()->reflash();
 
-        if (TransactionType::RECONCILIATION === $type) {
+        if (TransactionTypeEnum::RECONCILIATION->value === $type) {
             return redirect(route('accounts.index', ['asset']));
         }
 

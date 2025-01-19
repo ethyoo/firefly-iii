@@ -24,6 +24,7 @@ declare(strict_types=1);
 
 namespace FireflyIII\TransactionRules\Actions;
 
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Events\Model\Rule\RuleActionFailedOnArray;
 use FireflyIII\Events\Model\Rule\RuleActionFailedOnObject;
 use FireflyIII\Events\TriggeredAuditLog;
@@ -51,8 +52,8 @@ class ConvertToTransfer implements ActionInterface
     }
 
     /**
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
-     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings("PHPMD.ExcessiveMethodLength")
+     * @SuppressWarnings("PHPMD.NPathComplexity")
      */
     public function actOnArray(array $journal): bool
     {
@@ -78,7 +79,7 @@ class ConvertToTransfer implements ActionInterface
         $type         = $object->transactionType->type;
         $user         = $object->user;
         $journalId    = $object->id;
-        if (TransactionType::TRANSFER === $type) {
+        if (TransactionTypeEnum::TRANSFER->value === $type) {
             app('log')->error(
                 sprintf('Journal #%d is already a transfer so cannot be converted (rule #%d).', $object->id, $this->action->rule_id)
             );
@@ -86,7 +87,7 @@ class ConvertToTransfer implements ActionInterface
 
             return false;
         }
-        if (TransactionType::DEPOSIT !== $type && TransactionType::WITHDRAWAL !== $type) {
+        if (TransactionTypeEnum::DEPOSIT->value !== $type && TransactionTypeEnum::WITHDRAWAL->value !== $type) {
             event(new RuleActionFailedOnArray($this->action, $journal, trans('rules.unsupported_transaction_type_transfer', ['type' => $type])));
 
             return false;
@@ -97,11 +98,11 @@ class ConvertToTransfer implements ActionInterface
         $repository   = app(AccountRepositoryInterface::class);
         $repository->setUser($user);
         $expectedType = null;
-        if (TransactionType::WITHDRAWAL === $type) {
+        if (TransactionTypeEnum::WITHDRAWAL->value === $type) {
             $expectedType = $this->getSourceType($journalId);
             // Withdrawal? Replace destination with account with same type as source.
         }
-        if (TransactionType::DEPOSIT === $type) {
+        if (TransactionTypeEnum::DEPOSIT->value === $type) {
             $expectedType = $this->getDestinationType($journalId);
             // Deposit? Replace source with account with same type as destination.
         }
@@ -122,7 +123,7 @@ class ConvertToTransfer implements ActionInterface
             return false;
         }
 
-        if (TransactionType::WITHDRAWAL === $type) {
+        if (TransactionTypeEnum::WITHDRAWAL->value === $type) {
             app('log')->debug('Going to transform a withdrawal to a transfer.');
 
             try {
@@ -135,7 +136,7 @@ class ConvertToTransfer implements ActionInterface
                 return false;
             }
             if (false !== $res) {
-                event(new TriggeredAuditLog($this->action->rule, $object, 'update_transaction_type', TransactionType::WITHDRAWAL, TransactionType::TRANSFER));
+                event(new TriggeredAuditLog($this->action->rule, $object, 'update_transaction_type', TransactionTypeEnum::WITHDRAWAL->value, TransactionTypeEnum::TRANSFER->value));
             }
 
             return $res;
@@ -153,7 +154,7 @@ class ConvertToTransfer implements ActionInterface
             return false;
         }
         if (false !== $res) {
-            event(new TriggeredAuditLog($this->action->rule, $object, 'update_transaction_type', TransactionType::DEPOSIT, TransactionType::TRANSFER));
+            event(new TriggeredAuditLog($this->action->rule, $object, 'update_transaction_type', TransactionTypeEnum::DEPOSIT->value, TransactionTypeEnum::TRANSFER->value));
         }
 
         return $res;
@@ -215,7 +216,7 @@ class ConvertToTransfer implements ActionInterface
         ;
 
         // change transaction type of journal:
-        $newType       = TransactionType::whereType(TransactionType::TRANSFER)->first();
+        $newType       = TransactionType::whereType(TransactionTypeEnum::TRANSFER->value)->first();
 
         \DB::table('transaction_journals')
             ->where('id', '=', $journal->id)
@@ -270,7 +271,7 @@ class ConvertToTransfer implements ActionInterface
         ;
 
         // change transaction type of journal:
-        $newType     = TransactionType::whereType(TransactionType::TRANSFER)->first();
+        $newType     = TransactionType::whereType(TransactionTypeEnum::TRANSFER->value)->first();
 
         \DB::table('transaction_journals')
             ->where('id', '=', $journal->id)

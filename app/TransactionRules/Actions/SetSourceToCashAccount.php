@@ -24,12 +24,12 @@ declare(strict_types=1);
 
 namespace FireflyIII\TransactionRules\Actions;
 
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Events\Model\Rule\RuleActionFailedOnArray;
 use FireflyIII\Events\TriggeredAuditLog;
 use FireflyIII\Models\RuleAction;
 use FireflyIII\Models\Transaction;
 use FireflyIII\Models\TransactionJournal;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\User;
 
@@ -64,7 +64,7 @@ class SetSourceToCashAccount implements ActionInterface
             return false;
         }
         $type        = $object->transactionType->type;
-        if (TransactionType::DEPOSIT !== $type) {
+        if (TransactionTypeEnum::DEPOSIT->value !== $type) {
             app('log')->error('Transaction must be deposit.');
             event(new RuleActionFailedOnArray($this->action, $journal, trans('rules.not_deposit')));
 

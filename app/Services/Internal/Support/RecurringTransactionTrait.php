@@ -24,6 +24,7 @@ declare(strict_types=1);
 
 namespace FireflyIII\Services\Internal\Support;
 
+use FireflyIII\Enums\AccountTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Factory\AccountFactory;
 use FireflyIII\Factory\BillFactory;
@@ -32,7 +33,6 @@ use FireflyIII\Factory\CategoryFactory;
 use FireflyIII\Factory\PiggyBankFactory;
 use FireflyIII\Factory\TransactionCurrencyFactory;
 use FireflyIII\Models\Account;
-use FireflyIII\Models\AccountType;
 use FireflyIII\Models\Note;
 use FireflyIII\Models\Recurrence;
 use FireflyIII\Models\RecurrenceMeta;
@@ -90,7 +90,7 @@ trait RecurringTransactionTrait
      *
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings("PHPMD.NPathComplexity")
      */
     protected function createTransactions(Recurrence $recurrence, array $transactions): void
     {
@@ -107,7 +107,7 @@ trait RecurringTransactionTrait
             $currency        = $factory->find($array['currency_id'] ?? null, $array['currency_code'] ?? null);
             $foreignCurrency = $factory->find($array['foreign_currency_id'] ?? null, $array['foreign_currency_code'] ?? null);
             if (null === $currency) {
-                $currency = app('amount')->getDefaultCurrencyByUserGroup($recurrence->user->userGroup);
+                $currency = app('amount')->getNativeCurrencyByUserGroup($recurrence->user->userGroup);
             }
 
             app('log')->debug(
@@ -189,7 +189,7 @@ trait RecurringTransactionTrait
         }
 
         // maybe we can create it? Try to avoid LOAN and other asset types.
-        $cannotCreate = [AccountType::ASSET, AccountType::DEBT, AccountType::LOAN, AccountType::MORTGAGE, AccountType::CREDITCARD];
+        $cannotCreate = [AccountTypeEnum::ASSET->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::LOAN->value, AccountTypeEnum::MORTGAGE->value, AccountTypeEnum::CREDITCARD->value];
 
         /** @var AccountFactory $factory */
         $factory      = app(AccountFactory::class);

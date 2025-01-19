@@ -25,9 +25,9 @@ declare(strict_types=1);
 namespace FireflyIII\Support\Http\Api;
 
 use Carbon\Carbon;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Models\TransactionCurrency;
-use FireflyIII\Models\TransactionType;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
@@ -219,13 +219,13 @@ class AccountBalanceGrouped
         // deposit = incoming
         // transfer or reconcile or opening balance, and these accounts are the destination.
         if (
-            TransactionType::DEPOSIT === $journal['transaction_type_type']
+            TransactionTypeEnum::DEPOSIT->value === $journal['transaction_type_type']
 
             || (
                 (
-                    TransactionType::TRANSFER === $journal['transaction_type_type']
-                    || TransactionType::RECONCILIATION === $journal['transaction_type_type']
-                    || TransactionType::OPENING_BALANCE === $journal['transaction_type_type']
+                    TransactionTypeEnum::TRANSFER->value === $journal['transaction_type_type']
+                    || TransactionTypeEnum::RECONCILIATION->value === $journal['transaction_type_type']
+                    || TransactionTypeEnum::OPENING_BALANCE->value === $journal['transaction_type_type']
                 )
                 && in_array($journal['destination_account_id'], $this->accountIds, true)
             )

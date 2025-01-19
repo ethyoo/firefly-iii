@@ -25,13 +25,13 @@ declare(strict_types=1);
 namespace FireflyIII\Support\Search;
 
 use Carbon\Carbon;
+use FireflyIII\Enums\AccountTypeEnum;
 use FireflyIII\Enums\SearchDirection;
 use FireflyIII\Enums\StringPosition;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Helpers\Collector\GroupCollectorInterface;
 use FireflyIII\Models\Account;
 use FireflyIII\Models\AccountMeta;
-use FireflyIII\Models\AccountType;
 use FireflyIII\Models\TransactionCurrency;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\Repositories\Bill\BillRepositoryInterface;
@@ -39,29 +39,20 @@ use FireflyIII\Repositories\Budget\BudgetRepositoryInterface;
 use FireflyIII\Repositories\Category\CategoryRepositoryInterface;
 use FireflyIII\Repositories\Tag\TagRepositoryInterface;
 use FireflyIII\Repositories\UserGroups\Currency\CurrencyRepositoryInterface;
+use FireflyIII\Support\Search\QueryParser\QueryParserInterface;
+use FireflyIII\Support\Search\QueryParser\Node;
+use FireflyIII\Support\Search\QueryParser\FieldNode;
+use FireflyIII\Support\Search\QueryParser\StringNode;
+use FireflyIII\Support\Search\QueryParser\NodeGroup;
 use FireflyIII\Support\ParseDateString;
 use FireflyIII\User;
-use Gdbots\QueryParser\Enum\BoolOperator;
-use Gdbots\QueryParser\Node\Date;
-use Gdbots\QueryParser\Node\Emoji;
-use Gdbots\QueryParser\Node\Emoticon;
-use Gdbots\QueryParser\Node\Field;
-use Gdbots\QueryParser\Node\Hashtag;
-use Gdbots\QueryParser\Node\Mention;
-use Gdbots\QueryParser\Node\Node;
-use Gdbots\QueryParser\Node\Numbr;
-use Gdbots\QueryParser\Node\Phrase;
-use Gdbots\QueryParser\Node\Subquery;
-use Gdbots\QueryParser\Node\Url;
-use Gdbots\QueryParser\Node\Word;
-use Gdbots\QueryParser\QueryParser;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 /**
  * Class OperatorQuerySearch
  *
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @SuppressWarnings("PHPMD.CouplingBetweenObjects")
  */
 class OperatorQuerySearch implements SearchInterface
 {
@@ -131,6 +122,16 @@ class OperatorQuerySearch implements SearchInterface
         return implode(' ', $this->words);
     }
 
+    public function getWords(): array
+    {
+        return $this->words;
+    }
+
+    public function getExcludedWords(): array
+    {
+        return $this->prohibitedWords;
+    }
+
     /**
      * @throws FireflyException
      */
@@ -144,11 +145,14 @@ class OperatorQuerySearch implements SearchInterface
      */
     public function parseQuery(string $query): void
     {
-        app('log')->debug(sprintf('Now in parseQuery(%s)', $query));
-        $parser = new QueryParser();
+        app('log')->debug(sprintf('Now in parseQuery("%s")', $query));
+
+        /** @var QueryParserInterface $parser */
+        $parser = app(QueryParserInterface::class);
+        app('log')->debug(sprintf('Using %s as implementation for QueryParserInterface', get_class($parser)));
 
         try {
-            $query1 = $parser->parse($query);
+            $parsedQuery = $parser->parse($query);
         } catch (\LogicException|\TypeError $e) {
             app('log')->error($e->getMessage());
             app('log')->error(sprintf('Could not parse search: "%s".', $query));
@@ -156,10 +160,8 @@ class OperatorQuerySearch implements SearchInterface
             throw new FireflyException(sprintf('Invalid search value "%s". See the logs.', e($query)), 0, $e);
         }
 
-        app('log')->debug(sprintf('Found %d node(s)', count($query1->getNodes())));
-        foreach ($query1->getNodes() as $searchNode) {
-            $this->handleSearchNode($searchNode);
-        }
+        app('log')->debug(sprintf('Found %d node(s) at top-level', count($parsedQuery->getNodes())));
+        $this->handleSearchNode($parsedQuery, $parsedQuery->isProhibited(false));
 
         // add missing information
         $this->collector->withBillInformation();
@@ -171,91 +173,108 @@ class OperatorQuerySearch implements SearchInterface
     /**
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings("PHPMD.CyclomaticComplexity")
      */
-    private function handleSearchNode(Node $searchNode): void
+    private function handleSearchNode(Node $node, bool $flipProhibitedFlag): void
     {
-        $class = get_class($searchNode);
-        app('log')->debug(sprintf('Now in handleSearchNode(%s)', $class));
+        app('log')->debug(sprintf('Now in handleSearchNode(%s)', get_class($node)));
 
-        switch ($class) {
+        switch (true) {
+            case $node instanceof StringNode:
+                $this->handleStringNode($node, $flipProhibitedFlag);
+
+                break;
+
+            case $node instanceof FieldNode:
+                $this->handleFieldNode($node, $flipProhibitedFlag);
+
+                break;
+
+            case $node instanceof NodeGroup:
+                $this->handleNodeGroup($node, $flipProhibitedFlag);
+
+                break;
+
             default:
-                app('log')->error(sprintf('Cannot handle node %s', $class));
+                app('log')->error(sprintf('Cannot handle node %s', get_class($node)));
 
-                throw new FireflyException(sprintf('Firefly III search can\'t handle "%s"-nodes', $class));
+                throw new FireflyException(sprintf('Firefly III search can\'t handle "%s"-nodes', get_class($node)));
+        }
+    }
 
-            case Subquery::class:
-                // loop all notes in subquery:
-                foreach ($searchNode->getNodes() as $subNode) { // @phpstan-ignore-line PHPStan thinks getNodes() does not exist but it does.
-                    $this->handleSearchNode($subNode);          // let's hope it's not too recursive
-                }
+    private function handleNodeGroup(NodeGroup $node, bool $flipProhibitedFlag): void
+    {
+        $prohibited = $node->isProhibited($flipProhibitedFlag);
 
-                break;
+        foreach ($node->getNodes() as $subNode) {
+            $this->handleSearchNode($subNode, $prohibited);
+        }
+    }
 
-            case Word::class:
-            case Phrase::class:
-            case Numbr::class:
-            case Url::class:
-            case Date::class:
-            case Hashtag::class:
-            case Emoticon::class:
-            case Emoji::class:
-            case Mention::class:
-                $allWords      = (string) $searchNode->getValue();
-                app('log')->debug(sprintf('Add words "%s" to search string, because Node class is "%s"', $allWords, $class));
-                $this->words[] = $allWords;
+    private function handleStringNode(StringNode $node, bool $flipProhibitedFlag): void
+    {
+        $string     = $node->getValue();
 
-                break;
+        $prohibited = $node->isProhibited($flipProhibitedFlag);
 
-            case Field::class:
-                app('log')->debug(sprintf('Now handle Node class %s', $class));
+        if ($prohibited) {
+            app('log')->debug(sprintf('Exclude string "%s" from search string', $string));
+            $this->prohibitedWords[] = $string;
+        }
+        if (!$prohibited) {
+            app('log')->debug(sprintf('Add string "%s" to search string', $string));
+            $this->words[] = $string;
+        }
+    }
 
-                /** @var Field $searchNode */
-                // used to search for x:y
-                $operator      = strtolower($searchNode->getValue());
-                $value         = $searchNode->getNode()->getValue();
-                $prohibited    = BoolOperator::PROHIBITED === $searchNode->getBoolOperator();
-                $context       = config(sprintf('search.operators.%s.needs_context', $operator));
+    /**
+     * @throws FireflyException
+     */
+    private function handleFieldNode(FieldNode $node, bool $flipProhibitedFlag): void
+    {
+        $operator   = strtolower($node->getOperator());
+        $value      = $node->getValue();
+        $prohibited = $node->isProhibited($flipProhibitedFlag);
 
-                // is an operator that needs no context, and value is false, then prohibited = true.
-                if ('false' === $value && in_array($operator, $this->validOperators, true) && false === $context && !$prohibited) {
-                    $prohibited = true;
-                    $value      = 'true';
-                }
-                // if the operator is prohibited, but the value is false, do an uno reverse
-                if ('false' === $value && $prohibited && in_array($operator, $this->validOperators, true) && false === $context) {
-                    $prohibited = false;
-                    $value      = 'true';
-                }
+        $context    = config(sprintf('search.operators.%s.needs_context', $operator));
 
-                // must be valid operator:
-                if (
-                    in_array($operator, $this->validOperators, true)
-                    && $this->updateCollector($operator, (string) $value, $prohibited)) {
-                    $this->operators->push(
-                        [
-                            'type'       => self::getRootOperator($operator),
-                            'value'      => (string) $value,
-                            'prohibited' => $prohibited,
-                        ]
-                    );
-                    app('log')->debug(sprintf('Added operator type "%s"', $operator));
-                }
-                if (!in_array($operator, $this->validOperators, true)) {
-                    app('log')->debug(sprintf('Added INVALID operator type "%s"', $operator));
-                    $this->invalidOperators[] = [
-                        'type'  => $operator,
-                        'value' => (string) $value,
-                    ];
-                }
+        // is an operator that needs no context, and value is false, then prohibited = true.
+        if ('false' === $value && in_array($operator, $this->validOperators, true) && false === $context && !$prohibited) {
+            $prohibited = true;
+            $value      = 'true';
+        }
+        // if the operator is prohibited, but the value is false, do an uno reverse
+        if ('false' === $value && $prohibited && in_array($operator, $this->validOperators, true) && false === $context) {
+            $prohibited = false;
+            $value      = 'true';
+        }
+
+        // must be valid operator:
+        $inArray    = in_array($operator, $this->validOperators, true);
+        if ($inArray) {
+            if ($this->updateCollector($operator, $value, $prohibited)) {
+                $this->operators->push([
+                    'type'       => self::getRootOperator($operator),
+                    'value'      => $value,
+                    'prohibited' => $prohibited,
+                ]);
+                app('log')->debug(sprintf('Added operator type "%s"', $operator));
+            }
+        }
+        if (!$inArray) {
+            app('log')->debug(sprintf('Added INVALID operator type "%s"', $operator));
+            $this->invalidOperators[] = [
+                'type'  => $operator,
+                'value' => $value,
+            ];
         }
     }
 
     /**
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings("PHPMD.ExcessiveMethodLength")
+     * @SuppressWarnings("PHPMD.CyclomaticComplexity")
      */
     private function updateCollector(string $operator, string $value, bool $prohibited): bool
     {
@@ -1930,15 +1949,15 @@ class OperatorQuerySearch implements SearchInterface
      * searchDirection: 1 = source (default), 2 = destination, 3 = both
      * stringPosition: 1 = start (default), 2 = end, 3 = contains, 4 = is
      *
-     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
-     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings("PHPMD.BooleanArgumentFlag")
+     * @SuppressWarnings("PHPMD.NPathComplexity")
      */
     private function searchAccount(string $value, SearchDirection $searchDirection, StringPosition $stringPosition, bool $prohibited = false): void
     {
         app('log')->debug(sprintf('searchAccount("%s", %s, %s)', $value, $stringPosition->name, $searchDirection->name));
 
         // search direction (default): for source accounts
-        $searchTypes     = [AccountType::ASSET, AccountType::MORTGAGE, AccountType::LOAN, AccountType::DEBT, AccountType::REVENUE];
+        $searchTypes     = [AccountTypeEnum::ASSET->value, AccountTypeEnum::MORTGAGE->value, AccountTypeEnum::LOAN->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::REVENUE->value];
         $collectorMethod = 'setSourceAccounts';
         if ($prohibited) {
             $collectorMethod = 'excludeSourceAccounts';
@@ -1947,7 +1966,7 @@ class OperatorQuerySearch implements SearchInterface
         // search direction: for destination accounts
         if (SearchDirection::DESTINATION === $searchDirection) { // destination
             // destination can be
-            $searchTypes     = [AccountType::ASSET, AccountType::MORTGAGE, AccountType::LOAN, AccountType::DEBT, AccountType::EXPENSE];
+            $searchTypes     = [AccountTypeEnum::ASSET->value, AccountTypeEnum::MORTGAGE->value, AccountTypeEnum::LOAN->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::EXPENSE->value];
             $collectorMethod = 'setDestinationAccounts';
             if ($prohibited) {
                 $collectorMethod = 'excludeDestinationAccounts';
@@ -1955,7 +1974,7 @@ class OperatorQuerySearch implements SearchInterface
         }
         // either account could be:
         if (SearchDirection::BOTH === $searchDirection) {
-            $searchTypes     = [AccountType::ASSET, AccountType::MORTGAGE, AccountType::LOAN, AccountType::DEBT, AccountType::EXPENSE, AccountType::REVENUE];
+            $searchTypes     = [AccountTypeEnum::ASSET->value, AccountTypeEnum::MORTGAGE->value, AccountTypeEnum::LOAN->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::EXPENSE->value, AccountTypeEnum::REVENUE->value];
             $collectorMethod = 'setAccounts';
             if ($prohibited) {
                 $collectorMethod = 'excludeAccounts';
@@ -2010,15 +2029,15 @@ class OperatorQuerySearch implements SearchInterface
      * searchDirection: 1 = source (default), 2 = destination, 3 = both
      * stringPosition: 1 = start (default), 2 = end, 3 = contains, 4 = is
      *
-     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
-     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings("PHPMD.BooleanArgumentFlag")
+     * @SuppressWarnings("PHPMD.NPathComplexity")
      */
     private function searchAccountNr(string $value, SearchDirection $searchDirection, StringPosition $stringPosition, bool $prohibited = false): void
     {
         app('log')->debug(sprintf('searchAccountNr(%s, %d, %d)', $value, $searchDirection->name, $stringPosition->name));
 
         // search direction (default): for source accounts
-        $searchTypes     = [AccountType::ASSET, AccountType::MORTGAGE, AccountType::LOAN, AccountType::DEBT, AccountType::REVENUE];
+        $searchTypes     = [AccountTypeEnum::ASSET->value, AccountTypeEnum::MORTGAGE->value, AccountTypeEnum::LOAN->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::REVENUE->value];
         $collectorMethod = 'setSourceAccounts';
         if (true === $prohibited) {
             $collectorMethod = 'excludeSourceAccounts';
@@ -2027,7 +2046,7 @@ class OperatorQuerySearch implements SearchInterface
         // search direction: for destination accounts
         if (SearchDirection::DESTINATION === $searchDirection) {
             // destination can be
-            $searchTypes     = [AccountType::ASSET, AccountType::MORTGAGE, AccountType::LOAN, AccountType::DEBT, AccountType::EXPENSE];
+            $searchTypes     = [AccountTypeEnum::ASSET->value, AccountTypeEnum::MORTGAGE->value, AccountTypeEnum::LOAN->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::EXPENSE->value];
             $collectorMethod = 'setDestinationAccounts';
             if (true === $prohibited) {
                 $collectorMethod = 'excludeDestinationAccounts';
@@ -2036,7 +2055,7 @@ class OperatorQuerySearch implements SearchInterface
 
         // either account could be:
         if (SearchDirection::BOTH === $searchDirection) {
-            $searchTypes     = [AccountType::ASSET, AccountType::MORTGAGE, AccountType::LOAN, AccountType::DEBT, AccountType::EXPENSE, AccountType::REVENUE];
+            $searchTypes     = [AccountTypeEnum::ASSET->value, AccountTypeEnum::MORTGAGE->value, AccountTypeEnum::LOAN->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::EXPENSE->value, AccountTypeEnum::REVENUE->value];
             $collectorMethod = 'setAccounts';
             if (true === $prohibited) {
                 $collectorMethod = 'excludeAccounts';
@@ -2145,7 +2164,7 @@ class OperatorQuerySearch implements SearchInterface
     /**
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     * @SuppressWarnings("PHPMD.BooleanArgumentFlag")
      */
     private function setExactDateParams(array $range, bool $prohibited = false): void
     {
@@ -2237,7 +2256,7 @@ class OperatorQuerySearch implements SearchInterface
     /**
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     * @SuppressWarnings("PHPMD.BooleanArgumentFlag")
      */
     private function setDateBeforeParams(array $range, bool $prohibited = false): void
     {
@@ -2293,7 +2312,7 @@ class OperatorQuerySearch implements SearchInterface
     /**
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     * @SuppressWarnings("PHPMD.BooleanArgumentFlag")
      */
     private function setDateAfterParams(array $range, bool $prohibited = false): void
     {
@@ -2349,7 +2368,7 @@ class OperatorQuerySearch implements SearchInterface
     /**
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     * @SuppressWarnings("PHPMD.BooleanArgumentFlag")
      */
     private function setExactMetaDateParams(string $field, array $range, bool $prohibited = false): void
     {
@@ -2444,7 +2463,7 @@ class OperatorQuerySearch implements SearchInterface
     /**
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     * @SuppressWarnings("PHPMD.BooleanArgumentFlag")
      */
     private function setMetaDateBeforeParams(string $field, array $range, bool $prohibited = false): void
     {
@@ -2500,7 +2519,7 @@ class OperatorQuerySearch implements SearchInterface
     /**
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     * @SuppressWarnings("PHPMD.BooleanArgumentFlag")
      */
     private function setMetaDateAfterParams(string $field, array $range, bool $prohibited = false): void
     {
@@ -2556,7 +2575,7 @@ class OperatorQuerySearch implements SearchInterface
     /**
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     * @SuppressWarnings("PHPMD.BooleanArgumentFlag")
      */
     private function setExactObjectDateParams(string $field, array $range, bool $prohibited = false): void
     {
@@ -2649,7 +2668,7 @@ class OperatorQuerySearch implements SearchInterface
     /**
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     * @SuppressWarnings("PHPMD.BooleanArgumentFlag")
      */
     private function setObjectDateBeforeParams(string $field, array $range, bool $prohibited = false): void
     {
@@ -2705,7 +2724,7 @@ class OperatorQuerySearch implements SearchInterface
     /**
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     * @SuppressWarnings("PHPMD.BooleanArgumentFlag")
      */
     private function setObjectDateAfterParams(string $field, array $range, bool $prohibited = false): void
     {
@@ -2766,7 +2785,7 @@ class OperatorQuerySearch implements SearchInterface
     public function searchTransactions(): LengthAwarePaginator
     {
         $this->parseTagInstructions();
-        if (0 === count($this->getWords()) && 0 === count($this->getOperators())) {
+        if (0 === count($this->getWords()) && 0 === count($this->getExcludedWords()) && 0 === count($this->getOperators())) {
             return new LengthAwarePaginator([], 0, 5, 1);
         }
 
@@ -2816,11 +2835,6 @@ class OperatorQuerySearch implements SearchInterface
             }
             $this->collector->setTags($collection);
         }
-    }
-
-    public function getWords(): array
-    {
-        return $this->words;
     }
 
     public function setDate(Carbon $date): void

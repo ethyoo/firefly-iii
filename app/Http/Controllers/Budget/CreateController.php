@@ -24,11 +24,11 @@ declare(strict_types=1);
 
 namespace FireflyIII\Http\Controllers\Budget;
 
+use FireflyIII\Enums\AutoBudgetType;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Helpers\Attachments\AttachmentHelperInterface;
 use FireflyIII\Http\Controllers\Controller;
 use FireflyIII\Http\Requests\BudgetFormStoreRequest;
-use FireflyIII\Models\AutoBudget;
 use FireflyIII\Repositories\Budget\BudgetRepositoryInterface;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\RedirectResponse;
@@ -73,10 +73,10 @@ class CreateController extends Controller
 
         // auto budget types
         $autoBudgetTypes   = [
-            0                                => (string) trans('firefly.auto_budget_none'),
-            AutoBudget::AUTO_BUDGET_RESET    => (string) trans('firefly.auto_budget_reset'),
-            AutoBudget::AUTO_BUDGET_ROLLOVER => (string) trans('firefly.auto_budget_rollover'),
-            AutoBudget::AUTO_BUDGET_ADJUSTED => (string) trans('firefly.auto_budget_adjusted'),
+            0                                           => (string) trans('firefly.auto_budget_none'),
+            AutoBudgetType::AUTO_BUDGET_RESET->value    => (string) trans('firefly.auto_budget_reset'),
+            AutoBudgetType::AUTO_BUDGET_ROLLOVER->value => (string) trans('firefly.auto_budget_rollover'),
+            AutoBudgetType::AUTO_BUDGET_ADJUSTED->value => (string) trans('firefly.auto_budget_adjusted'),
         ];
         $autoBudgetPeriods = [
             'daily'     => (string) trans('firefly.auto_budget_period_daily'),

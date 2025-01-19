@@ -24,11 +24,11 @@ declare(strict_types=1);
 
 namespace FireflyIII\Http\Controllers\Account;
 
+use FireflyIII\Enums\AccountTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Helpers\Attachments\AttachmentHelperInterface;
 use FireflyIII\Http\Controllers\Controller;
 use FireflyIII\Http\Requests\AccountFormRequest;
-use FireflyIII\Models\AccountType;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\Support\Http\Controllers\ModelInformation;
 use Illuminate\Contracts\View\Factory;
@@ -149,7 +149,7 @@ class CreateController extends Controller
         if (!is_array($frontpage)) {
             $frontpage = [];
         }
-        if (AccountType::ASSET === $account->accountType->type) {
+        if (AccountTypeEnum::ASSET->value === $account->accountType->type) {
             $frontpage[] = $account->id;
             app('preferences')->set('frontpageAccounts', $frontpage);
         }

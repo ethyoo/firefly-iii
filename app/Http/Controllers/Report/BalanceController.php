@@ -24,12 +24,12 @@ declare(strict_types=1);
 namespace FireflyIII\Http\Controllers\Report;
 
 use Carbon\Carbon;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Helpers\Collector\GroupCollectorInterface;
 use FireflyIII\Http\Controllers\Controller;
 use FireflyIII\Models\Account;
 use FireflyIII\Models\Budget;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Budget\BudgetRepositoryInterface;
 use Illuminate\Support\Collection;
 
@@ -96,7 +96,7 @@ class BalanceController extends Controller
 
             /** @var GroupCollectorInterface $collector */
             $collector                             = app(GroupCollectorInterface::class);
-            $journals                              = $collector->setRange($start, $end)->setSourceAccounts($accounts)->setTypes([TransactionType::WITHDRAWAL])->setBudget($budget)
+            $journals                              = $collector->setRange($start, $end)->setSourceAccounts($accounts)->setTypes([TransactionTypeEnum::WITHDRAWAL->value])->setBudget($budget)
                 ->getExtractedJournals()
             ;
 

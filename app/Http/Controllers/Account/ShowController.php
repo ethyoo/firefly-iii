@@ -85,11 +85,11 @@ class ShowController extends Controller
             return $this->redirectAccountToAccount($account);
         }
 
-        // @var Carbon $start
         $start ??= session('start');
-        // @var Carbon $end
         $end   ??= session('end');
 
+        /** @var Carbon $start */
+        /** @var Carbon $end */
         if ($end->lt($start)) {
             [$start, $end] = [$end, $start];
         }

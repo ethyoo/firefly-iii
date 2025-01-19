@@ -66,7 +66,9 @@ class RemovesEmptyJournals extends Command
             if (1 === $count % 2) {
                 // uneven number, delete journal and transactions:
                 try {
-                    TransactionJournal::find($row->transaction_journal_id)->delete();
+                    /** @var null|TransactionJournal $journal */
+                    $journal = TransactionJournal::find($row->transaction_journal_id);
+                    $journal?->delete();
                 } catch (QueryException $e) {
                     app('log')->info(sprintf('Could not delete journal: %s', $e->getMessage()));
                     app('log')->error($e->getTraceAsString());
@@ -92,7 +94,9 @@ class RemovesEmptyJournals extends Command
 
         foreach ($set as $entry) {
             try {
-                TransactionJournal::find($entry->id)->delete();
+                /** @var null|TransactionJournal $journal */
+                $journal = TransactionJournal::find($entry->id);
+                $journal?->delete();
             } catch (QueryException $e) {
                 app('log')->info(sprintf('Could not delete entry: %s', $e->getMessage()));
                 app('log')->error($e->getTraceAsString());

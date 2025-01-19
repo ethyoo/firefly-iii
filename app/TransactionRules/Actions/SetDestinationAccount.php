@@ -23,13 +23,13 @@ declare(strict_types=1);
 
 namespace FireflyIII\TransactionRules\Actions;
 
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Events\Model\Rule\RuleActionFailedOnArray;
 use FireflyIII\Events\TriggeredAuditLog;
 use FireflyIII\Models\Account;
 use FireflyIII\Models\RuleAction;
 use FireflyIII\Models\Transaction;
 use FireflyIII\Models\TransactionJournal;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\User;
 
@@ -71,7 +71,7 @@ class SetDestinationAccount implements ActionInterface
 
         // if this is a transfer or a deposit, the new destination account must be an asset account or a default account, and it MUST exist:
         $newAccount       = $this->findAssetAccount($type, $accountName);
-        if ((TransactionType::DEPOSIT === $type || TransactionType::TRANSFER === $type) && null === $newAccount) {
+        if ((TransactionTypeEnum::DEPOSIT->value === $type || TransactionTypeEnum::TRANSFER->value === $type) && null === $newAccount) {
             app('log')->error(
                 sprintf(
                     'Cant change destination account of journal #%d because no asset account with name "%s" exists.',
@@ -116,7 +116,7 @@ class SetDestinationAccount implements ActionInterface
 
         // if this is a withdrawal, the new destination account must be a expense account and may be created:
         // or it is a liability, in which case it must be returned.
-        if (TransactionType::WITHDRAWAL === $type) {
+        if (TransactionTypeEnum::WITHDRAWAL->value === $type) {
             $newAccount = $this->findWithdrawalDestinationAccount($accountName);
         }
 

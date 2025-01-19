@@ -71,7 +71,7 @@ class EditController extends Controller
     /**
      * Edit account overview. It's complex, but it just has a lot of if/then/else.
      *
-     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings("PHPMD.NPathComplexity")
      *
      * @return Factory|Redirector|RedirectResponse|View
      */
@@ -119,7 +119,7 @@ class EditController extends Controller
         }
         $request->session()->forget('accounts.edit.fromUpdate');
 
-        $openingBalanceAmount = (string) $repository->getOpeningBalanceAmount($account);
+        $openingBalanceAmount = (string) $repository->getOpeningBalanceAmount($account, false);
         if ('0' === $openingBalanceAmount) {
             $openingBalanceAmount = '';
         }

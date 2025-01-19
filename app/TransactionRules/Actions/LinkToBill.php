@@ -23,11 +23,11 @@ declare(strict_types=1);
 
 namespace FireflyIII\TransactionRules\Actions;
 
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Events\Model\Rule\RuleActionFailedOnArray;
 use FireflyIII\Events\TriggeredAuditLog;
 use FireflyIII\Models\RuleAction;
 use FireflyIII\Models\TransactionJournal;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Bill\BillRepositoryInterface;
 use FireflyIII\User;
 
@@ -57,7 +57,7 @@ class LinkToBill implements ActionInterface
         $billName   = $this->action->getValue($journal);
         $bill       = $repository->findByName($billName);
 
-        if (null !== $bill && TransactionType::WITHDRAWAL === $journal['transaction_type_type']) {
+        if (null !== $bill && TransactionTypeEnum::WITHDRAWAL->value === $journal['transaction_type_type']) {
             $count  = \DB::table('transaction_journals')->where('id', '=', $journal['transaction_journal_id'])
                 ->where('bill_id', $bill->id)->count()
             ;

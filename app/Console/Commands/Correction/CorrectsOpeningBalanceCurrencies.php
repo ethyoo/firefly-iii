@@ -25,12 +25,12 @@ declare(strict_types=1);
 namespace FireflyIII\Console\Commands\Correction;
 
 use FireflyIII\Console\Commands\ShowsFriendlyMessages;
+use FireflyIII\Enums\AccountTypeEnum;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Models\Account;
-use FireflyIII\Models\AccountType;
 use FireflyIII\Models\Transaction;
 use FireflyIII\Models\TransactionCurrency;
 use FireflyIII\Models\TransactionJournal;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
@@ -65,10 +65,10 @@ class CorrectsOpeningBalanceCurrencies extends Command
 
     private function getJournals(): Collection
     {
-        // @var Collection
+        /** @var Collection */
         return TransactionJournal::leftJoin('transaction_types', 'transaction_types.id', '=', 'transaction_journals.transaction_type_id')
             ->whereNull('transaction_journals.deleted_at')
-            ->where('transaction_types.type', TransactionType::OPENING_BALANCE)->get(['transaction_journals.*'])
+            ->where('transaction_types.type', TransactionTypeEnum::OPENING_BALANCE->value)->get(['transaction_journals.*'])
         ;
     }
 
@@ -96,7 +96,7 @@ class CorrectsOpeningBalanceCurrencies extends Command
         foreach ($transactions as $transaction) {
             /** @var null|Account $account */
             $account = $transaction->account()->first();
-            if (null !== $account && AccountType::INITIAL_BALANCE !== $account->accountType()->first()->type) {
+            if (null !== $account && AccountTypeEnum::INITIAL_BALANCE->value !== $account->accountType()->first()->type) {
                 return $account;
             }
         }
@@ -132,6 +132,6 @@ class CorrectsOpeningBalanceCurrencies extends Command
         $repos = app(AccountRepositoryInterface::class);
         $repos->setUser($account->user);
 
-        return $repos->getAccountCurrency($account) ?? app('amount')->getDefaultCurrencyByUserGroup($account->userGroup);
+        return $repos->getAccountCurrency($account) ?? app('amount')->getNativeCurrencyByUserGroup($account->userGroup);
     }
 }

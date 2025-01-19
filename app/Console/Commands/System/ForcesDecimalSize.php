@@ -173,7 +173,7 @@ class ForcesDecimalSize extends Command
          * @var array  $fields
          */
         foreach ($this->tables as $name => $fields) {
-            switch ($name) { // @phpstan-ignore-line
+            switch ($name) {
                 default:
                     $message = sprintf('Cannot handle table "%s"', $name);
                     $this->friendlyError($message);
@@ -239,7 +239,7 @@ class ForcesDecimalSize extends Command
         $query->where(static function (Builder $q) use ($fields, $currency, $operator, $cast, $regularExpression): void {
             foreach ($fields as $field) {
                 $q->orWhere(
-                    DB::raw(sprintf('CAST(accounts.%s AS %s)', $field, $cast)), // @phpstan-ignore-line
+                    DB::raw(sprintf('CAST(accounts.%s AS %s)', $field, $cast)),
                     $operator,
                     DB::raw(sprintf($regularExpression, $currency->decimal_places))
                 );
@@ -256,15 +256,18 @@ class ForcesDecimalSize extends Command
         foreach ($result as $account) {
             /** @var string $field */
             foreach ($fields as $field) {
-                $value   = $account->{$field};
+                $value         = $account->{$field};
                 if (null === $value) {
                     continue;
                 }
                 // fix $field by rounding it down correctly.
-                $pow     = 10 ** $currency->decimal_places;
-                $correct = bcdiv((string) round($value * $pow), (string) $pow, 12);
+                $pow           = 10 ** $currency->decimal_places;
+                $correct       = bcdiv((string) round($value * $pow), (string) $pow, 12);
                 $this->friendlyInfo(sprintf('Account #%d has %s with value "%s", this has been corrected to "%s".', $account->id, $field, $value, $correct));
-                Account::find($account->id)->update([$field => $correct]);
+
+                /** @var null|Account $updateAccount */
+                $updateAccount = Account::find($account->id);
+                $updateAccount?->update([$field => $correct]);
             }
         }
     }
@@ -286,7 +289,7 @@ class ForcesDecimalSize extends Command
                 /** @var string $field */
                 foreach ($fields as $field) {
                     $q->orWhere(
-                        DB::raw(sprintf('CAST(%s AS %s)', $field, $cast)), // @phpstan-ignore-line
+                        DB::raw(sprintf('CAST(%s AS %s)', $field, $cast)),
                         $operator,
                         DB::raw(sprintf($regularExpression, $currency->decimal_places))
                     );
@@ -313,7 +316,10 @@ class ForcesDecimalSize extends Command
                 $pow     = 10 ** $currency->decimal_places;
                 $correct = bcdiv((string) round($value * $pow), (string) $pow, 12);
                 $this->friendlyWarning(sprintf('%s #%d has %s with value "%s", this has been corrected to "%s".', $table, $item->id, $field, $value, $correct));
-                $class::find($item->id)->update([$field => $correct]);
+
+                /** @var null|Model $model */
+                $model   = $class::find($item->id);
+                $model?->update([$field => $correct]);
             }
         }
     }
@@ -336,7 +342,7 @@ class ForcesDecimalSize extends Command
             ->where(static function (Builder $q) use ($fields, $currency, $cast, $operator, $regularExpression): void {
                 foreach ($fields as $field) {
                     $q->orWhere(
-                        DB::raw(sprintf('CAST(piggy_bank_events.%s AS %s)', $field, $cast)), // @phpstan-ignore-line
+                        DB::raw(sprintf('CAST(piggy_bank_events.%s AS %s)', $field, $cast)),
                         $operator,
                         DB::raw(sprintf($regularExpression, $currency->decimal_places))
                     );
@@ -365,7 +371,10 @@ class ForcesDecimalSize extends Command
                 $this->friendlyWarning(
                     sprintf('Piggy bank event #%d has %s with value "%s", this has been corrected to "%s".', $item->id, $field, $value, $correct)
                 );
-                PiggyBankEvent::find($item->id)->update([$field => $correct]);
+
+                /** @var null|PiggyBankEvent $event */
+                $event   = PiggyBankEvent::find($item->id);
+                $event?->update([$field => $correct]);
             }
         }
     }
@@ -389,7 +398,7 @@ class ForcesDecimalSize extends Command
             ->where(static function (Builder $q) use ($fields, $currency, $operator, $cast, $regularExpression): void {
                 foreach ($fields as $field) {
                     $q->orWhere(
-                        DB::raw(sprintf('CAST(piggy_bank_repetitions.%s AS %s)', $field, $cast)), // @phpstan-ignore-line
+                        DB::raw(sprintf('CAST(piggy_bank_repetitions.%s AS %s)', $field, $cast)),
                         $operator,
                         DB::raw(sprintf($regularExpression, $currency->decimal_places))
                     );
@@ -408,17 +417,20 @@ class ForcesDecimalSize extends Command
         foreach ($result as $item) {
             /** @var string $field */
             foreach ($fields as $field) {
-                $value   = $item->{$field};
+                $value      = $item->{$field};
                 if (null === $value) {
                     continue;
                 }
                 // fix $field by rounding it down correctly.
-                $pow     = 10 ** $currency->decimal_places;
-                $correct = bcdiv((string) round($value * $pow), (string) $pow, 12);
+                $pow        = 10 ** $currency->decimal_places;
+                $correct    = bcdiv((string) round($value * $pow), (string) $pow, 12);
                 $this->friendlyWarning(
                     sprintf('Piggy bank repetition #%d has %s with value "%s", this has been corrected to "%s".', $item->id, $field, $value, $correct)
                 );
-                PiggyBankRepetition::find($item->id)->update([$field => $correct]);
+
+                /** @var null|PiggyBankRepetition $repetition */
+                $repetition = PiggyBankRepetition::find($item->id);
+                $repetition->update([$field => $correct]);
             }
         }
     }
@@ -440,7 +452,7 @@ class ForcesDecimalSize extends Command
             ->where(static function (Builder $q) use ($fields, $currency, $operator, $cast, $regularExpression): void {
                 foreach ($fields as $field) {
                     $q->orWhere(
-                        DB::raw(sprintf('CAST(piggy_banks.%s AS %s)', $field, $cast)), // @phpstan-ignore-line
+                        DB::raw(sprintf('CAST(piggy_banks.%s AS %s)', $field, $cast)),
                         $operator,
                         DB::raw(sprintf($regularExpression, $currency->decimal_places))
                     );
@@ -459,15 +471,18 @@ class ForcesDecimalSize extends Command
         foreach ($result as $item) {
             /** @var string $field */
             foreach ($fields as $field) {
-                $value   = $item->{$field};
+                $value     = $item->{$field};
                 if (null === $value) {
                     continue;
                 }
                 // fix $field by rounding it down correctly.
-                $pow     = 10 ** $currency->decimal_places;
-                $correct = bcdiv((string) round($value * $pow), (string) $pow, 12);
+                $pow       = 10 ** $currency->decimal_places;
+                $correct   = bcdiv((string) round($value * $pow), (string) $pow, 12);
                 $this->friendlyWarning(sprintf('Piggy bank #%d has %s with value "%s", this has been corrected to "%s".', $item->id, $field, $value, $correct));
-                PiggyBank::find($item->id)->update([$field => $correct]);
+
+                /** @var null|PiggyBank $piggyBank */
+                $piggyBank = PiggyBank::find($item->id);
+                $piggyBank?->update([$field => $correct]);
             }
         }
     }
@@ -480,7 +495,7 @@ class ForcesDecimalSize extends Command
         // select all transactions with this currency and issue.
         /** @var Builder $query */
         $query  = Transaction::where('transaction_currency_id', $currency->id)->where(
-            DB::raw(sprintf('CAST(amount as %s)', $this->cast)), // @phpstan-ignore-line
+            DB::raw(sprintf('CAST(amount as %s)', $this->cast)),
             $this->operator,
             DB::raw(sprintf($this->regularExpression, $currency->decimal_places))
         );
@@ -492,21 +507,24 @@ class ForcesDecimalSize extends Command
 
         /** @var Transaction $item */
         foreach ($result as $item) {
-            $value   = $item->amount;
+            $value       = $item->amount;
             if ('' === $value) {
                 continue;
             }
             // fix $field by rounding it down correctly.
-            $pow     = (float) 10 ** $currency->decimal_places;
-            $correct = bcdiv((string) round((float) $value * $pow), (string) $pow, 12);
+            $pow         = (float) 10 ** $currency->decimal_places;
+            $correct     = bcdiv((string) round((float) $value * $pow), (string) $pow, 12);
             $this->friendlyWarning(sprintf('Transaction #%d has amount with value "%s", this has been corrected to "%s".', $item->id, $value, $correct));
-            Transaction::find($item->id)->update(['amount' => $correct]);
+
+            /** @var null|Transaction $transaction */
+            $transaction = Transaction::find($item->id);
+            $transaction?->update(['amount' => $correct]);
         }
 
         // select all transactions with this FOREIGN currency and issue.
         /** @var Builder $query */
         $query  = Transaction::where('foreign_currency_id', $currency->id)->where(
-            DB::raw(sprintf('CAST(foreign_amount as %s)', $this->cast)), // @phpstan-ignore-line
+            DB::raw(sprintf('CAST(foreign_amount as %s)', $this->cast)),
             $this->operator,
             DB::raw(sprintf($this->regularExpression, $currency->decimal_places))
         );
@@ -520,17 +538,20 @@ class ForcesDecimalSize extends Command
 
         /** @var Transaction $item */
         foreach ($result as $item) {
-            $value   = $item->foreign_amount;
+            $value       = $item->foreign_amount;
             if (null === $value) {
                 continue;
             }
             // fix $field by rounding it down correctly.
-            $pow     = (float) 10 ** $currency->decimal_places;
-            $correct = bcdiv((string) round((float) $value * $pow), (string) $pow, 12);
+            $pow         = (float) 10 ** $currency->decimal_places;
+            $correct     = bcdiv((string) round((float) $value * $pow), (string) $pow, 12);
             $this->friendlyWarning(
                 sprintf('Transaction #%d has foreign amount with value "%s", this has been corrected to "%s".', $item->id, $value, $correct)
             );
-            Transaction::find($item->id)->update(['foreign_amount' => $correct]);
+
+            /** @var null|Transaction $transaction */
+            $transaction = Transaction::find($item->id);
+            $transaction?->update(['foreign_amount' => $correct]);
         }
     }
 

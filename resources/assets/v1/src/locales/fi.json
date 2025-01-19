@@ -1,5 +1,11 @@
 {
     "firefly": {
+        "administrations_page_title": "Financial administrations",
+        "administrations_index_menu": "Financial administrations",
+        "temp_administrations_introduction": "Firefly III will soon get the ability to manage multiple financial administrations. Right now, you only have the one. You can set the title of this administration and its native currency. This replaces the previous setting where you would set your \"default currency\". This setting is now tied to the financial administration and can be different per administration.",
+        "administration_currency_form_help": "It may take a long time for the page to load if you change the native currency because transaction may need to be converted to your (new) native currency.",
+        "administrations_page_edit_sub_title_js": "Edit financial administration \"{title}\"",
+        "table": "Taulukko",
         "welcome_back": "Mit\u00e4 kuuluu?",
         "flash_error": "Virhe!",
         "flash_warning": "Varoitus!",
@@ -9,6 +15,7 @@
         "select_source_account": "Please select or type a valid source account name",
         "split_transaction_title": "Jaetun tapahtuman kuvaus",
         "errors_submission": "There was something wrong with your submission. Please check out the errors below.",
+        "is_reconciled": "Is reconciled",
         "split": "Jaa",
         "single_split": "Jako",
         "transaction_stored_link": "<a href=\"transactions\/show\/{ID}\">Tapahtuma #{ID} (\"{title}\")<\/a> on tallennettu.",
@@ -33,7 +40,7 @@
         "submit": "Vahvista",
         "amount": "Summa",
         "date": "P\u00e4iv\u00e4m\u00e4\u00e4r\u00e4",
-        "is_reconciled_fields_dropped": "Because this transaction is reconciled, you will not be able to update the accounts, nor the amount(s).",
+        "is_reconciled_fields_dropped": "Because this transaction is reconciled, you will not be able to update the accounts, nor the amount(s) unless you remove the reconciliation flag.",
         "tags": "T\u00e4git",
         "no_budget": "(ei budjettia)",
         "no_bill": "(no subscription)",
@@ -101,14 +108,14 @@
         "webhook_trigger_UPDATE_TRANSACTION": "After transaction update",
         "webhook_trigger_DESTROY_TRANSACTION": "After transaction delete",
         "webhook_response_TRANSACTIONS": "Transaction details",
-        "webhook_response_ACCOUNTS": "Account details",
+        "webhook_response_ACCOUNTS": "Tilin tiedot",
         "webhook_response_none_NONE": "No details",
         "webhook_delivery_JSON": "JSON",
         "actions": "Toiminnot",
         "meta_data": "Metatieto",
         "webhook_messages": "Webhook message",
         "inactive": "Ei aktiivinen",
-        "no_webhook_messages": "There are no webhook messages",
+        "no_webhook_messages": "Verkkotoimintokutsuviestej\u00e4 ei ole",
         "inspect": "Inspect",
         "create_new_webhook": "Create new webhook",
         "webhooks": "Webhookit",
@@ -126,7 +133,7 @@
         "attempt_content_help": "These are all the unsuccessful attempts of this webhook message to submit to the configured URL. After some time, Firefly III will stop trying.",
         "no_attempts": "There are no unsuccessful attempts. That's a good thing!",
         "webhook_attempt_at": "Attempt at {moment}",
-        "logs": "Logs",
+        "logs": "Lokitiedot",
         "response": "Response",
         "visit_webhook_url": "Visit webhook URL",
         "reset_webhook_secret": "Reset webhook secret",
@@ -144,6 +151,7 @@
         "url": "URL-osoite",
         "active": "Aktiivinen",
         "interest_date": "Korkop\u00e4iv\u00e4",
+        "administration_currency": "Native currency",
         "title": "Otsikko",
         "date": "P\u00e4iv\u00e4m\u00e4\u00e4r\u00e4",
         "book_date": "Kirjausp\u00e4iv\u00e4",
@@ -153,23 +161,25 @@
         "payment_date": "Maksup\u00e4iv\u00e4",
         "invoice_date": "Laskun p\u00e4iv\u00e4m\u00e4\u00e4r\u00e4",
         "internal_reference": "Sis\u00e4inen viite",
-        "webhook_response": "Response",
-        "webhook_trigger": "Trigger",
-        "webhook_delivery": "Delivery",
+        "webhook_response": "Vastaus",
+        "webhook_trigger": "Ehto",
+        "webhook_delivery": "Toimitus",
         "from_currency_to_currency": "{from} &rarr; {to}",
         "to_currency_from_currency": "{to} &rarr; {from}",
-        "rate": "Rate"
+        "rate": "Kurssi"
     },
     "list": {
+        "title": "Otsikko",
         "active": "Aktiivinen?",
-        "trigger": "Trigger",
-        "response": "Response",
-        "delivery": "Delivery",
+        "native_currency": "Native currency",
+        "trigger": "Ehto",
+        "response": "Vastaus",
+        "delivery": "Toimitus",
         "url": "URL",
-        "secret": "Secret"
+        "secret": "Salainen tunniste"
     },
     "config": {
         "html_language": "fi",
-        "date_time_fns": "MMMM do, yyyy @ HH:mm:ss"
+        "date_time_fns": "do MMMM yyyy @\u00a0HH:mm:ss"
     }
 }

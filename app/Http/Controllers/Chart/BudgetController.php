@@ -24,6 +24,7 @@ declare(strict_types=1);
 namespace FireflyIII\Http\Controllers\Chart;
 
 use Carbon\Carbon;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Generator\Chart\Basic\GeneratorInterface;
 use FireflyIII\Helpers\Collector\GroupCollectorInterface;
@@ -31,7 +32,6 @@ use FireflyIII\Http\Controllers\Controller;
 use FireflyIII\Models\Budget;
 use FireflyIII\Models\BudgetLimit;
 use FireflyIII\Models\TransactionCurrency;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Budget\BudgetLimitRepositoryInterface;
 use FireflyIII\Repositories\Budget\BudgetRepositoryInterface;
 use FireflyIII\Repositories\Budget\NoBudgetRepositoryInterface;
@@ -388,7 +388,7 @@ class BudgetController extends Controller
             return response()->json($cache->get());
         }
         $collector->setRange($start, $end);
-        $collector->setTypes([TransactionType::WITHDRAWAL])->setBudget($budget)->withAccountInformation();
+        $collector->setTypes([TransactionTypeEnum::WITHDRAWAL->value])->setBudget($budget)->withAccountInformation();
         $journals      = $collector->getExtractedJournals();
         $result        = [];
         $chartData     = [];
@@ -482,7 +482,7 @@ class BudgetController extends Controller
      *
      * Suppress warning because this method will be replaced by API calls.
      *
-     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+     * @SuppressWarnings("PHPMD.ExcessiveParameterList")
      */
     public function period(Budget $budget, TransactionCurrency $currency, Collection $accounts, Carbon $start, Carbon $end): JsonResponse
     {

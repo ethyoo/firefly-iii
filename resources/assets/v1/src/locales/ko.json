@@ -1,5 +1,11 @@
 {
     "firefly": {
+        "administrations_page_title": "Financial administrations",
+        "administrations_index_menu": "Financial administrations",
+        "temp_administrations_introduction": "Firefly III will soon get the ability to manage multiple financial administrations. Right now, you only have the one. You can set the title of this administration and its native currency. This replaces the previous setting where you would set your \"default currency\". This setting is now tied to the financial administration and can be different per administration.",
+        "administration_currency_form_help": "It may take a long time for the page to load if you change the native currency because transaction may need to be converted to your (new) native currency.",
+        "administrations_page_edit_sub_title_js": "Edit financial administration \"{title}\"",
+        "table": "\ud45c",
         "welcome_back": "\ubb34\uc2a8 \uc77c\uc774\uc8e0?",
         "flash_error": "\uc624\ub958!",
         "flash_warning": "\uacbd\uace0!",
@@ -9,6 +15,7 @@
         "select_source_account": "\uc720\ud6a8\ud55c \uc18c\uc2a4 \uacc4\uc815 \ub0b4\uc5ed\uc744 \uc120\ud0dd \ub610\ub294 \ud0c0\uc785\uc744 \uc120\ud0dd\ud558\uc2ed\uc2dc\uc624.",
         "split_transaction_title": "\ubd84\ud560 \uac70\ub798\uc5d0 \ub300\ud55c \uc124\uba85",
         "errors_submission": "\uc81c\ucd9c\ud55c \ub0b4\uc6a9\uc5d0 \ubb38\uc81c\uac00 \uc788\uc2b5\ub2c8\ub2e4. \uc544\ub798 \uc624\ub958\ub97c \ud655\uc778\ud574 \uc8fc\uc138\uc694.",
+        "is_reconciled": "Is reconciled",
         "split": "\ub098\ub204\uae30",
         "single_split": "\ub098\ub204\uae30",
         "transaction_stored_link": "<a href=\"transactions\/show\/{ID}\">\uac70\ub798 #{ID} (\"{title}\")<\/a>\uac00 \uc800\uc7a5\ub418\uc5c8\uc2b5\ub2c8\ub2e4.",
@@ -33,7 +40,7 @@
         "submit": "\uc81c\ucd9c",
         "amount": "\uae08\uc561",
         "date": "\ub0a0\uc9dc",
-        "is_reconciled_fields_dropped": "\uc774 \uac70\ub798\uac00 \uc218\uc815\ub418\uc5c8\uae30 \ub54c\ubb38\uc5d0, \uacc4\uc88c\ub098 \uae08\uc561\uc744 \uc5c5\ub370\uc774\ud2b8 \ud560 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4.",
+        "is_reconciled_fields_dropped": "Because this transaction is reconciled, you will not be able to update the accounts, nor the amount(s) unless you remove the reconciliation flag.",
         "tags": "\ud0dc\uadf8",
         "no_budget": "(\uc608\uc0b0 \uc5c6\uc74c)",
         "no_bill": "(no subscription)",
@@ -144,6 +151,7 @@
         "url": "URL",
         "active": "\ud65c\uc131",
         "interest_date": "\uc774\uc790 \ub0a0\uc9dc",
+        "administration_currency": "Native currency",
         "title": "\uc81c\ubaa9",
         "date": "\ub0a0\uc9dc",
         "book_date": "\uc608\uc57d\uc77c",
@@ -161,7 +169,9 @@
         "rate": "Rate"
     },
     "list": {
+        "title": "\uc81c\ubaa9",
         "active": "\ud65c\uc131 \uc0c1\ud0dc\uc785\ub2c8\uae4c?",
+        "native_currency": "Native currency",
         "trigger": "\ud2b8\ub9ac\uac70",
         "response": "\uc751\ub2f5",
         "delivery": "\uc804\ub2ec",

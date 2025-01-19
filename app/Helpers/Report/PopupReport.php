@@ -23,11 +23,11 @@ declare(strict_types=1);
 
 namespace FireflyIII\Helpers\Report;
 
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Helpers\Collector\GroupCollectorInterface;
 use FireflyIII\Models\Account;
 use FireflyIII\Models\Budget;
 use FireflyIII\Models\Category;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\Repositories\Journal\JournalRepositoryInterface;
 use FireflyIII\Repositories\UserGroups\Currency\CurrencyRepositoryInterface;
@@ -73,7 +73,7 @@ class PopupReport implements PopupReportInterface
         $collector  = app(GroupCollectorInterface::class);
         $collector
             ->setAccounts(new Collection([$account]))
-            ->setTypes([TransactionType::WITHDRAWAL])
+            ->setTypes([TransactionTypeEnum::WITHDRAWAL->value])
             ->withAccountInformation()
             ->withCategoryInformation()
             ->setRange($attributes['startDate'], $attributes['endDate'])
@@ -115,7 +115,7 @@ class PopupReport implements PopupReportInterface
             $collector->setCurrency($currency);
         }
         if (null === $budget->id || 0 === $budget->id) {
-            $collector->setTypes([TransactionType::WITHDRAWAL])->withoutBudget();
+            $collector->setTypes([TransactionTypeEnum::WITHDRAWAL->value])->withoutBudget();
         }
         if (null !== $budget->id && 0 !== $budget->id) {
             $collector->setBudget($budget);
@@ -142,7 +142,7 @@ class PopupReport implements PopupReportInterface
         $collector  = app(GroupCollectorInterface::class);
 
         $collector->setAccounts($attributes['accounts'])
-            ->setTypes([TransactionType::WITHDRAWAL, TransactionType::TRANSFER, TransactionType::DEPOSIT])
+            ->setTypes([TransactionTypeEnum::WITHDRAWAL->value, TransactionTypeEnum::TRANSFER->value, TransactionTypeEnum::DEPOSIT->value])
             ->withAccountInformation()
             ->withBudgetInformation()
             ->withCategoryInformation()
@@ -196,7 +196,7 @@ class PopupReport implements PopupReportInterface
             ->withAccountInformation()
             ->withBudgetInformation()
             ->withCategoryInformation()
-            ->setTypes([TransactionType::WITHDRAWAL, TransactionType::TRANSFER])
+            ->setTypes([TransactionTypeEnum::WITHDRAWAL->value, TransactionTypeEnum::TRANSFER->value])
         ;
 
         if (null !== $currency) {
@@ -221,7 +221,7 @@ class PopupReport implements PopupReportInterface
             ->setSourceAccounts(new Collection([$account]))
             ->setDestinationAccounts($attributes['accounts'])
             ->setRange($attributes['startDate'], $attributes['endDate'])
-            ->setTypes([TransactionType::DEPOSIT, TransactionType::TRANSFER])
+            ->setTypes([TransactionTypeEnum::DEPOSIT->value, TransactionTypeEnum::TRANSFER->value])
             ->withAccountInformation()
             ->withBudgetInformation()
             ->withCategoryInformation()

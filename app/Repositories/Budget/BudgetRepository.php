@@ -24,6 +24,8 @@ declare(strict_types=1);
 namespace FireflyIII\Repositories\Budget;
 
 use Carbon\Carbon;
+use FireflyIII\Enums\AutoBudgetType;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Helpers\Collector\GroupCollectorInterface;
 use FireflyIII\Models\Account;
@@ -35,7 +37,6 @@ use FireflyIII\Models\Note;
 use FireflyIII\Models\RecurrenceTransactionMeta;
 use FireflyIII\Models\RuleAction;
 use FireflyIII\Models\RuleTrigger;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\Repositories\UserGroups\Currency\CurrencyRepositoryInterface;
 use FireflyIII\Services\Internal\Destroy\BudgetDestroyService;
@@ -88,7 +89,7 @@ class BudgetRepository implements BudgetRepositoryInterface
         $limitRepository = app(BudgetLimitRepository::class);
         $limitRepository->setUser($this->user);
         $budgets         = $this->getActiveBudgets();
-        $defaultCurrency = app('amount')->getDefaultCurrency();
+        $defaultCurrency = app('amount')->getNativeCurrency();
         $converter       = new ExchangeRateConverter();
 
         /** @var Budget $budget */
@@ -382,6 +383,7 @@ class BudgetRepository implements BudgetRepositoryInterface
 
     public function getAutoBudget(Budget $budget): ?AutoBudget
     {
+        /** @var null|AutoBudget */
         return $budget->autoBudgets()->first();
     }
 
@@ -394,7 +396,7 @@ class BudgetRepository implements BudgetRepositoryInterface
         $autoBudget = $this->getAutoBudget($budget);
 
         // grab default currency:
-        $currency   = app('amount')->getDefaultCurrencyByUserGroup($this->user->userGroup);
+        $currency   = app('amount')->getNativeCurrencyByUserGroup($this->user->userGroup);
 
         if (null === $autoBudget) {
             // at this point it's a blind assumption auto_budget_type is 1 or 2.
@@ -440,6 +442,7 @@ class BudgetRepository implements BudgetRepositoryInterface
      */
     public function find(?int $budgetId = null): ?Budget
     {
+        /** @var null|Budget */
         return $this->user->budgets()->find($budgetId);
     }
 
@@ -512,6 +515,7 @@ class BudgetRepository implements BudgetRepositoryInterface
         }
         $query = sprintf('%%%s%%', $name);
 
+        /** @var null|Budget */
         return $this->user->budgets()->whereLike('name', $query)->first();
     }
 
@@ -537,7 +541,7 @@ class BudgetRepository implements BudgetRepositoryInterface
         $disk = \Storage::disk('upload');
 
         return $set->each(
-            static function (Attachment $attachment) use ($disk) {
+            static function (Attachment $attachment) use ($disk) { // @phpstan-ignore-line
                 $notes                   = $attachment->notes()->first();
                 $attachment->file_exists = $disk->exists($attachment->fileName());
                 $attachment->notes_text  = null !== $notes ? $notes->text : '';
@@ -617,7 +621,7 @@ class BudgetRepository implements BudgetRepositoryInterface
         $collector->setUser($this->user)
             ->setRange($start, $end)
             ->excludeDestinationAccounts($selection)
-            ->setTypes([TransactionType::WITHDRAWAL])
+            ->setTypes([TransactionTypeEnum::WITHDRAWAL->value])
             ->setBudgets($this->getActiveBudgets())
         ;
 
@@ -679,7 +683,7 @@ class BudgetRepository implements BudgetRepositoryInterface
         $collector->setUser($this->user)
             ->setRange($start, $end)
             ->excludeDestinationAccounts($selection)
-            ->setTypes([TransactionType::WITHDRAWAL])
+            ->setTypes([TransactionTypeEnum::WITHDRAWAL->value])
             ->setBudget($budget)
         ;
 
@@ -719,7 +723,7 @@ class BudgetRepository implements BudgetRepositoryInterface
     /**
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings("PHPMD.NPathComplexity")
      */
     public function store(array $data): Budget
     {
@@ -759,13 +763,13 @@ class BudgetRepository implements BudgetRepositoryInterface
         }
 
         if ('reset' === $type) {
-            $type = AutoBudget::AUTO_BUDGET_RESET;
+            $type = AutoBudgetType::AUTO_BUDGET_RESET->value;
         }
         if ('rollover' === $type) {
-            $type = AutoBudget::AUTO_BUDGET_ROLLOVER;
+            $type = AutoBudgetType::AUTO_BUDGET_ROLLOVER->value;
         }
         if ('adjusted' === $type) {
-            $type = AutoBudget::AUTO_BUDGET_ADJUSTED;
+            $type = AutoBudgetType::AUTO_BUDGET_ADJUSTED->value;
         }
 
         /** @var CurrencyRepositoryInterface $repos */
@@ -778,7 +782,7 @@ class BudgetRepository implements BudgetRepositoryInterface
             $currency = $repos->findByCode((string) $data['currency_code']);
         }
         if (null === $currency) {
-            $currency = app('amount')->getDefaultCurrencyByUserGroup($this->user->userGroup);
+            $currency = app('amount')->getNativeCurrencyByUserGroup($this->user->userGroup);
         }
 
         $autoBudget                          = new AutoBudget();

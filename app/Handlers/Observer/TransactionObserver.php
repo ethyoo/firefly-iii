@@ -39,8 +39,8 @@ class TransactionObserver
     public function created(Transaction $transaction): void
     {
         Log::debug('Observe "created" of a transaction.');
-        if (config('firefly.feature_flags.running_balance_column')) {
-            if (1 === bccomp($transaction->amount, '0') && self::$recalculate) {
+        if (true === config('firefly.feature_flags.running_balance_column')) {
+            if (1 === bccomp($transaction->amount, '0') && true === self::$recalculate) {
                 Log::debug('Trigger recalculateForJournal');
                 AccountBalanceCalculator::recalculateForJournal($transaction->transactionJournal);
             }
@@ -57,7 +57,7 @@ class TransactionObserver
     public function updated(Transaction $transaction): void
     {
         //        Log::debug('Observe "updated" of a transaction.');
-        if (config('firefly.feature_flags.running_balance_column') && self::$recalculate) {
+        if (true === config('firefly.feature_flags.running_balance_column') && true === self::$recalculate) {
             if (1 === bccomp($transaction->amount, '0')) {
                 Log::debug('Trigger recalculateForJournal');
                 AccountBalanceCalculator::recalculateForJournal($transaction->transactionJournal);
@@ -71,7 +71,7 @@ class TransactionObserver
         if (!Amount::convertToNative($transaction->transactionJournal->user)) {
             return;
         }
-        $userCurrency                       = app('amount')->getDefaultCurrencyByUserGroup($transaction->transactionJournal->user->userGroup);
+        $userCurrency                       = app('amount')->getNativeCurrencyByUserGroup($transaction->transactionJournal->user->userGroup);
         $transaction->native_amount         = null;
         $transaction->native_foreign_amount = null;
         // first normal amount

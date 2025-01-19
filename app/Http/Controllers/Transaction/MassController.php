@@ -24,14 +24,14 @@ declare(strict_types=1);
 namespace FireflyIII\Http\Controllers\Transaction;
 
 use Carbon\Carbon;
+use FireflyIII\Enums\AccountTypeEnum;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Events\UpdatedTransactionGroup;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Http\Controllers\Controller;
 use FireflyIII\Http\Requests\MassDeleteJournalRequest;
 use FireflyIII\Http\Requests\MassEditJournalRequest;
-use FireflyIII\Models\AccountType;
 use FireflyIII\Models\TransactionJournal;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\Repositories\Budget\BudgetRepositoryInterface;
 use FireflyIII\Repositories\Journal\JournalRepositoryInterface;
@@ -127,11 +127,11 @@ class MassController extends Controller
         $accountRepository   = app(AccountRepositoryInterface::class);
 
         // valid withdrawal sources:
-        $array               = array_keys(config(sprintf('firefly.source_dests.%s', TransactionType::WITHDRAWAL)));
+        $array               = array_keys(config(sprintf('firefly.source_dests.%s', TransactionTypeEnum::WITHDRAWAL->value)));
         $withdrawalSources   = $accountRepository->getAccountsByType($array);
 
         // valid deposit destinations:
-        $array               = config(sprintf('firefly.source_dests.%s.%s', TransactionType::DEPOSIT, AccountType::REVENUE));
+        $array               = config(sprintf('firefly.source_dests.%s.%s', TransactionTypeEnum::DEPOSIT->value, AccountTypeEnum::REVENUE->value));
         $depositDestinations = $accountRepository->getAccountsByType($array);
 
         /** @var BudgetRepositoryInterface $budgetRepository */

@@ -32,7 +32,6 @@ use FireflyIII\Models\Transaction;
 use FireflyIII\Models\TransactionCurrency;
 use FireflyIII\Models\TransactionGroup;
 use FireflyIII\Models\TransactionJournal;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use Illuminate\Support\Facades\Log;
 
@@ -159,7 +158,7 @@ class CreditRecalculateService
 
     private function processWorkAccount(Account $account): void
     {
-        Log::debug(sprintf('Now processing account #%d ("%s"). All amounts with 2 decimals!', $account->id, $account->name));
+        Log::debug(sprintf('Now processing account #%d ("%s").', $account->id, $account->name));
         // get opening balance (if present)
         $this->repository->setUser($account->user);
         $direction      = (string) $this->repository->getMetaValue($account, 'liability_direction');
@@ -171,7 +170,7 @@ class CreditRecalculateService
                 $this->validateOpeningBalance($account, $openingBalance);
             }
         }
-        $startOfDebt    = $this->repository->getOpeningBalanceAmount($account) ?? '0';
+        $startOfDebt    = $this->repository->getOpeningBalanceAmount($account, false) ?? '0';
         $leftOfDebt     = app('steam')->positive($startOfDebt);
         //        Log::debug(sprintf('Start of debt is "%s", so initial left of debt is "%s"', app('steam')->bcround($startOfDebt, 2), app('steam')->bcround($leftOfDebt, 2)));
 
@@ -230,15 +229,15 @@ class CreditRecalculateService
 
             return;
         }
-        Log::debug('Opening balance is valid');
+        // Log::debug('Opening balance is valid');
     }
 
     /**
      * A complex and long method, but rarely used luckily.
      *
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
-     * @SuppressWarnings(PHPMD.NPathComplexity)
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings("PHPMD.ExcessiveMethodLength")
+     * @SuppressWarnings("PHPMD.NPathComplexity")
+     * @SuppressWarnings("PHPMD.CyclomaticComplexity")
      */
     private function processTransaction(Account $account, string $direction, Transaction $transaction, string $leftOfDebt): string
     {
@@ -263,7 +262,7 @@ class CreditRecalculateService
             return $leftOfDebt;
         }
         if (TransactionTypeEnum::LIABILITY_CREDIT->value === $type || TransactionTypeEnum::OPENING_BALANCE->value === $type) {
-            Log::warning(sprintf('Transaction type is "%s", so do nothing.', $type));
+            // Log::warning(sprintf('Transaction type is "%s", so do nothing.', $type));
 
             return $leftOfDebt;
         }
@@ -343,7 +342,7 @@ class CreditRecalculateService
         }
 
         // in any other case, remove amount from left of debt.
-        if (in_array($type, [TransactionType::WITHDRAWAL, TransactionType::DEPOSIT, TransactionType::TRANSFER], true)) {
+        if (in_array($type, [TransactionTypeEnum::WITHDRAWAL->value, TransactionTypeEnum::DEPOSIT->value, TransactionTypeEnum::TRANSFER->value], true)) {
             $usedAmount = app('steam')->negative($usedAmount);
 
             return bcadd($leftOfDebt, $usedAmount);
@@ -380,7 +379,7 @@ class CreditRecalculateService
      */
     private function isWithdrawalIn(string $amount, string $transactionType): bool
     {
-        return TransactionType::WITHDRAWAL === $transactionType && 1 === bccomp($amount, '0');
+        return TransactionTypeEnum::WITHDRAWAL->value === $transactionType && 1 === bccomp($amount, '0');
     }
 
     /**
@@ -396,7 +395,7 @@ class CreditRecalculateService
      */
     private function isWithdrawalOut(string $amount, string $transactionType): bool
     {
-        return TransactionType::WITHDRAWAL === $transactionType && -1 === bccomp($amount, '0');
+        return TransactionTypeEnum::WITHDRAWAL->value === $transactionType && -1 === bccomp($amount, '0');
     }
 
     /**
@@ -412,7 +411,7 @@ class CreditRecalculateService
      */
     private function isDepositOut(string $amount, string $transactionType): bool
     {
-        return TransactionType::DEPOSIT === $transactionType && -1 === bccomp($amount, '0');
+        return TransactionTypeEnum::DEPOSIT->value === $transactionType && -1 === bccomp($amount, '0');
     }
 
     /**
@@ -423,7 +422,7 @@ class CreditRecalculateService
      */
     private function isDepositIn(string $amount, string $transactionType): bool
     {
-        return TransactionType::DEPOSIT === $transactionType && 1 === bccomp($amount, '0');
+        return TransactionTypeEnum::DEPOSIT->value === $transactionType && 1 === bccomp($amount, '0');
     }
 
     /**
@@ -437,7 +436,7 @@ class CreditRecalculateService
      */
     private function isTransferIn(string $amount, string $transactionType): bool
     {
-        return TransactionType::TRANSFER === $transactionType && 1 === bccomp($amount, '0');
+        return TransactionTypeEnum::TRANSFER->value === $transactionType && 1 === bccomp($amount, '0');
     }
 
     /**
@@ -449,7 +448,7 @@ class CreditRecalculateService
      */
     private function isTransferOut(string $amount, string $transactionType): bool
     {
-        return TransactionType::TRANSFER === $transactionType && -1 === bccomp($amount, '0');
+        return TransactionTypeEnum::TRANSFER->value === $transactionType && -1 === bccomp($amount, '0');
     }
 
     public function setAccount(?Account $account): void

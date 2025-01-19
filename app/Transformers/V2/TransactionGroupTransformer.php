@@ -25,6 +25,7 @@ declare(strict_types=1);
 namespace FireflyIII\Transformers\V2;
 
 use Carbon\Carbon;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Models\Budget;
 use FireflyIII\Models\Category;
@@ -35,7 +36,6 @@ use FireflyIII\Models\TransactionCurrency;
 use FireflyIII\Models\TransactionGroup;
 use FireflyIII\Models\TransactionJournal;
 use FireflyIII\Models\TransactionJournalMeta;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Support\Http\Api\ExchangeRateConverter;
 use FireflyIII\Support\NullArrayObject;
 use Illuminate\Support\Collection;
@@ -55,10 +55,10 @@ class TransactionGroupTransformer extends AbstractTransformer
 
     //    private array                 $currencies        = [];
     //    private array                 $transactionTypes  = [];
-    //    private array                 $meta              = [];
-    //    private array                 $notes             = [];
+    private array                 $meta         = [];
+    private array                 $notes        = [];
     //    private array                 $locations         = [];
-    //    private array                 $tags              = [];
+    private array                 $tags         = [];
     //    private array                 $amounts           = [];
     //    private array                 $foreignAmounts    = [];
     //    private array                 $journalCurrencies = [];
@@ -79,7 +79,7 @@ class TransactionGroupTransformer extends AbstractTransformer
             }
         }
 
-        $this->default     = app('amount')->getDefaultCurrency();
+        $this->default     = app('amount')->getNativeCurrency();
         $this->converter   = new ExchangeRateConverter();
 
         $this->collectAllMetaData();
@@ -310,12 +310,12 @@ class TransactionGroupTransformer extends AbstractTransformer
     /**
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings("PHPMD.ExcessiveMethodLength")
      */
     private function transformTransaction(array $transaction): array
     {
         $transaction         = new NullArrayObject($transaction);
-        $type                = $this->stringFromArray($transaction, 'transaction_type_type', TransactionType::WITHDRAWAL);
+        $type                = $this->stringFromArray($transaction, 'transaction_type_type', TransactionTypeEnum::WITHDRAWAL->value);
         $journalId           = (int) $transaction['transaction_journal_id'];
         $meta                = new NullArrayObject($this->meta[$journalId] ?? []);
 
@@ -504,7 +504,7 @@ class TransactionGroupTransformer extends AbstractTransformer
     /**
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings("PHPMD.ExcessiveMethodLength")
      */
     private function transformJournal(TransactionJournal $journal): array
     {

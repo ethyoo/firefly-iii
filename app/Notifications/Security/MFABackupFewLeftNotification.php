@@ -50,18 +50,18 @@ class MFABackupFewLeftNotification extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toArray(User $notifiable)
+    public function toArray(User $notifiable): array
     {
         return [
         ];
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toMail(User $notifiable)
+    public function toMail(User $notifiable): MailMessage
     {
         $subject   = (string) trans('email.mfa_few_backups_left_subject', ['count' => $this->count]);
         $ip        = Request::ip();
@@ -84,7 +84,7 @@ class MFABackupFewLeftNotification extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function toPushover(User $notifiable): PushoverMessage
     {
@@ -94,9 +94,9 @@ class MFABackupFewLeftNotification extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toSlack(User $notifiable)
+    public function toSlack(User $notifiable): SlackMessage
     {
         $message = (string) trans('email.mfa_few_backups_left_slack', ['email' => $this->user->email, 'count' => $this->count]);
 
@@ -104,9 +104,9 @@ class MFABackupFewLeftNotification extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function via(User $notifiable)
+    public function via(User $notifiable): array
     {
         return ReturnsAvailableChannels::returnChannels('user', $notifiable);
     }

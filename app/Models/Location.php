@@ -30,9 +30,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
-/**
- * @mixin IdeHelperLocation
- */
 class Location extends Model
 {
     use ReturnsIntegerIdTrait;

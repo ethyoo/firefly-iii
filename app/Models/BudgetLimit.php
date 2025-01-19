@@ -34,9 +34,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-/**
- * @mixin IdeHelperBudgetLimit
- */
 class BudgetLimit extends Model
 {
     use ReturnsIntegerIdTrait;

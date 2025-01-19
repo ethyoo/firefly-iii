@@ -36,6 +36,7 @@ use FireflyIII\Models\Category;
 use FireflyIII\Models\CurrencyExchangeRate;
 use FireflyIII\Models\GroupMembership;
 use FireflyIII\Models\ObjectGroup;
+use FireflyIII\Models\PiggyBank;
 use FireflyIII\Models\Preference;
 use FireflyIII\Models\Recurrence;
 use FireflyIII\Models\Role;
@@ -51,6 +52,7 @@ use FireflyIII\Models\UserRole;
 use FireflyIII\Models\Webhook;
 use FireflyIII\Notifications\Admin\UserRegistration;
 use FireflyIII\Notifications\Admin\VersionCheckResult;
+use FireflyIII\Support\Models\ReturnsIntegerIdTrait;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -64,13 +66,11 @@ use Laravel\Passport\HasApiTokens;
 use NotificationChannels\Pushover\PushoverReceiver;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-/**
- * @mixin IdeHelperUser
- */
 class User extends Authenticatable
 {
     use HasApiTokens;
     use Notifiable;
+    use ReturnsIntegerIdTrait;
 
     protected $casts
                         = [
@@ -329,9 +329,12 @@ class User extends Authenticatable
         return $this->hasMany(ObjectGroup::class);
     }
 
-    public function piggyBanks(): void
+    /**
+     * Link to piggy banks.
+     */
+    public function piggyBanks(): HasManyThrough
     {
-        throw new FireflyException('Method no longer supported.');
+        return $this->hasManyThrough(PiggyBank::class, Account::class);
     }
 
     /**
@@ -397,7 +400,7 @@ class User extends Authenticatable
         return $this->belongsToMany(Role::class);
     }
 
-    public function routeNotificationForPushover()
+    public function routeNotificationForPushover(): PushoverReceiver
     {
         $appToken  = (string) app('preferences')->getEncrypted('pushover_app_token', '')->data;
         $userToken = (string) app('preferences')->getEncrypted('pushover_user_token', '')->data;

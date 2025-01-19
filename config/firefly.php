@@ -56,7 +56,7 @@ use FireflyIII\TransactionRules\Actions\SetNotes;
 use FireflyIII\TransactionRules\Actions\SetSourceAccount;
 use FireflyIII\TransactionRules\Actions\SetSourceToCashAccount;
 use FireflyIII\TransactionRules\Actions\SwitchAccounts;
-use FireflyIII\TransactionRules\Actions\UpdatePiggybank;
+use FireflyIII\TransactionRules\Actions\UpdatePiggyBank;
 use FireflyIII\User;
 
 /*
@@ -81,7 +81,7 @@ return [
         'running_balance_column' => env('USE_RUNNING_BALANCE', false),
         // see cer.php for exchange rates feature flag.
     ],
-    'version'                      => '6.2.0-alpha.1',
+    'version'                      => '6.2.0-alpha.2',
     'api_version'                  => '2.1.0', // field is no longer used.
     'db_version'                   => 25,
 
@@ -421,7 +421,7 @@ return [
         'convert_deposit'         => ConvertToDeposit::class,
         'convert_transfer'        => ConvertToTransfer::class,
         'switch_accounts'         => SwitchAccounts::class,
-        'update_piggy'            => UpdatePiggybank::class,
+        'update_piggy'            => UpdatePiggyBank::class,
         'delete_transaction'      => DeleteTransaction::class,
         //        'append_descr_to_notes'   => AppendDescriptionToNotes::class,
         //        'append_notes_to_descr'   => AppendNotesToDescription::class,

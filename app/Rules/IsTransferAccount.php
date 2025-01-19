@@ -24,7 +24,7 @@ declare(strict_types=1);
 
 namespace FireflyIII\Rules;
 
-use FireflyIII\Models\TransactionType;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Validation\AccountValidator;
 use Illuminate\Contracts\Validation\ValidationRule;
 
@@ -34,7 +34,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 class IsTransferAccount implements ValidationRule
 {
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function validate(string $attribute, mixed $value, \Closure $fail): void
     {
@@ -42,7 +42,7 @@ class IsTransferAccount implements ValidationRule
 
         /** @var AccountValidator $validator */
         $validator    = app(AccountValidator::class);
-        $validator->setTransactionType(TransactionType::TRANSFER);
+        $validator->setTransactionType(TransactionTypeEnum::TRANSFER->value);
         $validator->setUser(auth()->user());
 
         $validAccount = $validator->validateSource(['name' => (string) $value]);

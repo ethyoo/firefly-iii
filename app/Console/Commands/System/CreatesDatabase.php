@@ -36,24 +36,19 @@ class CreatesDatabase extends Command
 
     protected $signature   = 'firefly-iii:create-database';
 
-    /**
-     * Execute the console command.
-     *
-     * @suppressWarnings(PHPMD.MissingImport)
-     */
     public function handle(): int
     {
-        if ('mysql' !== env('DB_CONNECTION', 'mysql')) {
+        if ('mysql' !== env('DB_CONNECTION')) { // @phpstan-ignore larastan.noEnvCallsOutsideOfConfig */
             $this->friendlyInfo(sprintf('CreateDB does not apply to "%s", skipped.', env('DB_CONNECTION')));
 
             return 0;
         }
         // try to set up a raw connection:
         $exists  = false;
-        $dsn     = sprintf('mysql:host=%s;port=%d;charset=utf8mb4', env('DB_HOST', 'localhost'), env('DB_PORT', '3306'));
+        $dsn     = sprintf('mysql:host=%s;port=%d;charset=utf8mb4', env('DB_HOST'), env('DB_PORT'));
 
-        if ('' !== env('DB_SOCKET', '')) {
-            $dsn = sprintf('mysql:unix_socket=%s;charset=utf8mb4', env('DB_SOCKET', ''));
+        if ('' !== (string) env('DB_SOCKET')) {
+            $dsn = sprintf('mysql:unix_socket=%s;charset=utf8mb4', env('DB_SOCKET'));
         }
         $this->friendlyLine(sprintf('DSN is %s', $dsn));
 
@@ -65,7 +60,7 @@ class CreatesDatabase extends Command
 
         // when it fails, display error
         try {
-            $pdo = new \PDO($dsn, env('DB_USERNAME'), env('DB_PASSWORD'), $options);
+            $pdo = new \PDO($dsn, (string) env('DB_USERNAME'), (string) env('DB_PASSWORD'), $options);
         } catch (\PDOException $e) {
             $this->friendlyError(sprintf('Error when connecting to DB: %s', $e->getMessage()));
 

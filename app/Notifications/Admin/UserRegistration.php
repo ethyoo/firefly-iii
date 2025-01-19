@@ -45,28 +45,26 @@ class UserRegistration extends Notification
 {
     use Queueable;
 
-    private OwnerNotifiable $owner;
     private User            $user;
 
-    public function __construct(OwnerNotifiable $owner, User $user)
+    public function __construct(User $user)
     {
-        $this->user  = $user;
-        $this->owner = $owner;
+        $this->user = $user;
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toArray(OwnerNotifiable $notifiable)
+    public function toArray(OwnerNotifiable $notifiable): array
     {
         return [
         ];
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toMail(OwnerNotifiable $notifiable)
+    public function toMail(OwnerNotifiable $notifiable): MailMessage
     {
         $ip        = Request::ip();
         $host      = Steam::getHostName($ip);
@@ -80,7 +78,7 @@ class UserRegistration extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function toNtfy(OwnerNotifiable $notifiable): Message
     {
@@ -95,7 +93,7 @@ class UserRegistration extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function toPushover(OwnerNotifiable $notifiable): PushoverMessage
     {
@@ -107,17 +105,17 @@ class UserRegistration extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toSlack(OwnerNotifiable $notifiable)
+    public function toSlack(OwnerNotifiable $notifiable): SlackMessage
     {
         return new SlackMessage()->content((string) trans('email.admin_new_user_registered', ['email' => $this->user->email, 'id' => $this->user->id]));
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function via(OwnerNotifiable $notifiable)
+    public function via(OwnerNotifiable $notifiable): array
     {
         return ReturnsAvailableChannels::returnChannels('owner');
     }

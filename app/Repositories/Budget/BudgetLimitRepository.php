@@ -223,7 +223,7 @@ class BudgetLimitRepository implements BudgetLimitRepositoryInterface
         // when both dates are set:
         return $budget->budgetlimits()
             ->where(
-                static function (Builder $q5) use ($start, $end): void { // @phpstan-ignore-line
+                static function (Builder $q5) use ($start, $end): void {
                     $q5->where(
                         static function (Builder $q1) use ($start, $end): void {
                             // budget limit ends within period
@@ -279,12 +279,13 @@ class BudgetLimitRepository implements BudgetLimitRepositoryInterface
         $factory                        = app(TransactionCurrencyFactory::class);
         $currency                       = $factory->find($data['currency_id'] ?? null, $data['currency_code'] ?? null);
         if (null === $currency) {
-            $currency = app('amount')->getDefaultCurrencyByUserGroup($this->user->userGroup);
+            $currency = app('amount')->getNativeCurrencyByUserGroup($this->user->userGroup);
         }
         $currency->enabled              = true;
         $currency->save();
 
         // find the budget:
+        /** @var null|Budget $budget */
         $budget                         = $this->user->budgets()->find((int) $data['budget_id']);
         if (null === $budget) {
             throw new FireflyException('200004: Budget does not exist.');
@@ -323,6 +324,7 @@ class BudgetLimitRepository implements BudgetLimitRepositoryInterface
 
     public function find(Budget $budget, TransactionCurrency $currency, Carbon $start, Carbon $end): ?BudgetLimit
     {
+        /** @var null|BudgetLimit */
         return $budget->budgetlimits()
             ->where('transaction_currency_id', $currency->id)
             ->where('start_date', $start->format('Y-m-d'))
@@ -375,7 +377,7 @@ class BudgetLimitRepository implements BudgetLimitRepositoryInterface
         }
         // catch unexpected null:
         if (null === $currency) {
-            $currency = $budgetLimit->transactionCurrency ?? app('amount')->getDefaultCurrencyByUserGroup($this->user->userGroup);
+            $currency = $budgetLimit->transactionCurrency ?? app('amount')->getNativeCurrencyByUserGroup($this->user->userGroup);
         }
         $currency->enabled                    = true;
         $currency->save();

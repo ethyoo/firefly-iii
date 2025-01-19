@@ -24,13 +24,13 @@ declare(strict_types=1);
 namespace FireflyIII\Repositories\Tag;
 
 use Carbon\Carbon;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Factory\TagFactory;
 use FireflyIII\Helpers\Collector\GroupCollectorInterface;
 use FireflyIII\Models\Attachment;
 use FireflyIII\Models\Location;
 use FireflyIII\Models\Note;
 use FireflyIII\Models\Tag;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Collection;
@@ -86,7 +86,7 @@ class TagRepository implements TagRepositoryInterface
         $collector = app(GroupCollectorInterface::class);
 
         $collector->setUser($this->user);
-        $collector->setRange($start, $end)->setTypes([TransactionType::WITHDRAWAL])->setTag($tag);
+        $collector->setRange($start, $end)->setTypes([TransactionTypeEnum::WITHDRAWAL->value])->setTag($tag);
 
         return $collector->getExtractedJournals();
     }
@@ -100,18 +100,19 @@ class TagRepository implements TagRepositoryInterface
 
     public function find(int $tagId): ?Tag
     {
+        /** @var null|Tag */
         return $this->user->tags()->find($tagId);
     }
 
     public function findByTag(string $tag): ?Tag
     {
-        // @var Tag|null
+        /** @var null|Tag */
         return $this->user->tags()->where('tag', $tag)->first();
     }
 
     public function firstUseDate(Tag $tag): ?Carbon
     {
-        // @var Carbon|null
+        /** @var null|Carbon */
         return $tag->transactionJournals()->orderBy('date', 'ASC')->first()?->date;
     }
 
@@ -123,7 +124,7 @@ class TagRepository implements TagRepositoryInterface
         $disk = \Storage::disk('upload');
 
         return $set->each(
-            static function (Attachment $attachment) use ($disk): void {
+            static function (Attachment $attachment) use ($disk): void { // @phpstan-ignore-line
                 /** @var null|Note $note */
                 $note                    = $attachment->notes()->first();
                 // only used in v1 view of tags
@@ -172,14 +173,14 @@ class TagRepository implements TagRepositoryInterface
         $collector = app(GroupCollectorInterface::class);
 
         $collector->setUser($this->user);
-        $collector->setRange($start, $end)->setTypes([TransactionType::DEPOSIT])->setTag($tag);
+        $collector->setRange($start, $end)->setTypes([TransactionTypeEnum::DEPOSIT->value])->setTag($tag);
 
         return $collector->getExtractedJournals();
     }
 
     public function lastUseDate(Tag $tag): ?Carbon
     {
-        // @var Carbon|null
+        /** @var null|Carbon */
         return $tag->transactionJournals()->orderBy('date', 'DESC')->first()?->date;
     }
 
@@ -188,13 +189,13 @@ class TagRepository implements TagRepositoryInterface
      */
     public function newestTag(): ?Tag
     {
-        // @var Tag|null
+        /** @var null|Tag */
         return $this->user->tags()->whereNotNull('date')->orderBy('date', 'DESC')->first();
     }
 
     public function oldestTag(): ?Tag
     {
-        // @var Tag|null
+        /** @var null|Tag */
         return $this->user->tags()->whereNotNull('date')->orderBy('date', 'ASC')->first();
     }
 
@@ -213,14 +214,13 @@ class TagRepository implements TagRepositoryInterface
      */
     public function searchTags(string $query, int $limit): Collection
     {
-        /** @var Collection $tags */
         $tags = $this->user->tags()->orderBy('tag', 'ASC');
         if ('' !== $query) {
             $search = sprintf('%%%s%%', $query);
             $tags->whereLike('tag', $search);
         }
 
-        return $tags->take($limit)->get('tags.*');
+        return $tags->take($limit)->get(['tags.*']);
     }
 
     public function store(array $data): Tag
@@ -261,21 +261,21 @@ class TagRepository implements TagRepositoryInterface
             }
             $currencyId               = (int) $journal['currency_id'];
             $sums[$currencyId] ??= [
-                'currency_id'                    => $currencyId,
-                'currency_name'                  => $journal['currency_name'],
-                'currency_symbol'                => $journal['currency_symbol'],
-                'currency_decimal_places'        => $journal['currency_decimal_places'],
-                TransactionType::WITHDRAWAL      => '0',
-                TransactionType::DEPOSIT         => '0',
-                TransactionType::TRANSFER        => '0',
-                TransactionType::RECONCILIATION  => '0',
-                TransactionType::OPENING_BALANCE => '0',
+                'currency_id'                               => $currencyId,
+                'currency_name'                             => $journal['currency_name'],
+                'currency_symbol'                           => $journal['currency_symbol'],
+                'currency_decimal_places'                   => $journal['currency_decimal_places'],
+                TransactionTypeEnum::WITHDRAWAL->value      => '0',
+                TransactionTypeEnum::DEPOSIT->value         => '0',
+                TransactionTypeEnum::TRANSFER->value        => '0',
+                TransactionTypeEnum::RECONCILIATION->value  => '0',
+                TransactionTypeEnum::OPENING_BALANCE->value => '0',
             ];
 
             // add amount to correct type:
             $amount                   = app('steam')->positive((string) $journal['amount']);
             $type                     = $journal['transaction_type_type'];
-            if (TransactionType::WITHDRAWAL === $type) {
+            if (TransactionTypeEnum::WITHDRAWAL->value === $type) {
                 $amount = bcmul($amount, '-1');
             }
             $sums[$currencyId][$type] = bcadd($sums[$currencyId][$type], $amount);
@@ -283,19 +283,19 @@ class TagRepository implements TagRepositoryInterface
             $foreignCurrencyId        = $journal['foreign_currency_id'];
             if (null !== $foreignCurrencyId && 0 !== $foreignCurrencyId) {
                 $sums[$foreignCurrencyId] ??= [
-                    'currency_id'                    => $foreignCurrencyId,
-                    'currency_name'                  => $journal['foreign_currency_name'],
-                    'currency_symbol'                => $journal['foreign_currency_symbol'],
-                    'currency_decimal_places'        => $journal['foreign_currency_decimal_places'],
-                    TransactionType::WITHDRAWAL      => '0',
-                    TransactionType::DEPOSIT         => '0',
-                    TransactionType::TRANSFER        => '0',
-                    TransactionType::RECONCILIATION  => '0',
-                    TransactionType::OPENING_BALANCE => '0',
+                    'currency_id'                               => $foreignCurrencyId,
+                    'currency_name'                             => $journal['foreign_currency_name'],
+                    'currency_symbol'                           => $journal['foreign_currency_symbol'],
+                    'currency_decimal_places'                   => $journal['foreign_currency_decimal_places'],
+                    TransactionTypeEnum::WITHDRAWAL->value      => '0',
+                    TransactionTypeEnum::DEPOSIT->value         => '0',
+                    TransactionTypeEnum::TRANSFER->value        => '0',
+                    TransactionTypeEnum::RECONCILIATION->value  => '0',
+                    TransactionTypeEnum::OPENING_BALANCE->value => '0',
                 ];
                 // add foreign amount to correct type:
                 $amount                          = app('steam')->positive((string) $journal['foreign_amount']);
-                if (TransactionType::WITHDRAWAL === $type) {
+                if (TransactionTypeEnum::WITHDRAWAL->value === $type) {
                     $amount = bcmul($amount, '-1');
                 }
                 $sums[$foreignCurrencyId][$type] = bcadd($sums[$foreignCurrencyId][$type], $amount);
@@ -324,7 +324,7 @@ class TagRepository implements TagRepositoryInterface
         /** @var GroupCollectorInterface $collector */
         $collector = app(GroupCollectorInterface::class);
         $collector->setUser($this->user);
-        $collector->setRange($start, $end)->setTypes([TransactionType::TRANSFER])->setTag($tag);
+        $collector->setRange($start, $end)->setTypes([TransactionTypeEnum::TRANSFER->value])->setTag($tag);
 
         return $collector->getExtractedJournals();
     }
@@ -380,7 +380,7 @@ class TagRepository implements TagRepositoryInterface
 
     public function getLocation(Tag $tag): ?Location
     {
-        // @var Location|null
+        /** @var null|Location */
         return $tag->locations()->first();
     }
 }

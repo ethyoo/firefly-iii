@@ -24,7 +24,7 @@ declare(strict_types=1);
 
 namespace FireflyIII\Support\Authentication;
 
-use FireflyIII\Console\Commands\Correction\CreateGroupMemberships;
+use FireflyIII\Console\Commands\Correction\CreatesGroupMemberships;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Models\Role;
 use FireflyIII\User;
@@ -47,7 +47,7 @@ class RemoteUserProvider implements UserProvider
     /**
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function retrieveByCredentials(array $credentials): ?Authenticatable
     {
@@ -82,7 +82,7 @@ class RemoteUserProvider implements UserProvider
             }
         }
         // make sure the user gets an administration as well.
-        CreateGroupMemberships::createGroupMembership($user);
+        CreatesGroupMemberships::createGroupMembership($user);
 
         app('log')->debug(sprintf('Going to return user #%d (%s)', $user->id, $user->email));
 
@@ -95,7 +95,7 @@ class RemoteUserProvider implements UserProvider
      *
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function retrieveByToken($identifier, $token): ?Authenticatable
     {
@@ -105,7 +105,7 @@ class RemoteUserProvider implements UserProvider
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      *
      * @param mixed $token
      *
@@ -121,7 +121,7 @@ class RemoteUserProvider implements UserProvider
     /**
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function validateCredentials(Authenticatable $user, array $credentials): bool
     {

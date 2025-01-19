@@ -55,34 +55,24 @@ class ConvertsDatesToUTC extends Command
 {
     use ShowsFriendlyMessages;
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Convert stored dates to UTC.';
-
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature   = 'correction:convert-to-utc';
 
-    /**
-     * Execute the console command.
-     */
     public function handle(): int
     {
-        $this->friendlyWarning('Please do not use this command.');
+        $this->friendlyWarning('Please do not use this command right now.');
 
-        return 0;
+        // this variable is ALWAYS en_US.
+        // stops phpstan complaining about dead code.
+        if ('en_US' === config('app.fallback_locale')) {
+            return Command::SUCCESS;
+        }
 
         /**
          * @var string $model
          * @var array  $fields
          */
-        foreach (AddTimezonesToDates::$models as $model => $fields) {
+        foreach (CorrectsTimezoneInformation::$models as $model => $fields) {
             $this->ConvertModeltoUTC($model, $fields);
         }
         // tell the system we are now in UTC mode.
@@ -122,10 +112,10 @@ class ConvertsDatesToUTC extends Command
         $items->each(
             function ($item) use ($field, $timezoneField): void {
                 /** @var Carbon $date */
-                $date                   = Carbon::parse($item->{$field}, $item->{$timezoneField});
+                $date                   = Carbon::parse($item->{$field}, $item->{$timezoneField}); // @phpstan-ignore-line
                 $date->setTimezone('UTC');
-                $item->{$field}         = $date->format('Y-m-d H:i:s');
-                $item->{$timezoneField} = 'UTC';
+                $item->{$field}         = $date->format('Y-m-d H:i:s'); // @phpstan-ignore-line
+                $item->{$timezoneField} = 'UTC';                        // @phpstan-ignore-line
                 $item->save();
             }
         );

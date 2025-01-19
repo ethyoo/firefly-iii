@@ -25,11 +25,11 @@ namespace FireflyIII\Http\Controllers;
 
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
+use FireflyIII\Enums\AccountTypeEnum;
 use FireflyIII\Events\RequestedVersionCheckStatus;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Helpers\Collector\GroupCollectorInterface;
 use FireflyIII\Http\Middleware\Installer;
-use FireflyIII\Models\AccountType;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\Repositories\Bill\BillRepositoryInterface;
 use FireflyIII\User;
@@ -145,7 +145,7 @@ class HomeController extends Controller
         $count          = $repository->count($types);
         $subTitle       = (string) trans('firefly.welcome_back');
         $transactions   = [];
-        $frontpage      = app('preferences')->getFresh('frontpageAccounts', $repository->getAccountsByType([AccountType::ASSET])->pluck('id')->toArray());
+        $frontpage      = app('preferences')->getFresh('frontpageAccounts', $repository->getAccountsByType([AccountTypeEnum::ASSET->value])->pluck('id')->toArray());
         $frontpageArray = $frontpage->data;
         if (!is_array($frontpageArray)) {
             $frontpageArray = [];

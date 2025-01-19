@@ -137,6 +137,12 @@ return [
         ],
         'v1' => [
             'firefly' => [
+                'administrations_page_title',
+                'administrations_index_menu',
+                'temp_administrations_introduction',
+                'administration_currency_form_help',
+                'administrations_page_edit_sub_title_js',
+                'table',
                 'welcome_back',
                 'flash_error',
                 'flash_warning',
@@ -146,6 +152,7 @@ return [
                 'select_source_account',
                 'split_transaction_title',
                 'errors_submission',
+                'is_reconciled',
                 'split',
                 'single_split',
                 'transaction_stored_link',
@@ -284,6 +291,7 @@ return [
                 'url',
                 'active',
                 'interest_date',
+                'administration_currency',
                 'title',
                 'date',
                 'book_date',
@@ -301,7 +309,9 @@ return [
                 'rate',
             ],
             'list'    => [
+                'title',
                 'active',
+                'native_currency',
                 'trigger',
                 'response',
                 'delivery',

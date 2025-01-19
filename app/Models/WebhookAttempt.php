@@ -32,9 +32,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-/**
- * @mixin IdeHelperWebhookAttempt
- */
 class WebhookAttempt extends Model
 {
     use ReturnsIntegerIdTrait;

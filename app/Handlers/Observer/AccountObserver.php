@@ -47,7 +47,7 @@ class AccountObserver
         if (!Amount::convertToNative($account->user)) {
             return;
         }
-        $userCurrency = app('amount')->getDefaultCurrencyByUserGroup($account->user->userGroup);
+        $userCurrency = app('amount')->getNativeCurrencyByUserGroup($account->user->userGroup);
         $repository   = app(AccountRepositoryInterface::class);
         $currency     = $repository->getAccountCurrency($account);
         if (null !== $currency && $currency->id !== $userCurrency->id && '' !== (string) $account->virtual_balance && 0 !== bccomp($account->virtual_balance, '0')) {
@@ -56,7 +56,7 @@ class AccountObserver
             $account->native_virtual_balance = $converter->convert($currency, $userCurrency, today(), $account->virtual_balance);
 
         }
-        if ('' === (string) $account->virtual_balance || ('' !== (string) $account->virtual_balance && 0 === bccomp($account->virtual_balance, '0'))) {
+        if ('' === (string) $account->virtual_balance || (0 === bccomp($account->virtual_balance, '0'))) {
             $account->virtual_balance        = null;
             $account->native_virtual_balance = null;
         }

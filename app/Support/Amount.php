@@ -55,7 +55,7 @@ class Amount
     public function getAmountFromJournal(array $journal): string
     {
         $convertToNative = $this->convertToNative();
-        $currency        = $this->getDefaultCurrency();
+        $currency        = $this->getNativeCurrency();
         $field           = $convertToNative && $currency->id !== $journal['currency_id'] ? 'native_amount' : 'amount';
         $amount          = $journal[$field] ?? '0';
         // Log::debug(sprintf('Field is %s, amount is %s', $field, $amount));
@@ -71,11 +71,11 @@ class Amount
     public function convertToNative(?User $user = null): bool
     {
         if (null === $user) {
-            return Preferences::get('convert_to_native', false)->data && config('cer.enabled');
+            return true === Preferences::get('convert_to_native', false)->data && true === config('cer.enabled');
             //            Log::debug(sprintf('convertToNative [a]: %s', var_export($result, true)));
         }
 
-        return Preferences::getForUser($user, 'convert_to_native', false)->data && config('cer.enabled');
+        return true === Preferences::getForUser($user, 'convert_to_native', false)->data && true === config('cer.enabled');
         // Log::debug(sprintf('convertToNative [b]: %s', var_export($result, true)));
     }
 
@@ -86,7 +86,7 @@ class Amount
     public function getAmountFromJournalObject(TransactionJournal $journal): string
     {
         $convertToNative   = $this->convertToNative();
-        $currency          = $this->getDefaultCurrency();
+        $currency          = $this->getNativeCurrency();
         $field             = $convertToNative && $currency->id !== $journal->transaction_currency_id ? 'native_amount' : 'amount';
 
         /** @var null|Transaction $sourceTransaction */
@@ -108,8 +108,6 @@ class Amount
      * as a currency, given two things: the currency required and the current locale.
      *
      * @throws FireflyException
-     *
-     * @SuppressWarnings(PHPMD.MissingImport)
      */
     public function formatFlat(string $symbol, int $decimalPlaces, string $amount, ?bool $coloured = null): string
     {
@@ -157,36 +155,54 @@ class Amount
         return $user->currencies()->orderBy('code', 'ASC')->get();
     }
 
+    /**
+     * @deprecated
+     */
     public function getDefaultCurrency(): TransactionCurrency
+    {
+        return $this->getNativeCurrency();
+    }
+
+    public function getNativeCurrency(): TransactionCurrency
     {
         if (auth()->check()) {
             /** @var User $user */
             $user = auth()->user();
             if (null !== $user->userGroup) {
-                return $this->getDefaultCurrencyByUserGroup($user->userGroup);
+                return $this->getNativeCurrencyByUserGroup($user->userGroup);
             }
         }
 
         return $this->getSystemCurrency();
     }
 
+    /**
+     * @deprecated
+     */
     public function getDefaultCurrencyByUserGroup(UserGroup $userGroup): TransactionCurrency
     {
-        $cache   = new CacheProperties();
-        $cache->addProperty('getDefaultCurrencyByGroup');
+        return $this->getNativeCurrencyByUserGroup($userGroup);
+    }
+
+    public function getNativeCurrencyByUserGroup(UserGroup $userGroup): TransactionCurrency
+    {
+        $cache  = new CacheProperties();
+        $cache->addProperty('getNativeCurrencyByGroup');
         $cache->addProperty($userGroup->id);
         if ($cache->has()) {
             return $cache->get();
         }
-        $default = $userGroup->currencies()->where('group_default', true)->first();
-        if (null === $default) {
-            $default = $this->getSystemCurrency();
-            // could be the user group has no default right now.
-            $userGroup->currencies()->sync([$default->id => ['group_default' => true]]);
-        }
-        $cache->store($default);
 
-        return $default;
+        /** @var null|TransactionCurrency $native */
+        $native = $userGroup->currencies()->where('group_default', true)->first();
+        if (null === $native) {
+            $native = $this->getSystemCurrency();
+            // could be the user group has no default right now.
+            $userGroup->currencies()->sync([$native->id => ['group_default' => true]]);
+        }
+        $cache->store($native);
+
+        return $native;
     }
 
     public function getSystemCurrency(): TransactionCurrency
@@ -229,8 +245,6 @@ class Amount
 
     /**
      * @throws FireflyException
-     *
-     * @SuppressWarnings(PHPMD.MissingImport)
      */
     private function getLocaleInfo(): array
     {

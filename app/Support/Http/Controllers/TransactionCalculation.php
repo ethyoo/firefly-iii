@@ -25,8 +25,8 @@ declare(strict_types=1);
 namespace FireflyIII\Support\Http\Controllers;
 
 use Carbon\Carbon;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Helpers\Collector\GroupCollectorInterface;
-use FireflyIII\Models\TransactionType;
 use Illuminate\Support\Collection;
 
 /**
@@ -46,7 +46,7 @@ trait TransactionCalculation
         $collector->setAccounts($total)
             ->setRange($start, $end)
             ->withAccountInformation()
-            ->setTypes([TransactionType::WITHDRAWAL])
+            ->setTypes([TransactionTypeEnum::WITHDRAWAL->value])
         ;
 
         return $collector->getExtractedJournals();
@@ -60,7 +60,7 @@ trait TransactionCalculation
         /** @var GroupCollectorInterface $collector */
         $collector = app(GroupCollectorInterface::class);
 
-        $collector->setAccounts($accounts)->setRange($start, $end)->setTypes([TransactionType::WITHDRAWAL, TransactionType::TRANSFER])
+        $collector->setAccounts($accounts)->setRange($start, $end)->setTypes([TransactionTypeEnum::WITHDRAWAL->value, TransactionTypeEnum::TRANSFER->value])
             ->setTags($tags)->withAccountInformation()
         ;
 
@@ -74,7 +74,7 @@ trait TransactionCalculation
     {
         /** @var GroupCollectorInterface $collector */
         $collector = app(GroupCollectorInterface::class);
-        $collector->setAccounts($accounts)->setRange($start, $end)->setTypes([TransactionType::WITHDRAWAL, TransactionType::TRANSFER])
+        $collector->setAccounts($accounts)->setRange($start, $end)->setTypes([TransactionTypeEnum::WITHDRAWAL->value, TransactionTypeEnum::TRANSFER->value])
             ->setBudgets($budgets)->withAccountInformation()
         ;
 
@@ -91,7 +91,7 @@ trait TransactionCalculation
         $collector
             ->setAccounts($accounts)
             ->setRange($start, $end)
-            ->setTypes([TransactionType::WITHDRAWAL, TransactionType::TRANSFER])
+            ->setTypes([TransactionTypeEnum::WITHDRAWAL->value, TransactionTypeEnum::TRANSFER->value])
             ->setCategories($categories)
             ->withAccountInformation()
         ;
@@ -106,7 +106,7 @@ trait TransactionCalculation
     {
         /** @var GroupCollectorInterface $collector */
         $collector = app(GroupCollectorInterface::class);
-        $collector->setAccounts($accounts)->setRange($start, $end)->setTypes([TransactionType::DEPOSIT, TransactionType::TRANSFER])
+        $collector->setAccounts($accounts)->setRange($start, $end)->setTypes([TransactionTypeEnum::DEPOSIT->value, TransactionTypeEnum::TRANSFER->value])
             ->setCategories($categories)->withAccountInformation()
         ;
 
@@ -122,7 +122,7 @@ trait TransactionCalculation
 
         /** @var GroupCollectorInterface $collector */
         $collector = app(GroupCollectorInterface::class);
-        $collector->setAccounts($total)->setRange($start, $end)->withAccountInformation()->setTypes([TransactionType::DEPOSIT]);
+        $collector->setAccounts($total)->setRange($start, $end)->withAccountInformation()->setTypes([TransactionTypeEnum::DEPOSIT->value]);
 
         return $collector->getExtractedJournals();
     }
@@ -134,7 +134,7 @@ trait TransactionCalculation
     {
         /** @var GroupCollectorInterface $collector */
         $collector = app(GroupCollectorInterface::class);
-        $collector->setAccounts($accounts)->setRange($start, $end)->setTypes([TransactionType::DEPOSIT, TransactionType::TRANSFER])
+        $collector->setAccounts($accounts)->setRange($start, $end)->setTypes([TransactionTypeEnum::DEPOSIT->value, TransactionTypeEnum::TRANSFER->value])
             ->setTags($tags)->withAccountInformation()
         ;
 

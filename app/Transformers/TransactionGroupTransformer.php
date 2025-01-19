@@ -24,6 +24,7 @@ declare(strict_types=1);
 
 namespace FireflyIII\Transformers;
 
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Models\Bill;
 use FireflyIII\Models\Budget;
@@ -33,7 +34,6 @@ use FireflyIII\Models\Transaction;
 use FireflyIII\Models\TransactionCurrency;
 use FireflyIII\Models\TransactionGroup;
 use FireflyIII\Models\TransactionJournal;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\TransactionGroup\TransactionGroupRepositoryInterface;
 use FireflyIII\Support\NullArrayObject;
 use Illuminate\Support\Collection;
@@ -108,7 +108,7 @@ class TransactionGroupTransformer extends AbstractTransformer
     }
 
     /**
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings("PHPMD.ExcessiveMethodLength")
      */
     private function transformTransaction(array $transaction): array
     {
@@ -123,7 +123,7 @@ class TransactionGroupTransformer extends AbstractTransformer
 
         $metaFieldData = $this->groupRepos->getMetaFields((int) $row['transaction_journal_id'], $this->metaFields);
         $metaDateData  = $this->groupRepos->getMetaDateFields((int) $row['transaction_journal_id'], $this->metaDateFields);
-        $type          = $this->stringFromArray($transaction, 'transaction_type_type', TransactionType::WITHDRAWAL);
+        $type          = $this->stringFromArray($transaction, 'transaction_type_type', TransactionTypeEnum::WITHDRAWAL->value);
 
         $longitude     = null;
         $latitude      = null;
@@ -246,6 +246,7 @@ class TransactionGroupTransformer extends AbstractTransformer
 
     private function getLocation(TransactionJournal $journal): ?Location
     {
+        /** @var null|Location */
         return $journal->locations()->first();
     }
 
@@ -322,7 +323,7 @@ class TransactionGroupTransformer extends AbstractTransformer
     /**
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings("PHPMD.ExcessiveMethodLength")
      */
     private function transformJournal(TransactionJournal $journal): array
     {

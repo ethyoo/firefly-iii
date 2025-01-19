@@ -85,15 +85,30 @@ class EditController extends Controller
         // build triggers from query, if present.
         $query          = (string) $request->get('from_query');
         if ('' !== $query) {
-            $search      = app(SearchInterface::class);
+            $search        = app(SearchInterface::class);
             $search->parseQuery($query);
-            $words       = $search->getWordsAsString();
-            $operators   = $search->getOperators()->toArray();
-            if ('' !== $words) {
-                session()->flash('warning', trans('firefly.rule_from_search_words', ['string' => $words]));
-                $operators[] = ['type' => 'description_contains', 'value' => $words];
+            $words         = $search->getWords();
+            $excludedWords = $search->getExcludedWords();
+            $operators     = $search->getOperators()->toArray();
+            if (count($words) > 0) {
+                session()->flash('warning', trans('firefly.rule_from_search_words', ['string' => implode('', $words)]));
+                foreach ($words as $word) {
+                    $operators[] = [
+                        'type'  => 'description_contains',
+                        'value' => $word,
+                    ];
+                }
             }
-            $oldTriggers = $this->parseFromOperators($operators);
+            if (count($excludedWords) > 0) {
+                session()->flash('warning', trans('firefly.rule_from_search_words', ['string' => implode('', $excludedWords)]));
+                foreach ($excludedWords as $excludedWord) {
+                    $operators[] = [
+                        'type'  => '-description_contains',
+                        'value' => $excludedWord,
+                    ];
+                }
+            }
+            $oldTriggers   = $this->parseFromOperators($operators);
         }
         // has old input?
         if (null !== $request->old() && is_array($request->old()) && count($request->old()) > 0) {

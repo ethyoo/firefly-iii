@@ -30,9 +30,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-/**
- * @mixin IdeHelperRecurrenceRepetition
- */
 class RecurrenceRepetition extends Model
 {
     use ReturnsIntegerIdTrait;
@@ -63,7 +60,6 @@ class RecurrenceRepetition extends Model
 
     protected $fillable                    = ['recurrence_id', 'weekend', 'repetition_type', 'repetition_moment', 'repetition_skip'];
 
-    /** @var string The table to store the data in */
     protected $table                       = 'recurrences_repetitions';
 
     public function recurrence(): BelongsTo

@@ -29,9 +29,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-/**
- * @mixin IdeHelperTransactionJournalMeta
- */
 class TransactionJournalMeta extends Model
 {
     use ReturnsIntegerIdTrait;
@@ -46,7 +43,6 @@ class TransactionJournalMeta extends Model
 
     protected $fillable = ['transaction_journal_id', 'name', 'data', 'hash'];
 
-    /** @var string The table to store the data in */
     protected $table    = 'journal_meta';
 
     /**

@@ -53,9 +53,13 @@ class BudgetLimitHandler
     private function updateAvailableBudget(BudgetLimit $budgetLimit): void
     {
         Log::debug(sprintf('Now in updateAvailableBudget(limit #%d)', $budgetLimit->id));
+
+        /** @var null|Budget $budget */
         $budget      = Budget::find($budgetLimit->budget_id);
         if (null === $budget) {
             Log::warning('Budget is null, probably deleted, find deleted version.');
+
+            /** @var null|Budget $budget */
             $budget = Budget::withTrashed()->find($budgetLimit->budget_id);
         }
         if (null === $budget) {

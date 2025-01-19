@@ -23,7 +23,7 @@
 declare(strict_types=1);
 
 return [
-    'operators' => [
+    'operators'        => [
         'user_action'                             => ['alias' => false, 'needs_context' => true],
         'account_id'                              => ['alias' => false, 'needs_context' => true],
         'reconciled'                              => ['alias' => false, 'needs_context' => false],
@@ -253,4 +253,8 @@ return [
         'destination_balance_lt'                  => ['alias' => false, 'needs_context' => true],
         'destination_balance_is'                  => ['alias' => false, 'needs_context' => true],
     ],
+    /**
+     * Which query parser to use - 'new' or 'legacy'
+     */
+    'query_parser'     => env('QUERY_PARSER_IMPLEMENTATION', 'legacy'),
 ];

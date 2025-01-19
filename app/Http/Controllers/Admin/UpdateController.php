@@ -47,7 +47,7 @@ class UpdateController extends Controller
         parent::__construct();
         $this->middleware(
             static function ($request, $next) {
-                app('view')->share('title', (string) trans('firefly.administration'));
+                app('view')->share('title', (string) trans('firefly.system_settings'));
                 app('view')->share('mainTitleIcon', 'fa-hand-spock-o');
 
                 return $next($request);
@@ -81,7 +81,7 @@ class UpdateController extends Controller
             'alpha'  => (string) trans('firefly.update_channel_alpha'),
         ];
 
-        return view('admin.update.index', compact('subTitle', 'subTitleIcon', 'selected', 'options', 'channelSelected', 'channelOptions'));
+        return view('settings.update.index', compact('subTitle', 'subTitleIcon', 'selected', 'options', 'channelSelected', 'channelOptions'));
     }
 
     /**
@@ -100,7 +100,7 @@ class UpdateController extends Controller
         app('fireflyconfig')->set('update_channel', $channel);
         session()->flash('success', (string) trans('firefly.configuration_updated'));
 
-        return redirect(route('admin.update-check'));
+        return redirect(route('settings.update-check'));
     }
 
     /**
@@ -112,6 +112,6 @@ class UpdateController extends Controller
 
         session()->flash($release['level'], $release['message']);
 
-        return redirect(route('admin.update-check'));
+        return redirect(route('settings.update-check'));
     }
 }

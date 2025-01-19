@@ -25,9 +25,10 @@ declare(strict_types=1);
 namespace FireflyIII\Http\Controllers;
 
 use Carbon\Carbon;
+use FireflyIII\Enums\AccountTypeEnum;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Http\Middleware\IsDemoUser;
-use FireflyIII\Models\AccountType;
 use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\PiggyBank\PiggyBankRepositoryInterface;
 use FireflyIII\Support\Http\Controllers\GetConfigurationData;
@@ -65,6 +66,8 @@ class DebugController extends Controller
         if (!auth()->user()->hasRole('owner')) {
             throw new NotFoundHttpException();
         }
+
+        /** @var iterable $routes */
         $routes = Route::getRoutes();
         $return = [];
 
@@ -120,7 +123,6 @@ class DebugController extends Controller
         }
 
         exit;
-        var_dump($return);
     }
 
     /**
@@ -245,7 +247,7 @@ class DebugController extends Controller
     private function getBuildInfo(): array
     {
         $return = [
-            'is_docker'       => env('IS_DOCKER', false),
+            'is_docker'       => env('IS_DOCKER', false), // @phpstan-ignore-line
             'build'           => '(unknown)',
             'build_date'      => '(unknown)',
             'base_build'      => '(unknown)',
@@ -257,7 +259,7 @@ class DebugController extends Controller
                 $return['build'] = trim((string) file_get_contents('/var/www/counter-main.txt'));
                 app('log')->debug(sprintf('build is now "%s"', $return['build']));
             }
-        } catch (\Exception $e) { // @phpstan-ignore-line
+        } catch (\Exception $e) {
             app('log')->debug('Could not check build counter, but thats ok.');
             app('log')->warning($e->getMessage());
         }
@@ -266,15 +268,15 @@ class DebugController extends Controller
             if (file_exists('/var/www/build-date-main.txt')) {
                 $return['build_date'] = trim((string) file_get_contents('/var/www/build-date-main.txt'));
             }
-        } catch (\Exception $e) { // @phpstan-ignore-line
+        } catch (\Exception $e) {
             app('log')->debug('Could not check build date, but thats ok.');
             app('log')->warning($e->getMessage());
         }
-        if ('' !== (string) env('BASE_IMAGE_BUILD')) {
-            $return['base_build'] = env('BASE_IMAGE_BUILD');
+        if ('' !== (string) env('BASE_IMAGE_BUILD')) { // @phpstan-ignore-line
+            $return['base_build'] = env('BASE_IMAGE_BUILD'); // @phpstan-ignore-line
         }
-        if ('' !== (string) env('BASE_IMAGE_DATE')) {
-            $return['base_build_date'] = env('BASE_IMAGE_DATE');
+        if ('' !== (string) env('BASE_IMAGE_DATE')) { // @phpstan-ignore-line
+            $return['base_build_date'] = env('BASE_IMAGE_DATE'); // @phpstan-ignore-line
         }
 
         return $return;
@@ -351,7 +353,7 @@ class DebugController extends Controller
         $user       = auth()->user();
 
         // has liabilities
-        if ($user->accounts()->accountTypeIn([AccountType::DEBT, AccountType::LOAN, AccountType::MORTGAGE])->count() > 0) {
+        if ($user->accounts()->accountTypeIn([AccountTypeEnum::DEBT->value, AccountTypeEnum::LOAN->value, AccountTypeEnum::MORTGAGE->value])->count() > 0) {
             $flags[] = '<span title="Has liabilities">:credit_card:</span>';
         }
 
@@ -364,7 +366,7 @@ class DebugController extends Controller
         }
 
         // has stored reconciliations
-        $type       = TransactionType::whereType(TransactionType::RECONCILIATION)->first();
+        $type       = TransactionType::whereType(TransactionTypeEnum::RECONCILIATION->value)->first();
         if ($user->transactionJournals()->where('transaction_type_id', $type->id)->count() > 0) {
             $flags[] = '<span title="Has reconciled">:ledger:</span>';
         }

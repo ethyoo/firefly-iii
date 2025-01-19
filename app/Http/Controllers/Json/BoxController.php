@@ -24,13 +24,12 @@ declare(strict_types=1);
 namespace FireflyIII\Http\Controllers\Json;
 
 use Carbon\Carbon;
+use FireflyIII\Enums\AccountTypeEnum;
 use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Helpers\Collector\GroupCollectorInterface;
 use FireflyIII\Helpers\Report\NetWorthInterface;
 use FireflyIII\Http\Controllers\Controller;
 use FireflyIII\Models\Account;
-use FireflyIII\Models\AccountType;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\Repositories\UserGroups\Currency\CurrencyRepositoryInterface;
 use FireflyIII\Support\CacheProperties;
@@ -84,7 +83,7 @@ class BoxController extends Controller
         /** @var GroupCollectorInterface $collector */
         $collector = app(GroupCollectorInterface::class);
         $collector->setRange($start, $end)
-            ->setTypes([TransactionType::DEPOSIT])
+            ->setTypes([TransactionTypeEnum::DEPOSIT->value])
         ;
         $set       = $collector->getExtractedJournals();
 
@@ -163,7 +162,7 @@ class BoxController extends Controller
         /** @var AccountRepositoryInterface $accountRepository */
         $accountRepository = app(AccountRepositoryInterface::class);
         $allAccounts       = $accountRepository->getActiveAccountsByType(
-            [AccountType::DEFAULT, AccountType::ASSET, AccountType::LOAN, AccountType::DEBT, AccountType::MORTGAGE]
+            [AccountTypeEnum::DEFAULT->value, AccountTypeEnum::ASSET->value, AccountTypeEnum::LOAN->value, AccountTypeEnum::DEBT->value, AccountTypeEnum::MORTGAGE->value]
         );
         app('log')->debug(sprintf('Found %d accounts.', $allAccounts->count()));
 

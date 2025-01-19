@@ -50,6 +50,8 @@ class CurrencyForm
 
     /**
      * @throws FireflyException
+     *
+     * @phpstan-param view-string $view
      */
     protected function currencyField(string $name, string $view, mixed $value = null, ?array $options = null): string
     {
@@ -58,7 +60,7 @@ class CurrencyForm
         $classes         = $this->getHolderClasses($name);
         $value           = $this->fillFieldValue($name, $value);
         $options['step'] = 'any';
-        $defaultCurrency = $options['currency'] ?? app('amount')->getDefaultCurrency();
+        $defaultCurrency = $options['currency'] ?? app('amount')->getNativeCurrency();
 
         /** @var Collection $currencies */
         $currencies      = app('amount')->getCurrencies();
@@ -126,7 +128,7 @@ class CurrencyForm
         $classes         = $this->getHolderClasses($name);
         $value           = $this->fillFieldValue($name, $value);
         $options['step'] = 'any';
-        $defaultCurrency = $options['currency'] ?? app('amount')->getDefaultCurrency();
+        $defaultCurrency = $options['currency'] ?? app('amount')->getNativeCurrency();
 
         /** @var Collection $currencies */
         $currencies      = app('amount')->getAllCurrencies();

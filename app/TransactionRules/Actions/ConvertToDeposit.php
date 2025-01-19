@@ -24,12 +24,13 @@ declare(strict_types=1);
 
 namespace FireflyIII\TransactionRules\Actions;
 
+use FireflyIII\Enums\AccountTypeEnum;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Events\Model\Rule\RuleActionFailedOnArray;
 use FireflyIII\Events\TriggeredAuditLog;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Factory\AccountFactory;
 use FireflyIII\Models\Account;
-use FireflyIII\Models\AccountType;
 use FireflyIII\Models\RuleAction;
 use FireflyIII\Models\Transaction;
 use FireflyIII\Models\TransactionJournal;
@@ -74,14 +75,14 @@ class ConvertToDeposit implements ActionInterface
 
         app('log')->debug(sprintf('Convert journal #%d to deposit.', $journal['transaction_journal_id']));
         $type        = $object->transactionType->type;
-        if (TransactionType::DEPOSIT === $type) {
+        if (TransactionTypeEnum::DEPOSIT->value === $type) {
             app('log')->error(sprintf('Journal #%d is already a deposit (rule #%d).', $journal['transaction_journal_id'], $this->action->rule_id));
             event(new RuleActionFailedOnArray($this->action, $journal, trans('rules.is_already_deposit')));
 
             return false;
         }
 
-        if (TransactionType::WITHDRAWAL === $type) {
+        if (TransactionTypeEnum::WITHDRAWAL->value === $type) {
             app('log')->debug('Going to transform a withdrawal to a deposit.');
 
             try {
@@ -94,11 +95,11 @@ class ConvertToDeposit implements ActionInterface
                 return false;
             }
 
-            event(new TriggeredAuditLog($this->action->rule, $object, 'update_transaction_type', TransactionType::WITHDRAWAL, TransactionType::DEPOSIT));
+            event(new TriggeredAuditLog($this->action->rule, $object, 'update_transaction_type', TransactionTypeEnum::WITHDRAWAL->value, TransactionTypeEnum::DEPOSIT->value));
 
             return $res;
         }
-        if (TransactionType::TRANSFER === $type) {
+        if (TransactionTypeEnum::TRANSFER->value === $type) {
             app('log')->debug('Going to transform a transfer to a deposit.');
 
             try {
@@ -110,7 +111,7 @@ class ConvertToDeposit implements ActionInterface
 
                 return false;
             }
-            event(new TriggeredAuditLog($this->action->rule, $object, 'update_transaction_type', TransactionType::TRANSFER, TransactionType::DEPOSIT));
+            event(new TriggeredAuditLog($this->action->rule, $object, 'update_transaction_type', TransactionTypeEnum::TRANSFER->value, TransactionTypeEnum::DEPOSIT->value));
 
             return $res;
         }
@@ -147,7 +148,7 @@ class ConvertToDeposit implements ActionInterface
         $validTypes      = config('firefly.expected_source_types.source.Deposit');
         $opposingAccount = $repository->findByName($opposingName, $validTypes);
         if (null === $opposingAccount) {
-            $opposingAccount = $factory->findOrCreate($opposingName, AccountType::REVENUE);
+            $opposingAccount = $factory->findOrCreate($opposingName, AccountTypeEnum::REVENUE->value);
         }
 
         app('log')->debug(sprintf('ConvertToDeposit. Action value is "%s", new opposing name is "%s"', $actionValue, $opposingAccount->name));
@@ -167,7 +168,7 @@ class ConvertToDeposit implements ActionInterface
         ;
 
         // change transaction type of journal:
-        $newType         = TransactionType::whereType(TransactionType::DEPOSIT)->first();
+        $newType         = TransactionType::whereType(TransactionTypeEnum::DEPOSIT->value)->first();
 
         \DB::table('transaction_journals')
             ->where('id', '=', $journal->id)
@@ -235,7 +236,7 @@ class ConvertToDeposit implements ActionInterface
         $validTypes      = config('firefly.expected_source_types.source.Deposit');
         $opposingAccount = $repository->findByName($opposingName, $validTypes);
         if (null === $opposingAccount) {
-            $opposingAccount = $factory->findOrCreate($opposingName, AccountType::REVENUE);
+            $opposingAccount = $factory->findOrCreate($opposingName, AccountTypeEnum::REVENUE->value);
         }
 
         app('log')->debug(sprintf('ConvertToDeposit. Action value is "%s", revenue name is "%s"', $actionValue, $opposingAccount->name));
@@ -248,7 +249,7 @@ class ConvertToDeposit implements ActionInterface
         ;
 
         // change transaction type of journal:
-        $newType         = TransactionType::whereType(TransactionType::DEPOSIT)->first();
+        $newType         = TransactionType::whereType(TransactionTypeEnum::DEPOSIT->value)->first();
 
         \DB::table('transaction_journals')
             ->where('id', '=', $journal->id)

@@ -62,8 +62,6 @@ class InstallController extends Controller
             'migrate'                            => ['--seed' => true, '--force' => true],
             'generate-keys'                      => [], // an exception :(
             'firefly-iii:upgrade-database'       => [],
-            // 'firefly-iii:correct-database'       => [],
-            // 'firefly-iii:report-integrity'       => [],
             'firefly-iii:set-latest-version'     => ['--james-is-cool' => true],
             'firefly-iii:verify-security-alerts' => [],
         ];
@@ -100,7 +98,7 @@ class InstallController extends Controller
         ];
 
         app('log')->debug(sprintf('Will now run commands. Request index is %d', $requestIndex));
-        $indexes      = array_values(array_keys($this->upgradeCommands));
+        $indexes      = array_keys($this->upgradeCommands);
         if (array_key_exists($requestIndex, $indexes)) {
             $command                    = $indexes[$requestIndex];
             $parameters                 = $this->upgradeCommands[$command];

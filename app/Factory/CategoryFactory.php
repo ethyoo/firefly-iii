@@ -84,6 +84,7 @@ class CategoryFactory
 
     public function findByName(string $name): ?Category
     {
+        /** @var null|Category */
         return $this->user->categories()->where('name', $name)->first();
     }
 

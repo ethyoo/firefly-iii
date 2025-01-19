@@ -79,7 +79,7 @@ use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 /**
  * Class FireflyServiceProvider.
  *
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @SuppressWarnings("PHPMD.CouplingBetweenObjects")
  */
 class FireflyServiceProvider extends ServiceProvider
 {
@@ -98,7 +98,7 @@ class FireflyServiceProvider extends ServiceProvider
     /**
      * Register stuff.
      *
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings("PHPMD.ExcessiveMethodLength")
      */
     public function register(): void
     {

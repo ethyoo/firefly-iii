@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace FireflyIII\Validation;
 
+use FireflyIII\Enums\AccountTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Models\Account;
 use FireflyIII\Models\AccountMeta;
@@ -56,7 +57,7 @@ class FireflyValidator extends Validator
      * @throws InvalidCharactersException
      * @throws SecretKeyTooShortException
      *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function validate2faCode($attribute, $value): bool
     {
@@ -70,13 +71,13 @@ class FireflyValidator extends Validator
             return false;
         }
         $secretPreference = app('preferences')->get('temp-mfa-secret');
-        $secret           = $secretPreference?->data ?? '';
+        $secret           = $secretPreference->data ?? '';
         if (is_array($secret)) {
             $secret = '';
         }
         $secret           = (string) $secret;
 
-        return (bool) \Google2FA::verifyKey((string) $secret, $value);
+        return (bool) \Google2FA::verifyKey($secret, $value);
     }
 
     /**
@@ -84,7 +85,7 @@ class FireflyValidator extends Validator
      * @param mixed $value
      * @param mixed $parameters
      *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function validateBelongsToUser($attribute, $value, $parameters): bool
     {
@@ -99,12 +100,9 @@ class FireflyValidator extends Validator
     }
 
     /**
-     * @param mixed $attribute
-     * @param mixed $value
-     *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function validateBic($attribute, $value): bool
+    public function validateBic(mixed $attribute, mixed  $value): bool
     {
         $regex  = '/^[a-z]{6}[0-9a-z]{2}([0-9a-z]{3})?\z/i';
         $result = preg_match($regex, $value);
@@ -115,7 +113,7 @@ class FireflyValidator extends Validator
         return true;
     }
 
-    public function validateExistingMfaCode($attribute, $value): bool
+    public function validateExistingMfaCode(mixed $attribute, mixed $value): bool
     {
         if (!is_string($value) || 6 !== strlen($value)) {
             return false;
@@ -132,8 +130,8 @@ class FireflyValidator extends Validator
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
+     * @SuppressWarnings("PHPMD.ExcessiveMethodLength")
      */
     public function validateIban(mixed $attribute, mixed $value): bool
     {
@@ -228,7 +226,7 @@ class FireflyValidator extends Validator
      * @param mixed $value
      * @param mixed $parameters
      *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function validateLess($attribute, $value, $parameters): bool
     {
@@ -243,7 +241,7 @@ class FireflyValidator extends Validator
      * @param mixed $value
      * @param mixed $parameters
      *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function validateMore($attribute, $value, $parameters): bool
     {
@@ -258,7 +256,7 @@ class FireflyValidator extends Validator
      * @param mixed $value
      * @param mixed $parameters
      *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function validateMustExist($attribute, $value, $parameters): bool
     {
@@ -316,12 +314,12 @@ class FireflyValidator extends Validator
             $account    = $repository->findByName(
                 $value,
                 [
-                    AccountType::DEFAULT,
-                    AccountType::ASSET,
-                    AccountType::LOAN,
-                    AccountType::DEBT,
-                    AccountType::MORTGAGE,
-                    AccountType::CREDITCARD,
+                    AccountTypeEnum::DEFAULT->value,
+                    AccountTypeEnum::ASSET->value,
+                    AccountTypeEnum::LOAN->value,
+                    AccountTypeEnum::DEBT->value,
+                    AccountTypeEnum::MORTGAGE->value,
+                    AccountTypeEnum::CREDITCARD->value,
                 ]
             );
 
@@ -442,7 +440,7 @@ class FireflyValidator extends Validator
      * @param mixed $attribute
      * @param mixed $value
      *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function validateSecurePassword($attribute, $value): bool
     {
@@ -465,7 +463,7 @@ class FireflyValidator extends Validator
      * @param mixed $value
      * @param mixed $parameters
      *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function validateUniqueAccountForUser($attribute, $value, $parameters): bool
     {
@@ -613,7 +611,7 @@ class FireflyValidator extends Validator
      * @param mixed $value
      * @param mixed $parameters
      *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function validateUniqueAccountNumberForUser($attribute, $value, $parameters): bool
     {
@@ -667,7 +665,7 @@ class FireflyValidator extends Validator
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function validateUniqueCurrencyCode(?string $attribute, ?string $value): bool
     {
@@ -675,7 +673,7 @@ class FireflyValidator extends Validator
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function validateUniqueCurrency(string $field, string $attribute, string $value): bool
     {
@@ -697,7 +695,7 @@ class FireflyValidator extends Validator
      * @param mixed $parameters
      * @param mixed $something
      *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function validateUniqueExistingWebhook($value, $parameters, $something): bool
     {
@@ -752,7 +750,7 @@ class FireflyValidator extends Validator
      * @param mixed $value
      * @param mixed $parameters
      *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function validateUniqueObjectForUser($attribute, $value, $parameters): bool
     {
@@ -786,7 +784,7 @@ class FireflyValidator extends Validator
      * @param mixed $value
      * @param mixed $parameters
      *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function validateUniqueObjectGroup($attribute, $value, $parameters): bool
     {
@@ -808,7 +806,7 @@ class FireflyValidator extends Validator
      * @param mixed $value
      * @param mixed $parameters
      *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function validateUniquePiggyBankForUser($attribute, $value, $parameters): bool
     {
@@ -822,14 +820,14 @@ class FireflyValidator extends Validator
         }
         $query->where('piggy_banks.name', $value);
 
-        return 0 === $query->get(['piggy_banks.*'])->count();
+        return 0 === $query->count();
     }
 
     /**
      * @param mixed $value
      * @param mixed $parameters
      *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function validateUniqueWebhook($value, $parameters): bool
     {

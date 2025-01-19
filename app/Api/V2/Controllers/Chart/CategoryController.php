@@ -27,10 +27,10 @@ namespace FireflyIII\Api\V2\Controllers\Chart;
 use Carbon\Carbon;
 use FireflyIII\Api\V2\Controllers\Controller;
 use FireflyIII\Api\V2\Request\Generic\DateRequest;
+use FireflyIII\Enums\AccountTypeEnum;
 use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Helpers\Collector\GroupCollectorInterface;
-use FireflyIII\Models\AccountType;
 use FireflyIII\Repositories\UserGroups\Account\AccountRepositoryInterface;
 use FireflyIII\Repositories\UserGroups\Currency\CurrencyRepositoryInterface;
 use FireflyIII\Support\Http\Api\CleansChartData;
@@ -70,7 +70,7 @@ class CategoryController extends Controller
      *
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function dashboard(DateRequest $request): JsonResponse
     {
@@ -81,8 +81,8 @@ class CategoryController extends Controller
 
         /** @var Carbon $end */
         $end        = $this->parameters->get('end');
-        $accounts   = $this->accountRepos->getAccountsByType([AccountType::DEBT, AccountType::LOAN, AccountType::MORTGAGE, AccountType::ASSET, AccountType::DEFAULT]);
-        $default    = app('amount')->getDefaultCurrency();
+        $accounts   = $this->accountRepos->getAccountsByType([AccountTypeEnum::DEBT->value, AccountTypeEnum::LOAN->value, AccountTypeEnum::MORTGAGE->value, AccountTypeEnum::ASSET->value, AccountTypeEnum::DEFAULT->value]);
+        $default    = app('amount')->getNativeCurrency();
         $converter  = new ExchangeRateConverter();
         $currencies = [];
         $return     = [];

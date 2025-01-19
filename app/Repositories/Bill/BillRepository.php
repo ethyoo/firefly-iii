@@ -142,6 +142,7 @@ class BillRepository implements BillRepositoryInterface
      */
     public function find(int $billId): ?Bill
     {
+        /** @var null|Bill */
         return $this->user->bills()->find($billId);
     }
 
@@ -150,6 +151,7 @@ class BillRepository implements BillRepositoryInterface
      */
     public function findByName(string $name): ?Bill
     {
+        /** @var null|Bill */
         return $this->user->bills()->where('name', $name)->first(['bills.*']);
     }
 
@@ -164,7 +166,7 @@ class BillRepository implements BillRepositoryInterface
         $disk = \Storage::disk('upload');
 
         return $set->each(
-            static function (Attachment $attachment) use ($disk) {
+            static function (Attachment $attachment) use ($disk) {  // @phpstan-ignore-line
                 $notes                   = $attachment->notes()->first();
                 $attachment->file_exists = $disk->exists($attachment->fileName());
                 $attachment->notes_text  = null !== $notes ? $notes->text : '';
@@ -273,7 +275,7 @@ class BillRepository implements BillRepositoryInterface
             ];
             $result[$currencyId]['sum']        = bcadd($result[$currencyId]['sum'], $transaction->amount);
             $result[$currencyId]['native_sum'] = bcadd($result[$currencyId]['native_sum'], $transaction->native_amount ?? '0');
-            if ($journal->foreign_currency_id === Amount::getDefaultCurrency()->id) {
+            if ($journal->foreign_currency_id === Amount::getNativeCurrency()->id) {
                 $result[$currencyId]['native_sum'] = bcadd($result[$currencyId]['native_sum'], $transaction->amount);
             }
             ++$result[$currencyId]['count'];
@@ -404,7 +406,7 @@ class BillRepository implements BillRepositoryInterface
             ];
             $result[$currencyId]['sum']        = bcadd($result[$currencyId]['sum'], $transaction->amount);
             $result[$currencyId]['native_sum'] = bcadd($result[$currencyId]['native_sum'], $transaction->native_amount ?? '0');
-            if ($journal->foreign_currency_id === Amount::getDefaultCurrency()->id) {
+            if ($journal->foreign_currency_id === Amount::getNativeCurrency()->id) {
                 $result[$currencyId]['native_sum'] = bcadd($result[$currencyId]['native_sum'], $transaction->amount);
             }
             ++$result[$currencyId]['count'];
@@ -528,7 +530,7 @@ class BillRepository implements BillRepositoryInterface
         $bills           = $this->getActiveBills();
         $return          = [];
         $convertToNative = Amount::convertToNative($this->user);
-        $default         = app('amount')->getDefaultCurrency();
+        $default         = app('amount')->getNativeCurrency();
 
         /** @var Bill $bill */
         foreach ($bills as $bill) {
@@ -550,9 +552,9 @@ class BillRepository implements BillRepositoryInterface
             foreach ($set as $transactionJournal) {
                 $setAmount = bcadd($setAmount, Amount::getAmountFromJournalObject($transactionJournal));
             }
-            Log::debug(sprintf('Bill #%d ("%s") with %d transaction(s) and sum %s %s', $bill->id, $bill->name, $set->count(), $currency->code, $setAmount));
+            // Log::debug(sprintf('Bill #%d ("%s") with %d transaction(s) and sum %s %s', $bill->id, $bill->name, $set->count(), $currency->code, $setAmount));
             $return[$currency->id]['sum'] = bcadd($return[$currency->id]['sum'], $setAmount);
-            Log::debug(sprintf('Total sum is now %s', $return[$currency->id]['sum']));
+            // Log::debug(sprintf('Total sum is now %s', $return[$currency->id]['sum']));
         }
 
         return $return;
@@ -573,7 +575,7 @@ class BillRepository implements BillRepositoryInterface
         $bills           = $this->getActiveBills();
         $return          = [];
         $convertToNative = Amount::convertToNative($this->user);
-        $default         = app('amount')->getDefaultCurrency();
+        $default         = app('amount')->getNativeCurrency();
 
         /** @var Bill $bill */
         foreach ($bills as $bill) {
@@ -586,7 +588,7 @@ class BillRepository implements BillRepositoryInterface
 
             $minField = $convertToNative && $bill->transactionCurrency->id !== $default->id ? 'native_amount_min' : 'amount_min';
             $maxField = $convertToNative && $bill->transactionCurrency->id !== $default->id ? 'native_amount_max' : 'amount_max';
-            Log::debug(sprintf('min field is %s, max field is %s', $minField, $maxField));
+            // Log::debug(sprintf('min field is %s, max field is %s', $minField, $maxField));
 
             if ($total > 0) {
                 $currency                     = $convertToNative && $bill->transactionCurrency->id !== $default->id ? $default : $bill->transactionCurrency;

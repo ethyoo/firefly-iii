@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace FireflyIII\Models;
 
+use FireflyIII\Enums\AccountTypeEnum;
 use FireflyIII\Support\Models\ReturnsIntegerIdTrait;
 use FireflyIII\Support\Models\ReturnsIntegerUserIdTrait;
 use FireflyIII\User;
@@ -38,9 +39,6 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-/**
- * @mixin IdeHelperAccount
- */
 class Account extends Model
 {
     use HasFactory;
@@ -131,7 +129,7 @@ class Account extends Model
     {
         $name = $this->name;
 
-        if (AccountType::CASH === $this->accountType->type) {
+        if (AccountTypeEnum::CASH->value === $this->accountType->type) {
             return '';
         }
 

@@ -1,9 +1,9 @@
 <?php
 
-declare(strict_types=1);
+
 /*
- * UpgradeMultiPiggyBanks.php
- * Copyright (c) 2024 james@firefly-iii.org.
+ * UpgradesMultiPiggyBanks.php
+ * Copyright (c) 2025 james@firefly-iii.org.
  *
  * This file is part of Firefly III (https://github.com/firefly-iii).
  *
@@ -20,6 +20,8 @@ declare(strict_types=1);
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
+
+declare(strict_types=1);
 
 namespace FireflyIII\Console\Commands\Upgrade;
 
@@ -88,7 +90,7 @@ class UpgradesMultiPiggyBanks extends Command
         $this->repository->setUser($piggyBank->account->user);
         $this->accountRepository->setUser($piggyBank->account->user);
         $repetition                         = $this->repository->getRepetition($piggyBank, true);
-        $currency                           = $this->accountRepository->getAccountCurrency($piggyBank->account) ?? app('amount')->getDefaultCurrencyByUserGroup($piggyBank->account->user->userGroup);
+        $currency                           = $this->accountRepository->getAccountCurrency($piggyBank->account) ?? app('amount')->getNativeCurrencyByUserGroup($piggyBank->account->user->userGroup);
 
         // update piggy bank to have a currency.
         $piggyBank->transaction_currency_id = $currency->id;

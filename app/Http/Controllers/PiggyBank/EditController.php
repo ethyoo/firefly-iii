@@ -28,7 +28,6 @@ use FireflyIII\Helpers\Attachments\AttachmentHelperInterface;
 use FireflyIII\Http\Controllers\Controller;
 use FireflyIII\Http\Requests\PiggyBankUpdateRequest;
 use FireflyIII\Models\PiggyBank;
-use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\Repositories\PiggyBank\PiggyBankRepositoryInterface;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\RedirectResponse;
@@ -41,7 +40,6 @@ use Illuminate\View\View;
  */
 class EditController extends Controller
 {
-    private AccountRepositoryInterface   $accountRepository;
     private AttachmentHelperInterface    $attachments;
     private PiggyBankRepositoryInterface $piggyRepos;
 
@@ -57,9 +55,8 @@ class EditController extends Controller
                 app('view')->share('title', (string) trans('firefly.piggyBanks'));
                 app('view')->share('mainTitleIcon', 'fa-bullseye');
 
-                $this->attachments       = app(AttachmentHelperInterface::class);
-                $this->piggyRepos        = app(PiggyBankRepositoryInterface::class);
-                $this->accountRepository = app(AccountRepositoryInterface::class);
+                $this->attachments = app(AttachmentHelperInterface::class);
+                $this->piggyRepos  = app(PiggyBankRepositoryInterface::class);
 
                 return $next($request);
             }

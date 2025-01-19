@@ -20,7 +20,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// Ignore this comment
+
 
 declare(strict_types=1);
 
@@ -49,6 +49,7 @@ return [
     'date_or_time'                    => 'The value must be a valid date or time value (ISO 8601).',
     'source_equals_destination'       => 'The source account equals the destination account.',
     'unique_account_number_for_user'  => 'It looks like this account number is already in use.',
+    'unique_user_group_for_user'      => 'It looks like this administration title is already in use.',
     'unique_iban_for_user'            => 'It looks like this IBAN is already in use.',
     'reconciled_forbidden_field'      => 'This transaction is already reconciled, you cannot change the ":field"',
     'deleted_user'                    => 'Due to security constraints, you cannot register using this email address.',
@@ -106,7 +107,7 @@ return [
     'unique_object_for_user'          => 'This name is already in use.',
     'unique_account_for_user'         => 'This account name is already in use.',
 
-    // Ignore this comment
+
 
     'between.numeric'                 => 'The :attribute must be between :min and :max.',
     'between.file'                    => 'The :attribute must be between :min and :max kilobytes.',
@@ -177,7 +178,7 @@ return [
     'same_account_type'               => 'Both accounts must be of the same account type',
     'same_account_currency'           => 'Both accounts must have the same currency setting',
 
-    // Ignore this comment
+
 
     'secure_password'                 => 'This is not a secure password. Please try again. For more information, visit https://bit.ly/FF3-password',
     'valid_recurrence_rep_type'       => 'Invalid repetition type for recurring transactions.',
@@ -240,7 +241,7 @@ return [
     'deposit_dest_bad_data'           => 'Could not find a valid destination account when searching for ID ":id" or name ":name".',
     'deposit_dest_wrong_type'         => 'The submitted destination account is not of the right type.',
 
-    // Ignore this comment
+
 
     'transfer_source_need_data'       => 'Need to get a valid source account ID and/or valid source account name to continue.',
     'transfer_source_bad_data'        => '[c] Could not find a valid source account when searching for ID ":id" or name ":name".',
@@ -278,5 +279,3 @@ return [
     'administration_owner_rename'     => 'You can\'t rename your standard administration.',
     'existing_mfa_code'               => 'Please enter a valid code',
 ];
-
-// Ignore this comment

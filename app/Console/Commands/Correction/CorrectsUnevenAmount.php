@@ -28,7 +28,6 @@ use FireflyIII\Console\Commands\ShowsFriendlyMessages;
 use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Models\Transaction;
 use FireflyIII\Models\TransactionJournal;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Support\Models\AccountBalanceCalculator;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -50,7 +49,7 @@ class CorrectsUnevenAmount extends Command
         $this->convertOldStyleTransfers();
         $this->fixUnevenAmounts();
         $this->matchCurrencies();
-        if (config('firefly.feature_flags.running_balance_column')) {
+        if (true === config('firefly.feature_flags.running_balance_column')) {
             $this->friendlyInfo('Will recalculate transaction running balance columns. This may take a LONG time. Please be patient.');
             AccountBalanceCalculator::recalculateAll(false);
             $this->friendlyInfo('Done recalculating transaction running balance columns.');
@@ -84,7 +83,7 @@ class CorrectsUnevenAmount extends Command
                 continue;
             }
             // needs to be a transfer.
-            if (TransactionType::TRANSFER !== $journal->transactionType->type) {
+            if (TransactionTypeEnum::TRANSFER->value !== $journal->transactionType->type) {
                 Log::debug('Must be a transfer, continue.');
 
                 continue;
@@ -122,7 +121,7 @@ class CorrectsUnevenAmount extends Command
         $journals = \DB::table('transactions')
             ->groupBy('transaction_journal_id')
             ->whereNull('deleted_at')
-            ->get(['transaction_journal_id', \DB::raw('SUM(amount) AS the_sum')])
+            ->get(['transaction_journal_id', \DB::raw('SUM(amount) AS the_sum')])  // @phpstan-ignore-line
         ;
 
         /** @var \stdClass $entry */
@@ -228,7 +227,7 @@ class CorrectsUnevenAmount extends Command
 
     private function isForeignCurrencyTransfer(TransactionJournal $journal): bool
     {
-        if (TransactionType::TRANSFER !== $journal->transactionType->type) {
+        if (TransactionTypeEnum::TRANSFER->value !== $journal->transactionType->type) {
             return false;
         }
 

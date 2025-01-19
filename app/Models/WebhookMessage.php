@@ -32,9 +32,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-/**
- * @mixin IdeHelperWebhookMessage
- */
 class WebhookMessage extends Model
 {
     use ReturnsIntegerIdTrait;

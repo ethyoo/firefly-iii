@@ -37,7 +37,7 @@ class BillDateCalculator
     /**
      * Returns the dates a bill needs to be paid.
      *
-     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+     * @SuppressWarnings("PHPMD.ExcessiveParameterList")
      */
     public function getPayDates(Carbon $earliest, Carbon $latest, Carbon $billStart, string $period, int $skip, ?Carbon $lastPaid): array
     {
@@ -117,7 +117,7 @@ class BillDateCalculator
             }
         }
         Log::debug('end of loop');
-        $simple             = $set->map(
+        $simple             = $set->map( // @phpstan-ignore-line
             static function (Carbon $date) {
                 return $date->format('Y-m-d');
             }

@@ -55,9 +55,10 @@ class PiggyBankRepository implements PiggyBankRepositoryInterface
         Log::channel('audit')->info('Delete all piggy banks through destroyAll');
 
         PiggyBank::leftJoin('account_piggy_bank', 'account_piggy_bank.piggy_bank_id', '=', 'piggy_banks.id')
-                        ->leftJoin('accounts', 'accounts.id', '=', 'account_piggy_bank.account_id')
-                        ->where('accounts.user_id', $this->user->id)
-                        ->delete();
+            ->leftJoin('accounts', 'accounts.id', '=', 'account_piggy_bank.account_id')
+            ->where('accounts.user_id', $this->user->id)
+            ->delete()
+        ;
     }
 
     public function findPiggyBank(?int $piggyBankId, ?string $piggyBankName): ?PiggyBank
@@ -114,7 +115,7 @@ class PiggyBankRepository implements PiggyBankRepositoryInterface
         $disk = \Storage::disk('upload');
 
         return $set->each(
-            static function (Attachment $attachment) use ($disk) {
+            static function (Attachment $attachment) use ($disk) { // @phpstan-ignore-line
                 $notes                   = $attachment->notes()->first();
                 $attachment->file_exists = $disk->exists($attachment->fileName());
                 $attachment->notes_text  = null !== $notes ? $notes->text : '';
@@ -149,7 +150,7 @@ class PiggyBankRepository implements PiggyBankRepositoryInterface
         $accountRepos    = app(AccountRepositoryInterface::class);
         $accountRepos->setUser($this->user);
 
-        $defaultCurrency = app('amount')->getDefaultCurrencyByUserGroup($this->user->userGroup);
+        $defaultCurrency = app('amount')->getNativeCurrencyByUserGroup($this->user->userGroup);
 
         app('log')->debug(sprintf('Piggy bank #%d currency is %s', $piggyBank->id, $piggyBank->transactionCurrency->code));
 
@@ -158,20 +159,31 @@ class PiggyBankRepository implements PiggyBankRepositoryInterface
 
         /** @var Transaction $destination */
         $destination     = $journal->transactions()->with(['account'])->where('amount', '>', 0)->first();
+        $hits            = 0;
+        foreach ($piggyBank->accounts as $account) {
 
-        // matches source, which means amount will be removed from piggy:
-        if ($source->account_id === $piggyBank->account_id) {
-            $operator = 'negative';
-            $currency = $accountRepos->getAccountCurrency($source->account) ?? $defaultCurrency;
-            app('log')->debug(sprintf('Currency will draw money out of piggy bank. Source currency is %s', $currency->code));
+            // matches source, which means amount will be removed from piggy:
+            if ($account->id === $source->account_id) {
+                $operator = 'negative';
+                $currency = $accountRepos->getAccountCurrency($source->account) ?? $defaultCurrency;
+                app('log')->debug(sprintf('Currency will draw money out of piggy bank. Source currency is %s', $currency->code));
+                ++$hits;
+            }
+            // matches destination, which means amount will be added to piggy.
+            if ($account->id === $destination->account_id) {
+                $operator = 'positive';
+                $currency = $accountRepos->getAccountCurrency($destination->account) ?? $defaultCurrency;
+                app('log')->debug(sprintf('Currency will add money to piggy bank. Destination currency is %s', $currency->code));
+                ++$hits;
+            }
+        }
+        if ($hits > 1) {
+            app('log')->debug(sprintf('Transaction journal is related to %d of the accounts, cannot determine what to do. Return "0".', $hits));
+
+            return '0';
         }
 
-        // matches destination, which means amount will be added to piggy.
-        if ($destination->account_id === $piggyBank->account_id) {
-            $operator = 'positive';
-            $currency = $accountRepos->getAccountCurrency($destination->account) ?? $defaultCurrency;
-            app('log')->debug(sprintf('Currency will add money to piggy bank. Destination currency is %s', $currency->code));
-        }
+
         if (null === $operator || null === $currency) {
             app('log')->debug('Currency is NULL and operator is NULL, return "0".');
 
@@ -291,7 +303,7 @@ class PiggyBankRepository implements PiggyBankRepositoryInterface
             $amount = '' === $amount ? '0' : $amount;
             $sum    = bcadd($sum, $amount);
         }
-        Log::debug(sprintf('Current amount in piggy bank #%d ("%s") is %s', $piggyBank->id, $piggyBank->name, $sum));
+        // Log::debug(sprintf('Current amount in piggy bank #%d ("%s") is %s', $piggyBank->id, $piggyBank->name, $sum));
 
         return $sum;
     }
@@ -303,6 +315,7 @@ class PiggyBankRepository implements PiggyBankRepositoryInterface
         }
         Log::warning('Piggy bank repetitions are EOL.');
 
+        /** @var null|PiggyBankRepetition */
         return $piggyBank->piggyBankRepetitions()->first();
     }
 

@@ -36,26 +36,19 @@ class OwnerTestNotificationEmail extends Notification
 {
     use Queueable;
 
-    private OwnerNotifiable $owner;
-
-    public function __construct(OwnerNotifiable $owner)
-    {
-        $this->owner = $owner;
-    }
-
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toArray(OwnerNotifiable $notifiable)
+    public function toArray(OwnerNotifiable $notifiable): array
     {
         return [
         ];
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toMail(OwnerNotifiable $notifiable)
+    public function toMail(OwnerNotifiable $notifiable): MailMessage
     {
         $address = (string) config('firefly.site_owner');
 
@@ -66,9 +59,9 @@ class OwnerTestNotificationEmail extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function via(OwnerNotifiable $notifiable)
+    public function via(OwnerNotifiable $notifiable): array
     {
         return ['mail'];
     }

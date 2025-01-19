@@ -68,7 +68,7 @@ trait ModifiesPiggyBanks
         $pivot->native_current_amount = null;
 
         // also update native_current_amount.
-        $userCurrency                 = app('amount')->getDefaultCurrencyByUserGroup($this->user->userGroup);
+        $userCurrency                 = app('amount')->getNativeCurrencyByUserGroup($this->user->userGroup);
         if ($userCurrency->id !== $piggyBank->transaction_currency_id) {
             $converter                    = new ExchangeRateConverter();
             $converter->setIgnoreSettings(true);
@@ -91,7 +91,7 @@ trait ModifiesPiggyBanks
         $pivot->native_current_amount = null;
 
         // also update native_current_amount.
-        $userCurrency                 = app('amount')->getDefaultCurrencyByUserGroup($this->user->userGroup);
+        $userCurrency                 = app('amount')->getNativeCurrencyByUserGroup($this->user->userGroup);
         if ($userCurrency->id !== $piggyBank->transaction_currency_id) {
             $converter                    = new ExchangeRateConverter();
             $converter->setIgnoreSettings(true);
@@ -360,10 +360,8 @@ trait ModifiesPiggyBanks
                 return;
             }
             // if this account contains less than the amount, remove the current amount, update the amount and continue.
-            if (bccomp($current, $amount) < 1) {
-                $this->removeAmount($piggyBank, $account, $current);
-                $amount = bcsub($amount, $current);
-            }
+            $this->removeAmount($piggyBank, $account, $current);
+            $amount  = bcsub($amount, $current);
         }
     }
 }

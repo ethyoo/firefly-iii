@@ -46,27 +46,25 @@ class UserInvitation extends Notification
     use Queueable;
 
     private InvitedUser     $invitee;
-    private OwnerNotifiable $owner;
 
-    public function __construct(OwnerNotifiable $owner, InvitedUser $invitee)
+    public function __construct(InvitedUser $invitee)
     {
         $this->invitee = $invitee;
-        $this->owner   = $owner;
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toArray(OwnerNotifiable $notifiable)
+    public function toArray(OwnerNotifiable $notifiable): array
     {
         return [
         ];
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toMail(OwnerNotifiable $notifiable)
+    public function toMail(OwnerNotifiable $notifiable): MailMessage
     {
         $ip        = Request::ip();
         $host      = Steam::getHostName($ip);
@@ -81,7 +79,7 @@ class UserInvitation extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function toNtfy(OwnerNotifiable $notifiable): Message
     {
@@ -96,7 +94,7 @@ class UserInvitation extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
     public function toPushover(OwnerNotifiable $notifiable): PushoverMessage
     {
@@ -108,9 +106,9 @@ class UserInvitation extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function toSlack(OwnerNotifiable $notifiable)
+    public function toSlack(OwnerNotifiable $notifiable): SlackMessage
     {
         return new SlackMessage()->content(
             (string) trans('email.invitation_created_body', ['email' => $this->invitee->user->email, 'invitee' => $this->invitee->email])
@@ -118,9 +116,9 @@ class UserInvitation extends Notification
     }
 
     /**
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
      */
-    public function via(OwnerNotifiable $notifiable)
+    public function via(OwnerNotifiable $notifiable): array
     {
         return ReturnsAvailableChannels::returnChannels('owner');
     }

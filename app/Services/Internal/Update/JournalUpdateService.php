@@ -35,10 +35,8 @@ use FireflyIII\Factory\TransactionJournalMetaFactory;
 use FireflyIII\Factory\TransactionTypeFactory;
 use FireflyIII\Models\Account;
 use FireflyIII\Models\Transaction;
-use FireflyIII\Models\TransactionCurrency;
 use FireflyIII\Models\TransactionGroup;
 use FireflyIII\Models\TransactionJournal;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\Repositories\Bill\BillRepositoryInterface;
 use FireflyIII\Repositories\Budget\BudgetRepositoryInterface;
@@ -238,11 +236,9 @@ class JournalUpdateService
     private function getSourceTransaction(): Transaction
     {
         if (null === $this->sourceTransaction) {
-            $this->sourceTransaction = $this->transactionJournal->transactions()->with(['account'])->where(
-                'amount',
-                '<',
-                0
-            )->first();
+            /** @var null|Transaction $result */
+            $result                  = $this->transactionJournal->transactions()->with(['account'])->where('amount', '<', 0)->first();
+            $this->sourceTransaction = $result;
         }
         Log::debug(sprintf('getSourceTransaction: %s', $this->sourceTransaction->amount));
 
@@ -321,7 +317,9 @@ class JournalUpdateService
     private function getDestinationTransaction(): Transaction
     {
         if (null === $this->destinationTransaction) {
-            $this->destinationTransaction = $this->transactionJournal->transactions()->where('amount', '>', 0)->first();
+            /** @var null|Transaction $result */
+            $result                       = $this->transactionJournal->transactions()->where('amount', '>', 0)->first();
+            $this->destinationTransaction = $result;
         }
 
         return $this->destinationTransaction;
@@ -467,7 +465,7 @@ class JournalUpdateService
             array_key_exists('bill_id', $this->data)
                 || array_key_exists('bill_name', $this->data)
         )
-            && TransactionType::WITHDRAWAL === $type
+            && TransactionTypeEnum::WITHDRAWAL->value === $type
         ) {
             $billId                            = (int) ($this->data['bill_id'] ?? 0);
             $billName                          = (string) ($this->data['bill_name'] ?? '');
@@ -492,7 +490,7 @@ class JournalUpdateService
 
                 $value->setTimezone(config('app.timezone'));
                 // 2024-11-22, overrule timezone with UTC and store it as UTC.
-                if (FireflyConfig::get('utc', false)->data) {
+                if (true === FireflyConfig::get('utc', false)->data) {
                     $value->setTimezone('UTC');
                 }
 
@@ -533,7 +531,7 @@ class JournalUpdateService
             $this->storeBudget($this->transactionJournal, new NullArrayObject($this->data));
         }
         // is transfer? remove budget
-        if (TransactionType::TRANSFER === $this->transactionJournal->transactionType->type) {
+        if (TransactionTypeEnum::TRANSFER->value === $this->transactionJournal->transactionType->type) {
             $this->transactionJournal->budgets()->sync([]);
         }
     }
@@ -770,6 +768,4 @@ class JournalUpdateService
         $this->sourceTransaction->refresh();
         $this->destinationTransaction->refresh();
     }
-
-    private function collectCurrency(): TransactionCurrency {}
 }

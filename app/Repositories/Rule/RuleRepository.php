@@ -96,6 +96,7 @@ class RuleRepository implements RuleRepositoryInterface
      */
     public function getFirstRuleGroup(): RuleGroup
     {
+        /** @var null|RuleGroup */
         return $this->user->ruleGroups()->first();
     }
 
@@ -238,6 +239,8 @@ class RuleRepository implements RuleRepositoryInterface
             throw new FireflyException('No such rule group.');
         }
 
+        /** @var RuleGroup $ruleGroup */
+
         // start by creating a new rule:
         $rule                  = new Rule();
         $rule->user()->associate($this->user);
@@ -276,6 +279,7 @@ class RuleRepository implements RuleRepositoryInterface
 
     public function find(int $ruleId): ?Rule
     {
+        /** @var null|Rule */
         return $this->user->rules()->find($ruleId);
     }
 

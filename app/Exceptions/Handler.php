@@ -78,25 +78,14 @@ class Handler extends ExceptionHandler
      *
      * @throws \Throwable
      *
-     * @SuppressWarnings(PHPMD.NPathComplexity)
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings("PHPMD.NPathComplexity")
+     * @SuppressWarnings("PHPMD.CyclomaticComplexity")
      */
     public function render($request, \Throwable $e): Response
     {
         $expectsJson = $request->expectsJson();
 
         app('log')->debug('Now in Handler::render()');
-
-        if ($e instanceof JsonApiException) {
-            // ignore it: controller will handle it.
-
-            app('log')->debug(sprintf(
-                'Return to parent to handle JsonApiException(%d)',
-                $e->getCode()
-            ));
-
-            return parent::render($request, $e);
-        }
 
         if ($e instanceof LaravelValidationException && $expectsJson) {
             // ignore it: controller will handle it.

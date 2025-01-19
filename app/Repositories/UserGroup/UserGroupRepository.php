@@ -30,6 +30,7 @@ use FireflyIII\Factory\UserGroupFactory;
 use FireflyIII\Models\GroupMembership;
 use FireflyIII\Models\UserGroup;
 use FireflyIII\Models\UserRole;
+use FireflyIII\Repositories\UserGroups\Currency\CurrencyRepositoryInterface;
 use FireflyIII\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Collection;
@@ -198,12 +199,30 @@ class UserGroupRepository implements UserGroupRepositoryInterface
     {
         $userGroup->title = $data['title'];
         $userGroup->save();
+        $currency         = null;
+
+        /** @var CurrencyRepositoryInterface $repository */
+        $repository       = app(CurrencyRepositoryInterface::class);
+
+        if (array_key_exists('native_currency_code', $data)) {
+            $repository->setUser($this->user);
+            $currency = $repository->findByCode($data['native_currency_code']);
+        }
+
+        if (array_key_exists('native_currency_id', $data) && null === $currency) {
+            $repository->setUser($this->user);
+            $currency = $repository->find((int) $data['native_currency_id']);
+        }
+        if (null !== $currency) {
+            $repository->makeDefault($currency);
+        }
+
 
         return $userGroup;
     }
 
     /**
-     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings("PHPMD.NPathComplexity")
      *
      * @throws FireflyException
      */

@@ -24,14 +24,14 @@ declare(strict_types=1);
 
 namespace FireflyIII\Services\Internal\Support;
 
+use FireflyIII\Enums\AccountTypeEnum;
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Factory\AccountMetaFactory;
 use FireflyIII\Factory\TagFactory;
 use FireflyIII\Models\Account;
-use FireflyIII\Models\AccountType;
 use FireflyIII\Models\Note;
 use FireflyIII\Models\TransactionJournal;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\Repositories\Budget\BudgetRepositoryInterface;
 use FireflyIII\Repositories\Category\CategoryRepositoryInterface;
@@ -257,7 +257,7 @@ trait JournalServiceTrait
         }
         if (null === $account) {
             // final attempt, create it.
-            if (AccountType::ASSET === $preferredType) {
+            if (AccountTypeEnum::ASSET->value === $preferredType) {
                 throw new FireflyException(sprintf('TransactionFactory: Cannot create asset account with these values: %s', json_encode($data)));
             }
             // fix name of account if only IBAN is given:
@@ -311,7 +311,7 @@ trait JournalServiceTrait
     {
         // return cash account.
         if (null === $account && '' === (string) $data['name']
-            && in_array(AccountType::CASH, $types, true)) {
+            && in_array(AccountTypeEnum::CASH->value, $types, true)) {
             $account = $this->accountRepository->getCashAccount();
         }
         app('log')->debug('Cannot return cash account, return input instead.');
@@ -359,7 +359,7 @@ trait JournalServiceTrait
 
     protected function storeBudget(TransactionJournal $journal, NullArrayObject $data): void
     {
-        if (TransactionType::WITHDRAWAL !== $journal->transactionType->type) {
+        if (TransactionTypeEnum::WITHDRAWAL->value !== $journal->transactionType->type) {
             $journal->budgets()->sync([]);
 
             return;

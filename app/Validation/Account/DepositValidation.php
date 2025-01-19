@@ -24,6 +24,7 @@ declare(strict_types=1);
 
 namespace FireflyIII\Validation\Account;
 
+use FireflyIII\Enums\AccountTypeEnum;
 use FireflyIII\Models\Account;
 use FireflyIII\Models\AccountType;
 
@@ -82,8 +83,8 @@ trait DepositValidation
     /**
      * Pretty complex unfortunately.
      *
-     * @SuppressWarnings(PHPMD.NPathComplexity)
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings("PHPMD.NPathComplexity")
+     * @SuppressWarnings("PHPMD.CyclomaticComplexity")
      */
     protected function validateDepositSource(array $array): bool
     {
@@ -173,7 +174,7 @@ trait DepositValidation
 
             // set the source to be a (dummy) revenue account.
             $account              = new Account();
-            $accountType          = AccountType::whereType(AccountType::REVENUE)->first();
+            $accountType          = AccountType::whereType(AccountTypeEnum::REVENUE->value)->first();
             $account->accountType = $accountType;
             $this->setSource($account);
         }

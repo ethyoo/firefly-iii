@@ -25,13 +25,13 @@ declare(strict_types=1);
 namespace FireflyIII\Services\Internal\Support;
 
 use Carbon\Carbon;
+use FireflyIII\Enums\AccountTypeEnum;
 use FireflyIII\Exceptions\DuplicateTransactionException;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Factory\AccountMetaFactory;
 use FireflyIII\Factory\TransactionCurrencyFactory;
 use FireflyIII\Factory\TransactionGroupFactory;
 use FireflyIII\Models\Account;
-use FireflyIII\Models\AccountType;
 use FireflyIII\Models\Note;
 use FireflyIII\Models\Transaction;
 use FireflyIII\Models\TransactionCurrency;
@@ -89,14 +89,14 @@ trait AccountServiceTrait
     /**
      * Update metadata for account. Depends on type which fields are valid.
      *
-     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings("PHPMD.NPathComplexity")
      *
      * TODO this method treats expense accounts and liabilities the same way (tries to save interest)
      */
     public function updateMetaData(Account $account, array $data): void
     {
         $fields  = $this->validFields;
-        if (AccountType::ASSET === $account->accountType->type) {
+        if (AccountTypeEnum::ASSET->value === $account->accountType->type) {
             $fields = $this->validAssetFields;
         }
 
@@ -119,11 +119,11 @@ trait AccountServiceTrait
         }
 
         // only asset account may have a role:
-        if (AccountType::ASSET !== $account->accountType->type) {
+        if (AccountTypeEnum::ASSET->value !== $account->accountType->type) {
             $data['account_role'] = '';
         }
 
-        if (AccountType::ASSET === $account->accountType->type && 'ccAsset' === $data['account_role']) {
+        if (AccountTypeEnum::ASSET->value === $account->accountType->type && 'ccAsset' === $data['account_role']) {
             $fields = $this->validCCFields;
         }
 
@@ -233,7 +233,7 @@ trait AccountServiceTrait
         // get or grab currency:
         $currency   = $this->accountRepository->getAccountCurrency($account);
         if (null === $currency) {
-            $currency = app('amount')->getDefaultCurrencyByUserGroup($account->user->userGroup);
+            $currency = app('amount')->getNativeCurrencyByUserGroup($account->user->userGroup);
         }
 
         // submit to factory:
@@ -351,7 +351,7 @@ trait AccountServiceTrait
 
         if (null === $currency) {
             // use default currency:
-            $currency = app('amount')->getDefaultCurrencyByUserGroup($this->user->userGroup);
+            $currency = app('amount')->getNativeCurrencyByUserGroup($this->user->userGroup);
         }
         $currency->enabled = true;
         $currency->save();
@@ -391,7 +391,7 @@ trait AccountServiceTrait
         // if exists, update:
         $currency                                    = $this->accountRepository->getAccountCurrency($account);
         if (null === $currency) {
-            $currency = app('amount')->getDefaultCurrencyByUserGroup($account->user->userGroup);
+            $currency = app('amount')->getNativeCurrencyByUserGroup($account->user->userGroup);
         }
 
         // simply grab the first journal and change it:
@@ -457,7 +457,7 @@ trait AccountServiceTrait
         // get or grab currency:
         $currency   = $this->accountRepository->getAccountCurrency($account);
         if (null === $currency) {
-            $currency = app('amount')->getDefaultCurrencyByUserGroup($account->user->userGroup);
+            $currency = app('amount')->getNativeCurrencyByUserGroup($account->user->userGroup);
         }
 
         // submit to factory:
@@ -573,7 +573,7 @@ trait AccountServiceTrait
         // if exists, update:
         $currency           = $this->accountRepository->getAccountCurrency($account);
         if (null === $currency) {
-            $currency = app('amount')->getDefaultCurrencyByUserGroup($account->user->userGroup);
+            $currency = app('amount')->getNativeCurrencyByUserGroup($account->user->userGroup);
         }
 
         // simply grab the first journal and change it:
@@ -654,7 +654,7 @@ trait AccountServiceTrait
         // get or grab currency:
         $currency   = $this->accountRepository->getAccountCurrency($account);
         if (null === $currency) {
-            $currency = app('amount')->getDefaultCurrencyByUserGroup($account->user->userGroup);
+            $currency = app('amount')->getNativeCurrencyByUserGroup($account->user->userGroup);
         }
 
         // submit to factory:

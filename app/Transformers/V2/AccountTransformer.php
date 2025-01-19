@@ -48,6 +48,7 @@ class AccountTransformer extends AbstractTransformer
     private array               $fullTypes;
     private array               $lastActivity;
     private array               $objectGroups;
+    private array $balances;
 
     /**
      * This method collects meta-data for one or all accounts in the transformer's collection.
@@ -55,6 +56,7 @@ class AccountTransformer extends AbstractTransformer
     public function collectMetaData(Collection $objects): Collection
     {
         $this->currencies         = [];
+        $this->balances           = [];
         $this->accountMeta        = [];
         $this->accountTypes       = [];
         $this->fullTypes          = [];
@@ -133,7 +135,7 @@ class AccountTransformer extends AbstractTransformer
 
     private function getDefaultCurrency(): void
     {
-        $this->default = app('amount')->getDefaultCurrency();
+        $this->default = app('amount')->getNativeCurrency();
     }
 
     private function collectAccountMetaData(Collection $accounts): void
@@ -172,7 +174,9 @@ class AccountTransformer extends AbstractTransformer
 
     private function getBalanceDifference(Collection $accounts, Carbon $start, Carbon $end): void
     {
-        throw new FireflyException('Used deprecated method, rethink this.');
+        if ('en_US' === config('app.fallback_locale')) {
+            throw new FireflyException('Used deprecated method, rethink this.');
+        }
         // collect balances, start and end for both native and converted.
         // yes the b is usually used for boolean by idiots but here it's for balance.
         $bStart = [];

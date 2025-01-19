@@ -24,10 +24,10 @@ declare(strict_types=1);
 
 namespace FireflyIII\Http\Requests;
 
+use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Factory\CategoryFactory;
 use FireflyIII\Models\Recurrence;
-use FireflyIII\Models\TransactionType;
 use FireflyIII\Rules\IsValidPositiveAmount;
 use FireflyIII\Rules\ValidRecurrenceRepetitionType;
 use FireflyIII\Rules\ValidRecurrenceRepetitionValue;
@@ -51,7 +51,7 @@ class RecurrenceFormRequest extends FormRequest
      *
      * @throws FireflyException
      *
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings("PHPMD.ExcessiveMethodLength")
      */
     public function getAll(): array
     {
@@ -243,15 +243,15 @@ class RecurrenceFormRequest extends FormRequest
 
         // switch on type to expand rules for source and destination accounts:
         $type       = strtolower($this->convertString('transaction_type'));
-        if (strtolower(TransactionType::WITHDRAWAL) === $type) {
+        if (strtolower(TransactionTypeEnum::WITHDRAWAL->value) === $type) {
             $rules['source_id']        = 'required|exists:accounts,id|belongsToUser:accounts';
             $rules['destination_name'] = 'min:1|max:255|nullable';
         }
-        if (strtolower(TransactionType::DEPOSIT) === $type) {
+        if (strtolower(TransactionTypeEnum::DEPOSIT->value) === $type) {
             $rules['source_name']    = 'min:1|max:255|nullable';
             $rules['destination_id'] = 'required|exists:accounts,id|belongsToUser:accounts';
         }
-        if (strtolower(TransactionType::TRANSFER) === $type) {
+        if (strtolower(TransactionTypeEnum::TRANSFER->value) === $type) {
             // this may not work:
             $rules['source_id']      = 'required|exists:accounts,id|belongsToUser:accounts|different:destination_id';
             $rules['destination_id'] = 'required|exists:accounts,id|belongsToUser:accounts|different:source_id';
