@@ -1,8 +1,8 @@
 <?php
 
 /*
- * DestroyController.php
- * Copyright (c) 2024 james@firefly-iii.org.
+ * IndexController.php
+ * Copyright (c) 2025 james@firefly-iii.org.
  *
  * This file is part of Firefly III (https://github.com/firefly-iii).
  *
@@ -22,20 +22,23 @@
 
 declare(strict_types=1);
 
-namespace FireflyIII\Api\V2\Controllers\Model\ExchangeRate;
+namespace FireflyIII\Api\V1\Controllers\Models\CurrencyExchangeRate;
 
 use FireflyIII\Api\V2\Controllers\Controller;
-use FireflyIII\Api\V2\Request\Model\ExchangeRate\StoreRequest;
 use FireflyIII\Repositories\UserGroups\ExchangeRate\ExchangeRateRepositoryInterface;
 use FireflyIII\Support\Http\Api\ValidatesUserGroupTrait;
 use FireflyIII\Transformers\V2\ExchangeRateTransformer;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Pagination\LengthAwarePaginator;
 
-class StoreController extends Controller
+/**
+ * Class ShowController
+ */
+class IndexController extends Controller
 {
     use ValidatesUserGroupTrait;
 
-    public const string RESOURCE_KEY = 'exchange-rates';
+    public const string RESOURCE_KEY = 'currency_exchange_rates';
 
     private ExchangeRateRepositoryInterface $repository;
 
@@ -52,29 +55,18 @@ class StoreController extends Controller
         );
     }
 
-    public function store(StoreRequest $request): JsonResponse
+    public function index(): JsonResponse
     {
-        $date        = $request->getDate();
-        $rate        = $request->getRate();
-        $from        = $request->getFromCurrency();
-        $to          = $request->getToCurrency();
-
-        // already has rate?
-        $object      = $this->repository->getSpecificRateOnDate($from, $to, $date);
-        if (null !== $object) {
-            // just update it, no matter.
-            $rate = $this->repository->updateExchangeRate($object, $rate, $date);
-        }
-        if (null === $object) {
-            // store new
-            $rate = $this->repository->storeExchangeRate($from, $to, $rate, $date);
-        }
-
+        $piggies     = $this->repository->getAll();
+        $pageSize    = $this->parameters->get('limit');
+        $count       = $piggies->count();
+        $piggies     = $piggies->slice(($this->parameters->get('page') - 1) * $pageSize, $pageSize);
+        $paginator   = new LengthAwarePaginator($piggies, $count, $pageSize, $this->parameters->get('page'));
         $transformer = new ExchangeRateTransformer();
-        $transformer->setParameters($this->parameters);
+        $transformer->setParameters($this->parameters); // give params to transformer
 
         return response()
-            ->api($this->jsonApiObject(self::RESOURCE_KEY, $rate, $transformer))
+            ->json($this->jsonApiList(self::RESOURCE_KEY, $paginator, $transformer))
             ->header('Content-Type', self::CONTENT_TYPE)
         ;
     }

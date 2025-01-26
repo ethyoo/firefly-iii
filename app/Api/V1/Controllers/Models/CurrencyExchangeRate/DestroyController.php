@@ -1,8 +1,8 @@
 <?php
 
 /*
- * ShowController.php
- * Copyright (c) 2023 james@firefly-iii.org
+ * DestroyController.php
+ * Copyright (c) 2025 james@firefly-iii.org.
  *
  * This file is part of Firefly III (https://github.com/firefly-iii).
  *
@@ -17,27 +17,29 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
 declare(strict_types=1);
 
-namespace FireflyIII\Api\V2\Controllers\Model\ExchangeRate;
+namespace FireflyIII\Api\V1\Controllers\Models\CurrencyExchangeRate;
 
-use FireflyIII\Api\V2\Controllers\Controller;
+use FireflyIII\Api\V1\Controllers\Controller;
+use FireflyIII\Api\V1\Requests\Models\CurrencyExchangeRate\DestroyRequest;
+use FireflyIII\Enums\UserRoleEnum;
+use FireflyIII\Exceptions\ValidationException;
+use FireflyIII\Models\CurrencyExchangeRate;
 use FireflyIII\Models\TransactionCurrency;
 use FireflyIII\Repositories\UserGroups\ExchangeRate\ExchangeRateRepositoryInterface;
 use FireflyIII\Support\Http\Api\ValidatesUserGroupTrait;
-use FireflyIII\Transformers\V2\ExchangeRateTransformer;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-/**
- * Class ShowController
- */
-class ShowController extends Controller
+class DestroyController extends Controller
 {
     use ValidatesUserGroupTrait;
+
+    protected array $acceptedRoles   = [UserRoleEnum::OWNER];
 
     public const string RESOURCE_KEY = 'exchange-rates';
 
@@ -56,21 +58,25 @@ class ShowController extends Controller
         );
     }
 
-    public function show(TransactionCurrency $from, TransactionCurrency $to): JsonResponse
+    public function destroy(DestroyRequest $request, TransactionCurrency $from, TransactionCurrency $to): JsonResponse
     {
-        $pageSize    = $this->parameters->get('limit');
-        $page        = $this->parameters->get('page');
-        $rates       = $this->repository->getRates($from, $to);
-        $count       = $rates->count();
-        $rates       = $rates->slice(($page - 1) * $pageSize, $pageSize);
-        $paginator   = new LengthAwarePaginator($rates, $count, $pageSize, $page);
+        $date = $request->getDate();
+        if (null === $date) {
+            throw new ValidationException('Date is required');
+        }
+        $rate = $this->repository->getSpecificRateOnDate($from, $to, $date);
+        if (null === $rate) {
+            throw new NotFoundHttpException();
+        }
+        $this->repository->deleteRate($rate);
 
-        $transformer = new ExchangeRateTransformer();
-        $transformer->setParameters($this->parameters); // give params to transformer
+        return response()->json([], 204);
+    }
 
-        return response()
-            ->json($this->jsonApiList(self::RESOURCE_KEY, $paginator, $transformer))
-            ->header('Content-Type', self::CONTENT_TYPE)
-        ;
+    public function destroySingle(CurrencyExchangeRate $exchangeRate): JsonResponse
+    {
+        $this->repository->deleteRate($exchangeRate);
+
+        return response()->json([], 204);
     }
 }
