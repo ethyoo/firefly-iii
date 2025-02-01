@@ -25,8 +25,8 @@ declare(strict_types=1);
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 return new class () extends Migration {
     /**
@@ -37,8 +37,9 @@ return new class () extends Migration {
         // make account_id nullable and the relation also nullable.
         try {
             Schema::table('piggy_banks', static function (Blueprint $table): void {
-                // 1. drop index
-                $table->dropForeign('piggy_banks_account_id_foreign');
+                if (self::hasForeign('piggy_banks', 'piggy_banks_account_id_foreign')) {
+                    $table->dropForeign('piggy_banks_account_id_foreign');
+                }
             });
         } catch (RuntimeException $e) {
             Log::error('Could not drop foreign key "piggy_banks_account_id_foreign". Probably not an issue.');
@@ -105,7 +106,9 @@ return new class () extends Migration {
             $table->renameColumn('target_date_tz', 'targetdate_tz');
 
             // 3. drop currency again + index
-            $table->dropForeign('unique_currency');
+            if (self::hasForeign('piggy_banks', 'unique_currency')) {
+                $table->dropForeign('unique_currency');
+            }
             $table->dropColumn('transaction_currency_id');
 
             // 2. make column non-nullable.
@@ -126,5 +129,18 @@ return new class () extends Migration {
         });
 
         Schema::dropIfExists('account_piggy_bank');
+    }
+
+    protected static function hasForeign(string $table, string $column)
+    {
+
+        $foreignKeysDefinitions = Schema::getForeignKeys($table);
+        foreach ($foreignKeysDefinitions as $foreignKeyDefinition) {
+            if ($foreignKeyDefinition['name'] === $column) {
+                return true;
+            }
+        }
+
+        return false;
     }
 };
