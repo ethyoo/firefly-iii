@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 6.2.5 - 2025-02-08
+
+### Fixed
+
+- [Issue 9736](https://github.com/firefly-iii/firefly-iii/issues/9736) (Wrong `finalAccountBalance` result) reported by @gthbusrr
+- [Issue 9747](https://github.com/firefly-iii/firefly-iii/issues/9747) (Data entry issues with exchange rates) reported by @Azmodeszer
+- [Issue 9769](https://github.com/firefly-iii/firefly-iii/issues/9769) ("Your accounts" graph shows changes at wrong dates - not fixed by v6.2.4) reported by @SteffoSpieler
+- [Discussion 9780](https://github.com/orgs/firefly-iii/discussions/9780) (Rules or webhook precedence?) started by @joeshmoe57
+- [Issue 9781](https://github.com/firefly-iii/firefly-iii/issues/9781) (Search key `has_any_external_url:false` returns all transactions) reported by @joeshmoe57
+- [Issue 9783](https://github.com/firefly-iii/firefly-iii/issues/9783) (Subscriptions: Make "Not expected this period" and "expected x days from now" different colors) reported by @SteffoSpieler
+- [Issue 9784](https://github.com/firefly-iii/firefly-iii/issues/9784) (Transfers with external currency not considered for account balance?) reported by @pvieira84
+- [Issue 9786](https://github.com/firefly-iii/firefly-iii/issues/9786) (The error 500 information page has non-clickable links to github and the debug page) reported by @tjmv
+- [Issue 9787](https://github.com/firefly-iii/firefly-iii/issues/9787) (Twig general template error formatting TransactionCurrency on main page) reported by @tjmv
+- [Issue 9789](https://github.com/firefly-iii/firefly-iii/issues/9789) (Can't open expense and revenue accounts view) reported by @puffer-duck
+
 ## 6.2.4 - 2025-02-05
 
 > ⚠️ _Most pressing issues are fixed. Please open [an issue here](https://github.com/firefly-iii/firefly-iii/issues/new?template=bug.yml) if you run into problems._

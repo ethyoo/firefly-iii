@@ -11,7 +11,7 @@ use FireflyIII\Support\Search\QueryParser\NodeGroup;
 use FireflyIII\Support\Search\QueryParser\Node;
 use Tests\integration\TestCase;
 
-abstract class AbstractQueryParserInterfaceParseQueryTest extends TestCase
+abstract class AbstractQueryParserInterfaceParseQueryTester extends TestCase
 {
     abstract protected function createParser(): QueryParserInterface;
 
@@ -192,7 +192,7 @@ abstract class AbstractQueryParserInterfaceParseQueryTest extends TestCase
     {
         $actual = $this->createParser()->parse($query);
 
-        self::assertSame($expected, $actual);
+        self::assertObjectEquals($expected, $actual);
 
     }
 }

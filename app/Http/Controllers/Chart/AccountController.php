@@ -139,7 +139,7 @@ class AccountController extends Controller
                 }
                 // Log::debug(sprintf('Will process expense array "%s" with amount %s', $key, $endBalance));
                 $searchCode   = $this->convertToNative ? $this->defaultCurrency->code : $key;
-                $searchCode   = 3 !== strlen($searchCode) ? $this->defaultCurrency->code : $searchCode;
+                $searchCode   = 'balance' === $searchCode || 'native_balance' === $searchCode ? $this->defaultCurrency->code : $searchCode;
                 // Log::debug(sprintf('Search code is %s', $searchCode));
                 // see if there is an accompanying start amount.
                 // grab the difference and find the currency.
@@ -335,7 +335,7 @@ class AccountController extends Controller
         $start          = clone session('start', today(config('app.timezone'))->startOfMonth());
         $end            = clone session('end', today(config('app.timezone'))->endOfMonth());
         $defaultSet     = $repository->getAccountsByType([AccountTypeEnum::DEFAULT->value, AccountTypeEnum::ASSET->value])->pluck('id')->toArray();
-        Log::debug('Default set is ', $defaultSet);
+        // Log::debug('Default set is ', $defaultSet);
         $frontpage      = app('preferences')->get('frontpageAccounts', $defaultSet);
         $frontpageArray = !is_array($frontpage->data) ? [] : $frontpage->data;
         Log::debug('Frontpage preference set is ', $frontpageArray);
@@ -344,6 +344,9 @@ class AccountController extends Controller
             Log::debug('frontpage set is empty!');
         }
         $accounts       = $repository->getAccountsById($frontpageArray);
+
+        // move to end of day for $end.
+        $end->endOfDay();
 
         return response()->json($this->accountBalanceChart($accounts, $start, $end));
     }
@@ -603,7 +606,7 @@ class AccountController extends Controller
                 }
                 // Log::debug(sprintf('Will process expense array "%s" with amount %s', $key, $endBalance));
                 $searchCode   = $this->convertToNative ? $this->defaultCurrency->code : $key;
-                $searchCode   = 3 !== strlen($searchCode) ? $this->defaultCurrency->code : $searchCode;
+                $searchCode   = 'balance' === $searchCode || 'native_balance' === $searchCode ? $this->defaultCurrency->code : $searchCode;
                 // Log::debug(sprintf('Search code is %s', $searchCode));
                 // see if there is an accompanying start amount.
                 // grab the difference and find the currency.
