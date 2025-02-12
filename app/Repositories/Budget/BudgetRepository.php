@@ -41,8 +41,7 @@ use FireflyIII\Repositories\Account\AccountRepositoryInterface;
 use FireflyIII\Repositories\UserGroups\Currency\CurrencyRepositoryInterface;
 use FireflyIII\Services\Internal\Destroy\BudgetDestroyService;
 use FireflyIII\Support\Http\Api\ExchangeRateConverter;
-use FireflyIII\User;
-use Illuminate\Contracts\Auth\Authenticatable;
+use FireflyIII\Support\Repositories\UserGroup\UserGroupTrait;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -52,7 +51,7 @@ use Illuminate\Support\Facades\Log;
  */
 class BudgetRepository implements BudgetRepositoryInterface
 {
-    private User $user;
+    use UserGroupTrait;
 
     public function budgetEndsWith(string $query, int $limit): Collection
     {
@@ -152,13 +151,6 @@ class BudgetRepository implements BudgetRepositoryInterface
         }
 
         return $return;
-    }
-
-    public function setUser(null|Authenticatable|User $user): void
-    {
-        if ($user instanceof User) {
-            $this->user = $user;
-        }
     }
 
     public function getActiveBudgets(): Collection

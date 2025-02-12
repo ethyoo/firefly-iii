@@ -24,23 +24,38 @@ declare(strict_types=1);
 
 namespace FireflyIII\Support\Repositories\UserGroup;
 
+use FireflyIII\Enums\UserRoleEnum;
 use FireflyIII\Exceptions\FireflyException;
 use FireflyIII\Models\GroupMembership;
 use FireflyIII\Models\UserGroup;
 use FireflyIII\User;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Trait UserGroupTrait
  */
 trait UserGroupTrait
 {
-    protected User      $user;
-    protected UserGroup $userGroup;
+    protected ?User      $user      = null;
+    protected ?UserGroup $userGroup = null;
 
     public function getUserGroup(): UserGroup
     {
         return $this->userGroup;
+    }
+
+    public function checkUserGroupAccess(UserRoleEnum $role): bool
+    {
+        $result = $this->user->hasRoleInGroupOrOwner($this->userGroup, $role);
+        if ($result) {
+            Log::debug(sprintf('User #%d has role %s in group #%d or is owner/full.', $this->user->id, $role->value, $this->userGroup->id));
+
+            return true;
+        }
+        Log::warning(sprintf('User #%d DOES NOT have role %s in group #%d.', $this->user->id, $role->value, $this->userGroup->id));
+
+        return false;
     }
 
     /**
@@ -48,6 +63,9 @@ trait UserGroupTrait
      */
     public function setUserGroup(UserGroup $userGroup): void
     {
+        if (null === $this->user) {
+            Log::warning(sprintf('User is not set in repository %s', static::class));
+        }
         $this->userGroup = $userGroup;
     }
 
@@ -62,7 +80,11 @@ trait UserGroupTrait
                 throw new FireflyException(sprintf('User #%d has no user group.', $user->id));
             }
             $this->userGroup = $user->userGroup;
+
+            return;
         }
+
+        throw new FireflyException(sprintf('Object is of class %s, not User.', get_class($user)));
     }
 
     /**
@@ -70,7 +92,7 @@ trait UserGroupTrait
      */
     public function setUserGroupById(int $userGroupId): void
     {
-        $memberships     = GroupMembership::where('user_id', $this->user->id)
+        $memberships = GroupMembership::where('user_id', $this->user->id)
             ->where('user_group_id', $userGroupId)
             ->count()
         ;
@@ -79,10 +101,10 @@ trait UserGroupTrait
         }
 
         /** @var null|UserGroup $userGroup */
-        $userGroup       = UserGroup::find($userGroupId);
+        $userGroup   = UserGroup::find($userGroupId);
         if (null === $userGroup) {
             throw new FireflyException(sprintf('Cannot find administration for user #%d', $this->user->id));
         }
-        $this->userGroup = $userGroup;
+        $this->setUserGroup($userGroup);
     }
 }

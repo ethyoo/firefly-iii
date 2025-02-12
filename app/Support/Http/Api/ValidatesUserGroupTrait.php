@@ -38,6 +38,8 @@ use Illuminate\Support\Facades\Log;
  */
 trait ValidatesUserGroupTrait
 {
+    protected ?UserGroup $userGroup = null;
+
     /**
      * An "undocumented" filter
      *
@@ -59,7 +61,7 @@ trait ValidatesUserGroupTrait
         $user        = auth()->user();
         $groupId     = 0;
         if (!$request->has('user_group_id')) {
-            $groupId = $user->user_group_id;
+            $groupId = (int) $user->user_group_id;
             Log::debug(sprintf('validateUserGroup: no user group submitted, use default group #%d.', $groupId));
         }
         if ($request->has('user_group_id')) {
@@ -98,6 +100,7 @@ trait ValidatesUserGroupTrait
         foreach ($roles as $role) {
             if ($user->hasRoleInGroupOrOwner($group, $role)) {
                 Log::debug(sprintf('validateUserGroup: User has role "%s" in group #%d, return the group.', $role->value, $groupId));
+                $this->userGroup = $group;
 
                 return $group;
             }

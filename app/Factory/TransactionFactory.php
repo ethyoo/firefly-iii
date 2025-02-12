@@ -31,7 +31,6 @@ use FireflyIII\Models\TransactionCurrency;
 use FireflyIII\Models\TransactionJournal;
 use FireflyIII\Rules\UniqueIban;
 use FireflyIII\Services\Internal\Update\AccountUpdateService;
-use FireflyIII\User;
 use Illuminate\Database\QueryException;
 
 /**
@@ -215,13 +214,5 @@ class TransactionFactory
     public function setReconciled(bool $reconciled): void
     {
         $this->reconciled = $reconciled;
-    }
-
-    /**
-     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
-     */
-    public function setUser(User $user): void
-    {
-        // empty function.
     }
 }
