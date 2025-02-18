@@ -81,7 +81,7 @@ return [
         'running_balance_column' => env('USE_RUNNING_BALANCE', false),
         // see cer.php for exchange rates feature flag.
     ],
-    'version'                      => '6.2.6',
+    'version'                      => '6.2.7',
     'api_version'                  => '2.1.0', // field is no longer used.
     'db_version'                   => 25,
 
@@ -176,7 +176,7 @@ return [
     ],
 
     // administration specific preferences
-    'admin_specific_prefs'         => ['frontpageAccounts', 'lastActivity'],
+    'admin_specific_prefs'         => [],
 
     // default user-related values
     'darkMode'                     => 'browser',

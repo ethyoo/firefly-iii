@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 6.2.7 - 2025-02-19
+
+### Changed
+
+- Optimised Account and Transaction API endpoints, should be a lot faster
+- Optimized account deletion, should be a lot faster
+
+### Fixed
+
+- [Issue 9803](https://github.com/firefly-iii/firefly-iii/issues/9803) (Left to spend - All negativ after update.) reported by @nedsined
+- [Issue 9835](https://github.com/firefly-iii/firefly-iii/issues/9835) (Failed to create transaction in recurring transactions on 6.2.6) reported by @hhl5350
+- [Issue 9842](https://github.com/firefly-iii/firefly-iii/issues/9842) (Net worth on dashboard does not go up to the end of month for the current month) reported by @standingduck3
+- [Issue 9848](https://github.com/firefly-iii/firefly-iii/issues/9848) (Failed to export accounts data) reported by @Jaeger87
+- [Issue 9855](https://github.com/firefly-iii/firefly-iii/issues/9855) (Demo Website not working) reported by @xfarrow
+
 ## 6.2.6 - 2025-02-13
 
 ### Fixed

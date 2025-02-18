@@ -31,6 +31,7 @@ use FireflyIII\Models\Account;
 use FireflyIII\Models\PiggyBank;
 use FireflyIII\Repositories\ObjectGroup\OrganisesObjectGroups;
 use FireflyIII\Repositories\PiggyBank\PiggyBankRepositoryInterface;
+use FireflyIII\Support\JsonApi\Enrichments\AccountEnrichment;
 use FireflyIII\Transformers\AccountTransformer;
 use FireflyIII\Transformers\PiggyBankTransformer;
 use Illuminate\Contracts\View\Factory;
@@ -81,25 +82,25 @@ class IndexController extends Controller
     {
         $this->cleanupObjectGroups();
         $this->piggyRepos->resetOrder();
-        $collection         = $this->piggyRepos->getPiggyBanks();
+        $collection = $this->piggyRepos->getPiggyBanks();
 
         /** @var Carbon $end */
-        $end                = session('end', today(config('app.timezone'))->endOfMonth());
+        $end        = session('end', today(config('app.timezone'))->endOfMonth());
 
         // transform piggies using the transformer:
-        $parameters         = new ParameterBag();
-        $parameters->set('end', $end);
+        // $parameters         = new ParameterBag();
+        // $parameters->set('end', $end);
 
 
-        /** @var AccountTransformer $accountTransformer */
-        $accountTransformer = app(AccountTransformer::class);
-        $accountTransformer->setParameters($parameters);
+        // /** @var AccountTransformer $accountTransformer */
+        // $accountTransformer = app(AccountTransformer::class);
+        // $accountTransformer->setParameters($parameters);
 
         // data
-        $piggyBanks         = $this->groupPiggyBanks($collection);
-        $accounts           = $this->collectAccounts($collection);
-        $accounts           = $this->mergeAccountsAndPiggies($piggyBanks, $accounts);
-        $piggyBanks         = $this->makeSums($piggyBanks);
+        $piggyBanks = $this->groupPiggyBanks($collection);
+        $accounts   = $this->collectAccounts($collection);
+        $accounts   = $this->mergeAccountsAndPiggies($piggyBanks, $accounts);
+        $piggyBanks = $this->makeSums($piggyBanks);
 
         ksort($piggyBanks);
 
@@ -144,6 +145,11 @@ class IndexController extends Controller
         $accountTransformer = app(AccountTransformer::class);
         $accountTransformer->setParameters($parameters);
 
+        // enrich each account.
+        $enrichment         = new AccountEnrichment();
+        $enrichment->setUser(auth()->user());
+        $enrichment->setConvertToNative($this->convertToNative);
+        $enrichment->setNative($this->defaultCurrency);
         $return             = [];
 
         /** @var PiggyBank $piggy */
@@ -152,6 +158,7 @@ class IndexController extends Controller
 
             /** @var Account $account */
             foreach ($accounts as $account) {
+                $account   = $enrichment->enrichSingle($account);
                 $array     = $accountTransformer->transform($account);
                 $accountId = (int) $array['id'];
                 if (!array_key_exists($accountId, $return)) {

@@ -25,14 +25,19 @@ declare(strict_types=1);
 namespace FireflyIII\Support\JsonApi\Enrichments;
 
 use Carbon\Carbon;
+use FireflyIII\Enums\TransactionTypeEnum;
+use FireflyIII\Exceptions\FireflyException;
+use FireflyIII\Helpers\Collector\GroupCollectorInterface;
 use FireflyIII\Models\Account;
+use FireflyIII\Models\AccountMeta;
 use FireflyIII\Models\AccountType;
-use FireflyIII\Models\ObjectGroup;
+use FireflyIII\Models\Location;
+use FireflyIII\Models\Note;
 use FireflyIII\Models\TransactionCurrency;
-use FireflyIII\Repositories\UserGroups\Account\AccountRepositoryInterface;
-use FireflyIII\Repositories\UserGroups\Currency\CurrencyRepositoryInterface;
+use FireflyIII\Models\UserGroup;
 use FireflyIII\Support\Facades\Balance;
-use FireflyIII\Support\Http\Api\ExchangeRateConverter;
+use FireflyIII\Support\Facades\Steam;
+use FireflyIII\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -44,27 +49,50 @@ use Illuminate\Support\Facades\Log;
  */
 class AccountEnrichment implements EnrichmentInterface
 {
-    private array                       $balances;
-    private Collection                  $collection;
-    private array                       $currencies;
-    private CurrencyRepositoryInterface $currencyRepository;
-    private TransactionCurrency         $default;
-    private ?Carbon                     $end;
-    private array                       $grouped;
-    private array                       $objectGroups;
-    private AccountRepositoryInterface  $repository;
-    private ?Carbon                     $start;
+    //    private array                       $balances;
+    //    private array                       $currencies;
+    //    private CurrencyRepositoryInterface $currencyRepository;
+    //    private TransactionCurrency         $default;
+    //    private ?Carbon                     $end;
+    //    private array                       $grouped;
+    //    private array                       $objectGroups;
+    //    private AccountRepositoryInterface  $repository;
+    //    private ?Carbon                     $start;
+
+    private Collection $collection;
+
+    private bool                $convertToNative;
+    private User                $user;
+    private UserGroup           $userGroup;
+    private TransactionCurrency $native;
+    private array               $accountIds;
+    private array               $accountTypeIds;
+    private array               $accountTypes;
+    private array               $currencies;
+    private array               $meta;
+    private array               $openingBalances;
+    private array               $notes;
+    private array $locations;
 
     public function __construct()
     {
-        $this->repository         = app(AccountRepositoryInterface::class);
-        $this->currencyRepository = app(CurrencyRepositoryInterface::class);
-        $this->start              = null;
-        $this->end                = null;
+        $this->convertToNative = false;
+        $this->accountIds      = [];
+        $this->openingBalances = [];
+        $this->currencies      = [];
+        $this->accountTypeIds  = [];
+        $this->accountTypes    = [];
+        $this->meta            = [];
+        $this->notes           = [];
+        $this->locations       = [];
+        //        $this->repository         = app(AccountRepositoryInterface::class);
+        //        $this->currencyRepository = app(CurrencyRepositoryInterface::class);
+        //        $this->start              = null;
+        //        $this->end                = null;
     }
 
     #[\Override]
-    public function enrichSingle(Model $model): Account
+    public function enrichSingle(array|Model $model): Account|array
     {
         Log::debug(__METHOD__);
         $collection = new Collection([$model]);
@@ -80,20 +108,27 @@ class AccountEnrichment implements EnrichmentInterface
     public function enrich(Collection $collection): Collection
     {
         Log::debug(sprintf('Now doing account enrichment for %d account(s)', $collection->count()));
-        // prep local fields
-        $this->collection   = $collection;
-        $this->default      = app('amount')->getNativeCurrency();
-        $this->currencies   = [];
-        $this->balances     = [];
-        $this->objectGroups = [];
-        $this->grouped      = [];
 
-        // do everything here:
-        $this->getLastActivity();
-        $this->collectAccountTypes();
+        // prep local fields
+        $this->collection = $collection;
+        $this->collectAccountIds();
+        $this->getAccountTypes();
         $this->collectMetaData();
-        $this->getMetaBalances();
-        $this->getObjectGroups();
+        $this->collectNotes();
+        $this->collectLocations();
+        $this->collectOpeningBalances();
+        //        $this->default      = app('amount')->getNativeCurrency();
+        //        $this->currencies   = [];
+        //        $this->balances     = [];
+        //        $this->objectGroups = [];
+        //        $this->grouped      = [];
+        //
+        //        // do everything here:
+        //        $this->getLastActivity();
+        //        $this->collectAccountTypes();
+        //        $this->collectMetaData();
+        //        $this->getMetaBalances();
+        //        $this->getObjectGroups();
 
         //        $this->collection->transform(function (Account $account) {
         //            $account->user_array = ['id' => 1, 'bla bla' => 'bla'];
@@ -106,176 +141,177 @@ class AccountEnrichment implements EnrichmentInterface
         //            return $account;
         //        });
 
+        $this->appendCollectedData();
+
         return $this->collection;
     }
 
-    /**
-     * TODO this method refers to a single-use method inside Steam that could be moved here.
-     */
-    private function getLastActivity(): void
+    private function getAccountTypes(): void
     {
-        $lastActivity = $this->repository->getLastActivity($this->collection);
-        foreach ($lastActivity as $row) {
-            $this->collection->where('id', $row['account_id'])->first()->last_activity = Carbon::parse($row['date_max'], config('app.timezone'));
+        $types = AccountType::whereIn('id', $this->accountTypeIds)->get();
+
+        /** @var AccountType $type */
+        foreach ($types as $type) {
+            $this->accountTypes[(int) $type->id] = $type->type;
         }
     }
 
-    /**
-     * TODO this method refers to a single-use method inside Steam that could be moved here.
-     */
-    private function collectAccountTypes(): void
+    private function collectAccountIds(): void
     {
-        $accountTypes = $this->repository->getAccountTypes($this->collection);
-        $types        = [];
-
-        /** @var AccountType $row */
-        foreach ($accountTypes as $row) {
-            $types[$row->id] = $row->type;
+        /** @var Account $account */
+        foreach ($this->collection as $account) {
+            $this->accountIds[]     = (int) $account->id;
+            $this->accountTypeIds[] = (int) $account->account_type_id;
         }
-        $this->collection->transform(function (Account $account) use ($types) {
-            $account->account_type_string = $types[$account->id];
+        $this->accountIds     = array_unique($this->accountIds);
+        $this->accountTypeIds = array_unique($this->accountTypeIds);
+    }
 
-            return $account;
+    private function appendCollectedData(): void
+    {
+        $accountTypes     = $this->accountTypes;
+        $meta             = $this->meta;
+        $currencies       = $this->currencies;
+        $notes            = $this->notes;
+        $openingBalances  = $this->openingBalances;
+        $locations        = $this->locations;
+        $this->collection = $this->collection->map(function (Account $item) use ($accountTypes, $meta, $currencies, $notes, $openingBalances, $locations) {
+            $item->full_account_type = $accountTypes[(int) $item->account_type_id] ?? null;
+            $accountMeta             = [
+                'currency' => null,
+                'location' => [
+                    'latitude'   => null,
+                    'longitude'  => null,
+                    'zoom_level' => null,
+                ],
+            ];
+            if (array_key_exists((int) $item->id, $meta)) {
+                foreach ($meta[(int) $item->id] as $name => $value) {
+                    $accountMeta[$name] = $value;
+                }
+            }
+            // also add currency, if present.
+            if (array_key_exists('currency_id', $accountMeta)) {
+                $currencyId              = (int) $accountMeta['currency_id'];
+                $accountMeta['currency'] = $currencies[$currencyId];
+            }
+
+            // if notes, add notes.
+            if (array_key_exists($item->id, $notes)) {
+                $accountMeta['notes'] = $notes[$item->id];
+            }
+            // if opening balance, add opening balance
+            if (array_key_exists($item->id, $openingBalances)) {
+                $accountMeta['opening_balance_date']   = $openingBalances[$item->id]['date'];
+                $accountMeta['opening_balance_amount'] = $openingBalances[$item->id]['amount'];
+            }
+
+            // if location, add location:
+            if (array_key_exists($item->id, $locations)) {
+                $accountMeta['location'] = $locations[$item->id];
+            }
+            $item->meta              = $accountMeta;
+
+            return $item;
         });
+    }
+
+    private function collectOpeningBalances(): void
+    {
+        // use new group collector:
+        /** @var GroupCollectorInterface $collector */
+        $collector = app(GroupCollectorInterface::class);
+        $collector->setUser($this->user)->setAccounts($this->collection)
+            ->withAccountInformation()
+            ->setTypes([TransactionTypeEnum::OPENING_BALANCE->value])
+        ;
+        $journals  = $collector->getExtractedJournals();
+        foreach ($journals as $journal) {
+            $this->openingBalances[(int) $journal['source_account_id']]
+                   = [
+                       'amount' => Steam::negative($journal['amount']),
+                       'date'   => $journal['date'],
+                   ];
+            $this->openingBalances[(int) $journal['destination_account_id']]
+                   = [
+                       'amount' => Steam::positive($journal['amount']),
+                       'date'   => $journal['date'],
+                   ];
+        }
+    }
+
+    private function collectLocations(): void
+    {
+        $locations = Location::query()->whereIn('locatable_id', $this->accountIds)
+            ->where('locatable_type', Account::class)->get(['locations.locatable_id', 'locations.latitude', 'locations.longitude', 'locations.zoom_level'])->toArray()
+        ;
+        foreach ($locations as $location) {
+            $this->locations[(int) $location['locatable_id']]
+                = [
+                    'latitude'   => (float) $location['latitude'],
+                    'longitude'  => (float) $location['longitude'],
+                    'zoom_level' => (int) $location['zoom_level'],
+                ];
+        }
+        Log::debug(sprintf('Enrich with %d locations(s)', count($this->locations)));
     }
 
     private function collectMetaData(): void
     {
-        $metaFields  = $this->repository->getMetaValues($this->collection, ['is_multi_currency', 'currency_id', 'account_role', 'account_number', 'liability_direction', 'interest', 'interest_period', 'current_debt']);
-        $currencyIds = $metaFields->where('name', 'currency_id')->pluck('data')->toArray();
-
-        $currencies  = [];
-        foreach ($this->currencyRepository->getByIds($currencyIds) as $currency) {
-            $id              = $currency->id;
-            $currencies[$id] = $currency;
-        }
-
-        $this->collection->transform(function (Account $account) use ($metaFields, $currencies) {
-            $set = $metaFields->where('account_id', $account->id);
-            foreach ($set as $entry) {
-                $account->{$entry->name} = $entry->data;
-                if ('currency_id' === $entry->name) {
-                    $id                               = (int) $entry->data;
-                    $account->currency_name           = $currencies[$id]?->name;
-                    $account->currency_code           = $currencies[$id]?->code;
-                    $account->currency_symbol         = $currencies[$id]?->symbol;
-                    $account->currency_decimal_places = $currencies[$id]?->decimal_places;
-                }
-            }
-
-            return $account;
-        });
-    }
-
-    private function getMetaBalances(): void
-    {
-        $this->balances = Balance::getAccountBalances($this->collection, today());
-        $balances       = $this->balances;
-        $default        = $this->default;
-
-        // get start and end, so the balance difference can be generated.
-        $start          = null;
-        $end            = null;
-        if (null !== $this->start) {
-            $start = Balance::getAccountBalances($this->collection, $this->start);
-        }
-        if (null !== $this->end) {
-            $end = Balance::getAccountBalances($this->collection, $this->end);
-        }
-
-        $this->collection->transform(function (Account $account) use ($balances, $default, $start, $end) {
-            $converter = new ExchangeRateConverter();
-            $native    = [
-                'currency_id'             => $this->default->id,
-                'currency_name'           => $this->default->name,
-                'currency_code'           => $this->default->code,
-                'currency_symbol'         => $this->default->symbol,
-                'currency_decimal_places' => $this->default->decimal_places,
-                'balance'                 => '0',
-                'period_start_balance'    => null,
-                'period_end_balance'      => null,
-                'balance_difference'      => null,
-            ];
-            if (array_key_exists($account->id, $balances)) {
-                $set              = [];
-                foreach ($balances[$account->id] as $currencyId => $entry) {
-                    $left  = $start[$account->id][$currencyId]['balance'] ?? null;
-                    $right = $end[$account->id][$currencyId]['balance'] ?? null;
-                    $diff  = null;
-                    if (null !== $left && null !== $right) {
-                        $diff = bcsub($right, $left);
-                    }
-
-                    $item  = [
-                        'currency_id'             => $entry['currency']->id,
-                        'currency_name'           => $entry['currency']->name,
-                        'currency_code'           => $entry['currency']->code,
-                        'currency_symbol'         => $entry['currency']->symbol,
-                        'currency_decimal_places' => $entry['currency']->decimal_places,
-                        'balance'                 => $entry['balance'],
-                        'period_start_balance'    => $left,
-                        'period_end_balance'      => $right,
-                        'balance_difference'      => $diff,
-                    ];
-                    $set[] = $item;
-                    if ($converter->enabled()) {
-                        $native['balance'] = bcadd($native['balance'], $converter->convert($entry['currency'], $default, today(), $entry['balance']));
-                        if (null !== $diff) {
-                            $native['period_start_balance'] = $converter->convert($entry['currency'], $default, today(), $item['period_start_balance']);
-                            $native['period_end_balance']   = $converter->convert($entry['currency'], $default, today(), $item['period_end_balance']);
-                            $native['balance_difference']   = bcsub($native['period_end_balance'], $native['period_start_balance']);
-                        }
-                    }
-                }
-                $account->balance = $set;
-                if ($converter->enabled()) {
-                    $account->native_balance = $native;
-                }
-            }
-
-            return $account;
-        });
-    }
-
-    private function getObjectGroups(): void
-    {
-        $set      = \DB::table('object_groupables')
-            ->where('object_groupable_type', Account::class)
-            ->whereIn('object_groupable_id', $this->collection->pluck('id')->toArray())
-            ->distinct()
-            ->get(['object_groupables.object_groupable_id', 'object_groupables.object_group_id'])
+        $set        = AccountMeta::whereIn('name', ['is_multi_currency', 'currency_id', 'account_role', 'account_number', 'liability_direction', 'interest', 'interest_period', 'current_debt'])
+            ->whereIn('account_id', $this->accountIds)
+            ->get(['account_meta.id', 'account_meta.account_id', 'account_meta.name', 'account_meta.data'])->toArray()
         ;
-        // get the groups:
-        $groupIds = $set->pluck('object_group_id')->toArray();
-        $groups   = ObjectGroup::whereIn('id', $groupIds)->get();
 
-        /** @var ObjectGroup $group */
-        foreach ($groups as $group) {
-            $this->objectGroups[$group->id] = $group;
-        }
-
-        /** @var \stdClass $entry */
+        /** @var array $entry */
         foreach ($set as $entry) {
-            $this->grouped[(int) $entry->object_groupable_id] = (int) $entry->object_group_id;
-        }
-        $this->collection->transform(function (Account $account) {
-            $account->object_group_id = $this->grouped[$account->id] ?? null;
-            if (null !== $account->object_group_id) {
-                $account->object_group_title = $this->objectGroups[$account->object_group_id]->title;
-                $account->object_group_order = $this->objectGroups[$account->object_group_id]->order;
+            $this->meta[(int) $entry['account_id']][$entry['name']] = (string) $entry['data'];
+            if ('currency_id' === $entry['name']) {
+                $this->currencies[(int) $entry['data']] = true;
             }
-
-            return $account;
-        });
+        }
+        $currencies = TransactionCurrency::whereIn('id', array_keys($this->currencies))->get();
+        foreach ($currencies as $currency) {
+            $this->currencies[(int) $currency->id] = $currency;
+        }
+        foreach ($this->currencies as $id => $currency) {
+            if (true === $currency) {
+                throw new FireflyException(sprintf('Currency #%d not found.', $id));
+            }
+        }
     }
 
-    public function setEnd(?Carbon $end): void
+    public function setUserGroup(UserGroup $userGroup): void
     {
-        $this->end = $end;
+        $this->userGroup = $userGroup;
     }
 
-    public function setStart(?Carbon $start): void
+    public function setUser(User $user): void
     {
-        $this->start = $start;
+        $this->user      = $user;
+        $this->userGroup = $user->userGroup;
+    }
+
+    public function setConvertToNative(bool $convertToNative): void
+    {
+        $this->convertToNative = $convertToNative;
+    }
+
+    public function setNative(TransactionCurrency $native): void
+    {
+        $this->native = $native;
+    }
+
+    private function collectNotes(): void
+    {
+        $notes = Note::query()->whereIn('noteable_id', $this->accountIds)
+            ->whereNotNull('notes.text')
+            ->where('notes.text', '!=', '')
+            ->where('noteable_type', Account::class)->get(['notes.noteable_id', 'notes.text'])->toArray()
+        ;
+        foreach ($notes as $note) {
+            $this->notes[(int) $note['noteable_id']] = (string) $note['text'];
+        }
+        Log::debug(sprintf('Enrich with %d note(s)', count($this->notes)));
     }
 }

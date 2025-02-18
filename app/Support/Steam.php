@@ -48,7 +48,7 @@ class Steam
         if (!in_array($type, $list, true)) {
             return null;
         }
-        $result = $account->accountMeta->where('name', 'currency_id')->first();
+        $result = $account->accountMeta()->where('name', 'currency_id')->first();
         if (null === $result) {
             return null;
         }
@@ -288,21 +288,33 @@ class Steam
      * --> "native_balance": balance in the user's native balance, with all amounts converted to native.
      * "EUR": balance in EUR (or whatever currencies the account has balance in)
      */
-    public function finalAccountBalance(Account $account, Carbon $date): array
+    public function finalAccountBalance(Account $account, Carbon $date, ?TransactionCurrency $native = null, ?bool $convertToNative = null): array
     {
 
         $cache             = new CacheProperties();
         $cache->addProperty($account->id);
         $cache->addProperty($date);
         if ($cache->has()) {
-            //            Log::debug(sprintf('CACHED finalAccountBalance(#%d, %s)', $account->id, $date->format('Y-m-d H:i:s')));
+            Log::debug(sprintf('CACHED finalAccountBalance(#%d, %s)', $account->id, $date->format('Y-m-d H:i:s')));
+
             return $cache->get();
         }
         Log::debug(sprintf('finalAccountBalance(#%d, %s)', $account->id, $date->format('Y-m-d H:i:s')));
+        if (null === $convertToNative) {
+            $convertToNative = Amount::convertToNative($account->user);
+        }
+        if (null === $native) {
+            $native = Amount::getNativeCurrencyByUserGroup($account->user->userGroup);
+        }
+        // account balance thing.
+        $currencyPresent   = isset($account->meta) && array_key_exists('currency', $account->meta) && null !== $account->meta['currency'];
+        if ($currencyPresent) {
+            $accountCurrency = $account->meta['currency'];
+        }
+        if (!$currencyPresent) {
 
-        $native            = Amount::getNativeCurrencyByUserGroup($account->user->userGroup);
-        $convertToNative   = Amount::convertToNative($account->user);
-        $accountCurrency   = $this->getAccountCurrency($account);
+            $accountCurrency = $this->getAccountCurrency($account);
+        }
         $hasCurrency       = null !== $accountCurrency;
         $currency          = $hasCurrency ? $accountCurrency : $native;
         $return            = [

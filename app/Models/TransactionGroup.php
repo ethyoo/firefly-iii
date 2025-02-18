@@ -40,12 +40,14 @@ class TransactionGroup extends Model
 
     protected $casts
                         = [
-            'id'         => 'integer',
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
-            'deleted_at' => 'datetime',
-            'title'      => 'string',
-            'date'       => 'datetime',
+            'id'                           => 'integer',
+            'created_at'                   => 'datetime',
+            'updated_at'                   => 'datetime',
+            'deleted_at'                   => 'datetime',
+            'title'                        => 'string',
+            'date'                         => 'datetime',
+            'user_id'                      => 'integer',
+            'user_group_id'                => 'integer',
         ];
 
     protected $fillable = ['user_id', 'user_group_id', 'title'];

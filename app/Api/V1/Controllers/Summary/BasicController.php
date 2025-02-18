@@ -102,7 +102,7 @@ class BasicController extends Controller
         $balanceData  = $this->getBalanceInformation($start, $end);
         $billData     = $this->getBillInformation($start, $end);
         $spentData    = $this->getLeftToSpendInfo($start, $end);
-        $netWorthData = $this->getNetWorthInfo($start, $end);
+        $netWorthData = $this->getNetWorthInfo($end);
         //                $balanceData  = [];
         //                $billData     = [];
         //                $spentData    = [];
@@ -319,18 +319,13 @@ class BasicController extends Controller
         return $return;
     }
 
-    private function getNetWorthInfo(Carbon $start, Carbon $end): array
+    private function getNetWorthInfo(Carbon $end): array
     {
-        Log::debug('getNetWorthInfo');
+        $end->endOfDay();
 
         /** @var User $user */
         $user           = auth()->user();
-        $date           = now(config('app.timezone'));
-        // start and end in the future? use $end
-        if ($this->notInDateRange($date, $start, $end)) {
-            /** @var Carbon $date */
-            $date = session('end', today(config('app.timezone'))->endOfMonth());
-        }
+        Log::debug(sprintf('getNetWorthInfo up until "%s".', $end->format('Y-m-d H:i:s')));
 
         /** @var NetWorthInterface $netWorthHelper */
         $netWorthHelper = app(NetWorthInterface::class);
@@ -346,7 +341,7 @@ class BasicController extends Controller
             }
         );
 
-        $netWorthSet    = $netWorthHelper->byAccounts($filtered, $date);
+        $netWorthSet    = $netWorthHelper->byAccounts($filtered, $end);
         $return         = [];
         foreach ($netWorthSet as $key => $data) {
             if ('native' === $key) {
@@ -370,6 +365,22 @@ class BasicController extends Controller
                 'sub_title'               => '',
             ];
         }
+        if (0 === count($return)) {
+            $return[] = [
+                'key'                     => sprintf('net-worth-in-%s', $this->nativeCurrency->code),
+                'title'                   => trans('firefly.box_net_worth_in_currency', ['currency' => $this->nativeCurrency->symbol]),
+                'monetary_value'          => '0',
+                'currency_id'             => (string) $this->nativeCurrency->id,
+                'currency_code'           => $this->nativeCurrency->code,
+                'currency_symbol'         => $this->nativeCurrency->symbol,
+                'currency_decimal_places' => $this->nativeCurrency->decimal_places,
+                'value_parsed'            => app('amount')->formatFlat($this->nativeCurrency->symbol, $this->nativeCurrency->decimal_places, '0', false),
+                'local_icon'              => 'line-chart',
+                'sub_title'               => '',
+            ];
+        }
+
+
         Log::debug('End of getNetWorthInfo');
 
         return $return;

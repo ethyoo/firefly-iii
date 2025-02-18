@@ -79,7 +79,7 @@ class TransactionGroupFactory
 
         $group        = new TransactionGroup();
         $group->user()->associate($this->user);
-        $group->userGroup()->associate($data['user_group']);
+        $group->userGroup()->associate($this->userGroup);
         $group->title = $title;
         $group->save();
 
@@ -93,7 +93,8 @@ class TransactionGroupFactory
      */
     public function setUser(User $user): void
     {
-        $this->user = $user;
+        $this->user      = $user;
+        $this->userGroup = $user->userGroup;
     }
 
     public function setUserGroup(UserGroup $userGroup): void

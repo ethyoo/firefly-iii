@@ -33,6 +33,7 @@ use FireflyIII\Models\Budget;
 use FireflyIII\Models\Category;
 use FireflyIII\Models\CurrencyExchangeRate;
 use FireflyIII\Models\ObjectGroup;
+use FireflyIII\Models\Preference;
 use FireflyIII\Models\Recurrence;
 use FireflyIII\Models\Rule;
 use FireflyIII\Models\RuleGroup;
@@ -89,6 +90,7 @@ class CorrectsGroupInformation extends Command
             Category::class,
             ObjectGroup::class,
             CurrencyExchangeRate::class,
+            Preference::class,
             Recurrence::class,
             RuleGroup::class,
             Rule::class,
