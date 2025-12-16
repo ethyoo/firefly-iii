@@ -674,9 +674,17 @@ class JournalUpdateService
         $this->destinationTransaction->refresh();
         Log::debug(sprintf('Updated amount to "%s"', $amount));
 
+        $group                                = $this->transactionGroup;
+        if (null === $group) {
+            $group = $this->transactionJournal?->transactionGroup;
+        }
+        if (null === $group) {
+            return;
+        }
+
         event(new TriggeredAuditLog(
-            $this->transactionGroup->user,
-            $this->transactionGroup,
+            $group->user,
+            $group,
             'update_amount',
             [
                 'currency_symbol' => $destTransaction->transactionCurrency->symbol,
