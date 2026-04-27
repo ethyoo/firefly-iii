@@ -99,11 +99,6 @@ jobs:
         env:
           FIREFLY_III_ROOT: /github/workspace
           GH_TOKEN: ''
-      - name: Setup Mago
-        uses: nhedger/setup-mago@v1
-        with:
-          version: "latest"
-          working-directory: "."
       - name: Run CI
         run: |
           cp .env.example .env
@@ -113,17 +108,19 @@ jobs:
 
           # format code.
           echo "Will now run Mago Format"
-          mago format
+          ./vendor/bin/mago format
           sudo chown -R runner:docker resources/lang
           echo "Will now run PHPCS"
           .ci/phpcs.sh
 
           # lint and check
           echo "Will now run Mago Lint"
-          mago lint
+          ./vendor/bin/mago lint
           echo "Will now run PHPstan"
           .ci/phpstan.sh
           rm .env
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Crowdin action
         uses: crowdin/github-action@v2
         with:
