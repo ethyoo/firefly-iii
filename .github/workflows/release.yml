@@ -91,6 +91,7 @@ jobs:
           then
               exit 1
           fi
+
       - name: Code cleanup
         id: code-cleanup
         uses: JC5/firefly-iii-dev@main
@@ -122,6 +123,12 @@ jobs:
           rm .env
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Lint Blade templates
+        run: |
+          echo "Will now run Blade linter"
+          cp .env.example .env
+          php artisan blade:lint
+          rm .env
       - name: Crowdin action
         uses: crowdin/github-action@v2
         with:
@@ -133,24 +140,6 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           CROWDIN_PROJECT_NR: ${{ secrets.CROWDIN_PROJECT_NR }}
           CROWDIN_TOKEN: ${{ secrets.CROWDIN_TOKEN }}
-      - name: Generate JSON v1
-        id: json-v1
-        uses: JC5/firefly-iii-dev@main
-        with:
-          action: 'ff3:json-translations v1'
-          output: ''
-        env:
-          FIREFLY_III_ROOT: /github/workspace
-          GH_TOKEN: ''
-      - name: Generate JSON v2
-        id: json-v2
-        uses: JC5/firefly-iii-dev@main
-        with:
-          action: 'ff3:json-translations v2'
-          output: ''
-        env:
-          FIREFLY_III_ROOT: /github/workspace
-          GH_TOKEN: ''
       - name: Generate JSON v3
         id: json-v3
         uses: JC5/firefly-iii-dev@main
@@ -163,9 +152,8 @@ jobs:
       - name: Build JS
         run: |
           npm install
-          npm run prod  --workspace=v1 --verbose
-          npm run build --workspace=v2 --verbose || true
-          npm run build --workspace=v3 --verbose || true
+          npm run prod --workspace=v1 --verbose
+          npm run build --workspace=v3 --verbose
           npm update
       - name: Cleanup changelog
         id: cleanup-changelog
